@@ -1,12 +1,12 @@
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+import src.models  # noqa: F401
+from alembic import context
 from src.config import get_settings
-from src.models import category, payment_method, user
 from src.models.base import Base
 
 config = context.config
