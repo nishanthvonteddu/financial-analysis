@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowRight, BadgeDollarSign, CalendarRange, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -51,12 +52,14 @@ export default function Home() {
                 a composed front door for the app.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
-                <Button className="rounded-full px-6">
-                  Open dashboard
-                  <ArrowRight className="ml-2 size-4" />
+                <Button asChild className="rounded-full px-6">
+                  <Link href="/register">
+                    Create account
+                    <ArrowRight className="ml-2 size-4" />
+                  </Link>
                 </Button>
-                <Button variant="outline" className="rounded-full border-black/15 bg-white/70 px-6">
-                  Inspect bootstrap
+                <Button asChild variant="outline" className="rounded-full border-black/15 bg-white/70 px-6">
+                  <Link href="/login">Sign in</Link>
                 </Button>
               </div>
             </div>

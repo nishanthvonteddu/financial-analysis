@@ -1,0 +1,65 @@
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.core.database import get_db
+from src.core.rate_limiter import rate_limit
+from src.dependencies import get_current_user
+from src.models.user import User
+from src.schemas.auth import (
+    LoginRequest,
+    RefreshRequest,
+    RegisterRequest,
+    TokenResponse,
+    UserResponse,
+)
+from src.services.auth import login_user, refresh_user_tokens, register_user
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+DbSession = Annotated[AsyncSession, Depends(get_db)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+@router.post(
+    "/register",
+    response_model=TokenResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("auth-register"))],
+)
+async def register(
+    payload: RegisterRequest,
+    session: DbSession,
+) -> TokenResponse:
+    return await register_user(session, payload)
+
+
+@router.post(
+    "/login",
+    response_model=TokenResponse,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(rate_limit("auth-login"))],
+)
+async def login(
+    payload: LoginRequest,
+    session: DbSession,
+) -> TokenResponse:
+    return await login_user(session, payload)
+
+
+@router.post(
+    "/refresh",
+    response_model=TokenResponse,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(rate_limit("auth-refresh"))],
+)
+async def refresh(
+    payload: RefreshRequest,
+    session: DbSession,
+) -> TokenResponse:
+    return await refresh_user_tokens(session, payload.refresh_token)
+
+
+@router.get("/me", response_model=UserResponse, status_code=status.HTTP_200_OK)
+async def me(current_user: CurrentUser) -> UserResponse:
+    return UserResponse.model_validate(current_user)
