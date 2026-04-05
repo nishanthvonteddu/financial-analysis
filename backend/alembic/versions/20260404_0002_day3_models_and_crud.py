@@ -278,8 +278,18 @@ def upgrade() -> None:
         sa.Column("description", sa.String(length=255), nullable=False),
         sa.Column("amount", sa.Numeric(12, 2), nullable=False),
         sa.Column("currency", sa.String(length=3), nullable=False),
-        sa.Column("transaction_type", sa.String(length=20), nullable=False, server_default="debit"),
-        sa.Column("subscription_candidate", sa.Boolean(), nullable=False, server_default=sa.false()),
+        sa.Column(
+            "transaction_type",
+            sa.String(length=20),
+            nullable=False,
+            server_default="debit",
+        ),
+        sa.Column(
+            "subscription_candidate",
+            sa.Boolean(),
+            nullable=False,
+            server_default=sa.false(),
+        ),
         sa.Column("raw_payload", sa.JSON(), nullable=False),
         sa.Column(
             "created_at",
@@ -299,7 +309,12 @@ def upgrade() -> None:
     op.create_table(
         "subscription_events",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("subscription_id", sa.Integer(), sa.ForeignKey("subscriptions.id"), nullable=False),
+        sa.Column(
+            "subscription_id",
+            sa.Integer(),
+            sa.ForeignKey("subscriptions.id"),
+            nullable=False,
+        ),
         sa.Column("event_type", sa.String(length=50), nullable=False),
         sa.Column("effective_date", sa.Date(), nullable=False),
         sa.Column("note", sa.Text(), nullable=True),
@@ -321,7 +336,12 @@ def upgrade() -> None:
     op.create_table(
         "payment_history",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("subscription_id", sa.Integer(), sa.ForeignKey("subscriptions.id"), nullable=False),
+        sa.Column(
+            "subscription_id",
+            sa.Integer(),
+            sa.ForeignKey("subscriptions.id"),
+            nullable=False,
+        ),
         sa.Column(
             "payment_method_id",
             sa.Integer(),
