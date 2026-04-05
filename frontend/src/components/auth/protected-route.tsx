@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { useEffect } from "react";
 
 import { useAuth } from "@/hooks/use-auth";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -20,8 +21,11 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-6 text-sm uppercase tracking-[0.28em] text-black/45">
-        Checking session
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+        <LoadingSpinner label="Checking session" size="lg" />
+        <p className="text-xs uppercase tracking-[0.28em] text-black/45">
+          Redirecting to secure sign-in
+        </p>
       </div>
     );
   }
