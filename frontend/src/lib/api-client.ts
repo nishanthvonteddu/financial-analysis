@@ -1,16 +1,46 @@
 import { API_BASE_URL } from "@/lib/constants";
-import type { AuthResponse, HealthResponse, LoginInput, RegisterInput, User } from "@/types";
+import type {
+  AuthResponse,
+  CategoryListResponse,
+  HealthResponse,
+  LoginInput,
+  PaymentMethodListResponse,
+  RegisterInput,
+  Subscription,
+  SubscriptionFilters,
+  SubscriptionListResponse,
+  SubscriptionUpsertInput,
+  User,
+} from "@/types";
 
 type RequestOptions = {
+  query?: Record<string, boolean | number | string | undefined>;
   token?: string;
 };
+
+function buildUrl(path: string, query?: RequestOptions["query"]) {
+  const url = new URL(`${API_BASE_URL}${path}`);
+
+  if (!query) {
+    return url.toString();
+  }
+
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined || value === "") {
+      continue;
+    }
+    url.searchParams.set(key, String(value));
+  }
+
+  return url.toString();
+}
 
 async function request<T>(
   path: string,
   init?: RequestInit,
   options?: RequestOptions,
 ): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(buildUrl(path, options?.query), {
     ...init,
     headers: {
       "Content-Type": "application/json",
@@ -21,6 +51,15 @@ async function request<T>(
 
   if (!response.ok) {
     throw new Error(`Request failed with ${response.status}`);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  const contentType = response.headers.get("Content-Type") ?? "";
+  if (!contentType.includes("application/json")) {
+    return undefined as T;
   }
 
   return response.json() as Promise<T>;
@@ -50,5 +89,37 @@ export const apiClient = {
       body: JSON.stringify(payload),
       method: "POST",
     });
+  },
+  getCategories(token: string) {
+    return request<CategoryListResponse>("/categories", undefined, { token });
+  },
+  getPaymentMethods(token: string) {
+    return request<PaymentMethodListResponse>("/payment-methods", undefined, { token });
+  },
+  getSubscriptions(token: string, filters?: SubscriptionFilters) {
+    return request<SubscriptionListResponse>("/subscriptions", undefined, {
+      query: filters,
+      token,
+    });
+  },
+  getSubscription(token: string, subscriptionId: number) {
+    return request<Subscription>(`/subscriptions/${subscriptionId}`, undefined, { token });
+  },
+  createSubscription(token: string, payload: SubscriptionUpsertInput) {
+    return request<Subscription>("/subscriptions", {
+      body: JSON.stringify(payload),
+      method: "POST",
+    }, { token });
+  },
+  updateSubscription(token: string, subscriptionId: number, payload: Partial<SubscriptionUpsertInput>) {
+    return request<Subscription>(`/subscriptions/${subscriptionId}`, {
+      body: JSON.stringify(payload),
+      method: "PATCH",
+    }, { token });
+  },
+  deleteSubscription(token: string, subscriptionId: number) {
+    return request<void>(`/subscriptions/${subscriptionId}`, {
+      method: "DELETE",
+    }, { token });
   },
 };

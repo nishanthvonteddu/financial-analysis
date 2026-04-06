@@ -47,6 +47,7 @@ def test_subscriptions_support_crud_and_filters(client) -> None:
             "name": "Netflix",
             "vendor": "Netflix",
             "description": "Primary streaming service",
+            "website_url": "https://www.netflix.com",
             "amount": "15.49",
             "currency": "usd",
             "cadence": "monthly",
@@ -66,6 +67,7 @@ def test_subscriptions_support_crud_and_filters(client) -> None:
     assert created["currency"] == "USD"
     assert created["status"] == "active"
     assert created["payment_method_id"] == payment_method_id
+    assert created["website_url"] == "https://www.netflix.com"
 
     second_response = client.post(
         "/api/v1/subscriptions",
@@ -105,6 +107,7 @@ def test_subscriptions_support_crud_and_filters(client) -> None:
             "amount": "17.99",
             "status": "cancelled",
             "end_date": "2026-06-01",
+            "website_url": "https://www.netflix.com/account",
             "notes": "Cancelled after price increase",
         },
     )
@@ -113,6 +116,7 @@ def test_subscriptions_support_crud_and_filters(client) -> None:
     assert updated["amount"] == "17.99"
     assert updated["status"] == "cancelled"
     assert updated["end_date"] == "2026-06-01"
+    assert updated["website_url"] == "https://www.netflix.com/account"
 
     delete_response = client.delete(f"/api/v1/subscriptions/{created['id']}", headers=owner_headers)
     assert delete_response.status_code == 204
@@ -192,3 +196,18 @@ def test_subscriptions_enforce_validation_and_ownership(client) -> None:
     )
     assert invalid_dates_response.status_code == 422
     assert invalid_dates_response.json()["detail"] == "end_date must be on or after start_date."
+
+    invalid_url_response = client.post(
+        "/api/v1/subscriptions",
+        headers=owner_headers,
+        json={
+            "name": "Bad URL Service",
+            "vendor": "Bad URL Service",
+            "amount": "12.00",
+            "currency": "USD",
+            "cadence": "monthly",
+            "start_date": "2026-04-01",
+            "website_url": "notaurl",
+        },
+    )
+    assert invalid_url_response.status_code == 422

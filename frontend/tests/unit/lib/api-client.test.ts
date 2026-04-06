@@ -73,4 +73,55 @@ describe("apiClient", () => {
       }),
     );
   });
+
+  it("adds query params for subscription list requests", async () => {
+    const fetchMock = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          items: [],
+          limit: 25,
+          offset: 0,
+          total: 0,
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      ),
+    );
+
+    await apiClient.getSubscriptions("access-token", {
+      limit: 25,
+      search: "netflix",
+      status: "active",
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:8000/api/v1/subscriptions?limit=25&search=netflix&status=active",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Bearer access-token",
+        }),
+      }),
+    );
+  });
+
+  it("supports delete requests that return no JSON body", async () => {
+    const fetchMock = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(null, {
+        status: 204,
+      }),
+    );
+
+    await expect(apiClient.deleteSubscription("access-token", 4)).resolves.toBeUndefined();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:8000/api/v1/subscriptions/4",
+      expect.objectContaining({
+        method: "DELETE",
+      }),
+    );
+  });
 });

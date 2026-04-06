@@ -23,6 +23,7 @@ class Subscription(TimestampMixin, Base):
     name: Mapped[str] = mapped_column(String(150))
     vendor: Mapped[str] = mapped_column(String(150))
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    website_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     currency: Mapped[str] = mapped_column(String(3), nullable=False)
     cadence: Mapped[str] = mapped_column(String(20), nullable=False)

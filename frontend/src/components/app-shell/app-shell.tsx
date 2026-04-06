@@ -90,8 +90,8 @@ const routeMeta: Record<string, { description: string; searchPlaceholder: string
     title: "Settings",
   },
   "/subscriptions": {
-    description: "Manual entry, plan editing, and lifecycle controls will grow in this surface.",
-    searchPlaceholder: "Search plans, categories, shared households",
+    description: "Manual entry, plan editing, and lifecycle controls are now active in this workspace.",
+    searchPlaceholder: "Search plans, vendors, categories, payment methods",
     title: "Subscriptions",
   },
 };
@@ -119,7 +119,9 @@ export function AppShell({ children }: AppShellProps) {
     setIsUserMenuOpen(false);
   }, [pathname]);
 
-  const meta = routeMeta[pathname] ?? routeMeta["/dashboard"];
+  const meta =
+    Object.entries(routeMeta).find(([href]) => isActivePath(pathname, href))?.[1] ??
+    routeMeta["/dashboard"];
   const currentNavItem = navItems.find((item) => isActivePath(pathname, item.href)) ?? navItems[0];
   const displayName = user?.full_name || user?.email?.split("@")[0] || "Workspace operator";
 
@@ -224,10 +226,10 @@ export function AppShell({ children }: AppShellProps) {
                 isSidebarExpanded ? "block" : "hidden xl:block",
               )}
             >
-              <p className="text-xs uppercase tracking-[0.3em] text-white/40">Day 4 status</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-white/40">Day 5 status</p>
               <p className="mt-3 text-sm leading-6 text-white/75">
-                Shared shell navigation is live. The next milestones can now add working surfaces
-                without rebuilding layout chrome every day.
+                Subscription management is live with manual entry, detail routes, and lifecycle
+                edits layered onto the shared shell.
               </p>
             </div>
           </div>
