@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from decimal import Decimal
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
@@ -25,10 +26,26 @@ def _normalize_choice(value: str, field_name: str) -> str:
     return normalized
 
 
+def _normalize_url(value: str | None) -> str | None:
+    if value is None:
+        return None
+
+    normalized = value.strip()
+    if not normalized:
+        return None
+
+    parsed = urlparse(normalized)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError("Website URL must be a valid http or https URL.")
+
+    return normalized
+
+
 class SubscriptionCreate(BaseModel):
     name: str
     vendor: str
     description: str | None = None
+    website_url: str | None = None
     amount: Decimal
     currency: str
     cadence: str
@@ -59,6 +76,11 @@ class SubscriptionCreate(BaseModel):
             return None
         normalized = value.strip()
         return normalized or None
+
+    @field_validator("website_url")
+    @classmethod
+    def validate_website_url(cls, value: str | None) -> str | None:
+        return _normalize_url(value)
 
     @field_validator("amount")
     @classmethod
@@ -102,6 +124,7 @@ class SubscriptionUpdate(BaseModel):
     name: str | None = None
     vendor: str | None = None
     description: str | None = None
+    website_url: str | None = None
     amount: Decimal | None = None
     currency: str | None = None
     cadence: str | None = None
@@ -136,6 +159,11 @@ class SubscriptionUpdate(BaseModel):
             return None
         normalized = value.strip()
         return normalized or None
+
+    @field_validator("website_url")
+    @classmethod
+    def validate_website_url(cls, value: str | None) -> str | None:
+        return _normalize_url(value)
 
     @field_validator("amount")
     @classmethod
@@ -185,6 +213,7 @@ class SubscriptionResponse(BaseModel):
     name: str
     vendor: str
     description: str | None
+    website_url: str | None
     amount: Decimal
     currency: str
     cadence: str
