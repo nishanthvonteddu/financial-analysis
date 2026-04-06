@@ -29,3 +29,94 @@ export type AuthResponse = {
   refresh_token_expires_at: string;
   user: User;
 };
+
+export type Category = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CategoryListResponse = {
+  items: Category[];
+  total: number;
+};
+
+export type PaymentMethod = {
+  id: number;
+  user_id: number | null;
+  label: string;
+  provider: string;
+  last4: string | null;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PaymentMethodListResponse = {
+  items: PaymentMethod[];
+  total: number;
+};
+
+export type SubscriptionStatus = "active" | "paused" | "cancelled";
+export type SubscriptionCadence = "weekly" | "monthly" | "quarterly" | "yearly";
+
+export type Subscription = {
+  id: number;
+  user_id: number;
+  category_id: number | null;
+  payment_method_id: number | null;
+  name: string;
+  vendor: string;
+  description: string | null;
+  website_url: string | null;
+  amount: string;
+  currency: string;
+  cadence: string;
+  status: string;
+  start_date: string;
+  end_date: string | null;
+  next_charge_date: string | null;
+  day_of_month: number | null;
+  auto_renew: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SubscriptionListResponse = {
+  items: Subscription[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
+export type SubscriptionFilters = {
+  category_id?: number;
+  limit?: number;
+  offset?: number;
+  payment_method_id?: number;
+  search?: string;
+  status?: string;
+};
+
+export type SubscriptionUpsertInput = {
+  amount: string;
+  auto_renew: boolean;
+  cadence: string;
+  category_id?: number;
+  currency: string;
+  day_of_month?: number;
+  description?: string;
+  end_date?: string;
+  name: string;
+  next_charge_date?: string;
+  notes?: string;
+  payment_method_id?: number;
+  start_date: string;
+  status: string;
+  vendor: string;
+  website_url?: string;
+};
