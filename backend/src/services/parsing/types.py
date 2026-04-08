@@ -12,6 +12,8 @@ class ParsedTransaction:
     transaction_type: str
     currency: str = "USD"
     external_id: str | None = None
+    service_category: str | None = None
+    subscription_candidate: bool = False
     raw_payload: dict[str, object] = field(default_factory=dict)
 
 
