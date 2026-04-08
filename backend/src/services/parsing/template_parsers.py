@@ -20,6 +20,8 @@ DATE_KEYS = (
     "date",
     "posted at",
     "post date",
+    "posted date",
+    "trans date",
 )
 DESCRIPTION_KEYS = (
     "description",
@@ -27,10 +29,14 @@ DESCRIPTION_KEYS = (
     "merchant",
     "name",
     "transaction",
+    "original description",
+    "simple description",
+    "appears on your statement as",
+    "memo",
 )
-AMOUNT_KEYS = ("amount", "transaction amount", "amt")
-DEBIT_KEYS = ("debit", "withdrawal", "charge")
-CREDIT_KEYS = ("credit", "deposit", "payment")
+AMOUNT_KEYS = ("amount", "transaction amount", "amt", "billing amount")
+DEBIT_KEYS = ("debit", "withdrawal", "charge", "debits")
+CREDIT_KEYS = ("credit", "deposit", "payment", "credits")
 SUMMARY_MARKERS = (
     "balance",
     "summary",
