@@ -9,6 +9,7 @@ def app(tmp_path, monkeypatch):
     database_url = f"sqlite+aiosqlite:///{tmp_path / 'test.db'}"
     monkeypatch.setenv("DATABASE_URL", database_url)
     monkeypatch.setenv("JWT_SECRET_KEY", "test-secret-key")
+    monkeypatch.setenv("LOCAL_STORAGE_PATH", str(tmp_path / "storage"))
 
     from src.config import get_settings
 
