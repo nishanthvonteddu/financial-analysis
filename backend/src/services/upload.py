@@ -4,18 +4,20 @@ import hashlib
 from datetime import UTC, datetime
 from pathlib import Path
 
+from arq import create_pool
+from arq.connections import RedisSettings
 from fastapi import BackgroundTasks, HTTPException, UploadFile, status
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core import database as database_module
+from src.config import get_settings
 from src.core.logging import get_logger
 from src.core.storage import get_storage
 from src.models.data_source import DataSource
 from src.models.raw_transaction import RawTransaction
 from src.models.user import User
 from src.schemas.upload import UploadListResponse, UploadResponse
-from src.services.parsing import ScannedPdfError, extract_csv_transactions, extract_pdf_transactions
+from src.services.parsing import get_processing_job_name, process_stored_upload
 
 logger = get_logger(__name__)
 
@@ -54,6 +56,42 @@ def _source_type_for_upload(file_name: str, content_type: str | None) -> str:
 def _build_storage_key(user_id: int, file_hash: str, file_name: str) -> str:
     suffix = Path(file_name).suffix.lower()
     return f"uploads/{user_id}/{datetime.now(UTC).strftime('%Y/%m/%d')}/{file_hash}{suffix}"
+
+
+async def _close_redis_pool(redis: object) -> None:
+    close = getattr(redis, "aclose", None)
+    if callable(close):
+        await close()
+        return
+
+    close = getattr(redis, "close", None)
+    if callable(close):
+        result = close()
+        if hasattr(result, "__await__"):
+            await result
+
+
+async def _enqueue_upload_job(upload: DataSource) -> bool:
+    settings = get_settings()
+    if settings.upload_job_backend.lower() != "arq":
+        return False
+
+    try:
+        redis = await create_pool(RedisSettings.from_dsn(settings.redis_url))
+        try:
+            await redis.enqueue_job(get_processing_job_name(upload.source_type), upload.id)
+        finally:
+            await _close_redis_pool(redis)
+    except Exception:
+        logger.exception(
+            "uploads.enqueue_failed",
+            upload_id=upload.id,
+            source_type=upload.source_type,
+        )
+        return False
+
+    logger.info("uploads.enqueued", upload_id=upload.id, source_type=upload.source_type)
+    return True
 
 
 def _serialize_upload(upload: DataSource, *, transaction_count: int = 0) -> UploadResponse:
@@ -150,7 +188,8 @@ async def create_upload(
         file_hash=file_hash,
     )
     response = _serialize_upload(upload)
-    await process_upload(upload.id)
+    if not await _enqueue_upload_job(upload):
+        background_tasks.add_task(process_stored_upload, upload.id)
     return response
 
 
@@ -212,61 +251,3 @@ async def delete_upload(
         await get_storage().delete(upload.storage_path)
 
     logger.info("uploads.deleted", user_id=user.id, upload_id=upload_id)
-
-
-async def process_upload(upload_id: int) -> None:
-    async with database_module.SessionLocal() as session:
-        upload = await session.get(DataSource, upload_id)
-        if upload is None:
-            return
-
-        upload.status = "processing"
-        upload.error_message = None
-        await session.commit()
-
-        try:
-            if not upload.storage_path:
-                raise ValueError("Upload is missing its storage path.")
-
-            file_bytes = Path(upload.storage_path).read_bytes()
-            if upload.source_type == "upload_pdf":
-                extraction = extract_pdf_transactions(file_bytes)
-            else:
-                extraction = extract_csv_transactions(file_bytes)
-
-            await session.execute(
-                delete(RawTransaction).where(RawTransaction.data_source_id == upload.id)
-            )
-            for transaction in extraction.transactions:
-                session.add(
-                    RawTransaction(
-                        user_id=upload.user_id,
-                        data_source_id=upload.id,
-                        external_id=transaction.external_id,
-                        posted_at=transaction.posted_at,
-                        merchant=transaction.merchant,
-                        description=transaction.description,
-                        amount=transaction.amount,
-                        currency=transaction.currency,
-                        transaction_type=transaction.transaction_type,
-                        raw_payload=transaction.raw_payload,
-                    )
-                )
-
-            upload.provider = extraction.bank_format
-            upload.status = "completed"
-            upload.error_message = None
-            upload.last_synced_at = datetime.now(UTC)
-            await session.commit()
-            logger.info(
-                "uploads.processed",
-                upload_id=upload.id,
-                bank_format=extraction.bank_format,
-                transaction_count=len(extraction.transactions),
-            )
-        except (ScannedPdfError, ValueError) as exc:
-            upload.provider = "unknown"
-            upload.status = "failed"
-            upload.error_message = str(exc)
-            await session.commit()
-            logger.info("uploads.failed", upload_id=upload.id, error_message=str(exc))
