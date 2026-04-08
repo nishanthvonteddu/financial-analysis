@@ -9,6 +9,10 @@ class BaseStorage(ABC):
     async def save(self, relative_path: str, content: bytes) -> str:
         raise NotImplementedError
 
+    @abstractmethod
+    async def delete(self, storage_path: str) -> None:
+        raise NotImplementedError
+
 
 class LocalStorage(BaseStorage):
     def __init__(self, base_path: str) -> None:
@@ -20,6 +24,11 @@ class LocalStorage(BaseStorage):
         destination.write_bytes(content)
         return str(destination)
 
+    async def delete(self, storage_path: str) -> None:
+        path = Path(storage_path)
+        if path.exists():
+            path.unlink()
+
 
 class S3Storage(BaseStorage):
     def __init__(self, bucket_name: str, region: str) -> None:
@@ -27,6 +36,9 @@ class S3Storage(BaseStorage):
         self.region = region
 
     async def save(self, relative_path: str, content: bytes) -> str:
+        raise NotImplementedError("S3 storage wiring will be added in a later milestone.")
+
+    async def delete(self, storage_path: str) -> None:
         raise NotImplementedError("S3 storage wiring will be added in a later milestone.")
 
 
