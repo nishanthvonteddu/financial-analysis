@@ -1,0 +1,974 @@
+[
+  {
+    "name": "AWS",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Algolia",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Azure",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Bitbucket",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Cloudflare",
+    "category": "developer-tools"
+  },
+  {
+    "name": "ConvertKit",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Datadog",
+    "category": "developer-tools"
+  },
+  {
+    "name": "DigitalOcean",
+    "category": "developer-tools"
+  },
+  {
+    "name": "GitHub",
+    "category": "developer-tools"
+  },
+  {
+    "name": "GitLab",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Google Cloud",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Heroku",
+    "category": "developer-tools"
+  },
+  {
+    "name": "HubSpot",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Intercom",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Linode",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Mailchimp",
+    "category": "developer-tools"
+  },
+  {
+    "name": "MongoDB Atlas",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Neon",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Netlify",
+    "category": "developer-tools"
+  },
+  {
+    "name": "OpenAI",
+    "category": "developer-tools"
+  },
+  {
+    "name": "PlanetScale",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Postman",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Railway",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Render",
+    "category": "developer-tools"
+  },
+  {
+    "name": "SendGrid",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Sentry",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Stripe",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Supabase",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Twilio",
+    "category": "developer-tools"
+  },
+  {
+    "name": "Vercel",
+    "category": "developer-tools"
+  },
+  {
+    "name": "AMC Plus",
+    "category": "entertainment"
+  },
+  {
+    "name": "Acorn TV",
+    "category": "entertainment"
+  },
+  {
+    "name": "Apple TV Plus",
+    "category": "entertainment"
+  },
+  {
+    "name": "BritBox",
+    "category": "entertainment"
+  },
+  {
+    "name": "Crunchyroll",
+    "category": "entertainment"
+  },
+  {
+    "name": "DirecTV Stream",
+    "category": "entertainment"
+  },
+  {
+    "name": "Discovery Plus",
+    "category": "entertainment"
+  },
+  {
+    "name": "Disney Plus",
+    "category": "entertainment"
+  },
+  {
+    "name": "ESPN Plus",
+    "category": "entertainment"
+  },
+  {
+    "name": "Fubo",
+    "category": "entertainment"
+  },
+  {
+    "name": "Hulu",
+    "category": "entertainment"
+  },
+  {
+    "name": "MGM Plus",
+    "category": "entertainment"
+  },
+  {
+    "name": "Max",
+    "category": "entertainment"
+  },
+  {
+    "name": "Netflix",
+    "category": "entertainment"
+  },
+  {
+    "name": "Paramount Plus",
+    "category": "entertainment"
+  },
+  {
+    "name": "Peacock",
+    "category": "entertainment"
+  },
+  {
+    "name": "Philo",
+    "category": "entertainment"
+  },
+  {
+    "name": "Sling TV",
+    "category": "entertainment"
+  },
+  {
+    "name": "Starz",
+    "category": "entertainment"
+  },
+  {
+    "name": "YouTube Premium",
+    "category": "entertainment"
+  },
+  {
+    "name": "23andMe Plus",
+    "category": "family-home"
+  },
+  {
+    "name": "AAA Plus",
+    "category": "family-home"
+  },
+  {
+    "name": "AARP",
+    "category": "family-home"
+  },
+  {
+    "name": "Ancestry",
+    "category": "family-home"
+  },
+  {
+    "name": "Banfield Wellness",
+    "category": "family-home"
+  },
+  {
+    "name": "Care.com",
+    "category": "family-home"
+  },
+  {
+    "name": "Chegg",
+    "category": "family-home"
+  },
+  {
+    "name": "Epic Games",
+    "category": "family-home"
+  },
+  {
+    "name": "Kindle Unlimited",
+    "category": "family-home"
+  },
+  {
+    "name": "PBS Passport",
+    "category": "family-home"
+  },
+  {
+    "name": "Petco Vital Care",
+    "category": "family-home"
+  },
+  {
+    "name": "Rover",
+    "category": "family-home"
+  },
+  {
+    "name": "AAA",
+    "category": "finance"
+  },
+  {
+    "name": "Bilt Rewards",
+    "category": "finance"
+  },
+  {
+    "name": "Chime Plus",
+    "category": "finance"
+  },
+  {
+    "name": "Credit Karma",
+    "category": "finance"
+  },
+  {
+    "name": "Equifax",
+    "category": "finance"
+  },
+  {
+    "name": "Experian",
+    "category": "finance"
+  },
+  {
+    "name": "Identity Guard",
+    "category": "finance"
+  },
+  {
+    "name": "Monarch Money",
+    "category": "finance"
+  },
+  {
+    "name": "Privacy.com",
+    "category": "finance"
+  },
+  {
+    "name": "Quicken Simplifi",
+    "category": "finance"
+  },
+  {
+    "name": "Robinhood Gold",
+    "category": "finance"
+  },
+  {
+    "name": "Rocket Money",
+    "category": "finance"
+  },
+  {
+    "name": "SoFi Plus",
+    "category": "finance"
+  },
+  {
+    "name": "TransUnion",
+    "category": "finance"
+  },
+  {
+    "name": "YNAB",
+    "category": "finance"
+  },
+  {
+    "name": "Beachbody",
+    "category": "fitness-health"
+  },
+  {
+    "name": "BetterHelp",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Calmerry",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Centr",
+    "category": "fitness-health"
+  },
+  {
+    "name": "ClassPass",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Daily Burn",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Fitbit Premium",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Future",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Headway",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Hims",
+    "category": "fitness-health"
+  },
+  {
+    "name": "MyFitnessPal",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Nike Run Club",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Noom",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Oura",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Peloton",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Roman",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Strava",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Talkspace",
+    "category": "fitness-health"
+  },
+  {
+    "name": "WHOOP",
+    "category": "fitness-health"
+  },
+  {
+    "name": "WeightWatchers",
+    "category": "fitness-health"
+  },
+  {
+    "name": "Atlas Coffee Club",
+    "category": "food-delivery"
+  },
+  {
+    "name": "Blue Apron",
+    "category": "food-delivery"
+  },
+  {
+    "name": "ButcherBox",
+    "category": "food-delivery"
+  },
+  {
+    "name": "Daily Harvest",
+    "category": "food-delivery"
+  },
+  {
+    "name": "DoorDash DashPass",
+    "category": "food-delivery"
+  },
+  {
+    "name": "EveryPlate",
+    "category": "food-delivery"
+  },
+  {
+    "name": "Factor",
+    "category": "food-delivery"
+  },
+  {
+    "name": "Green Chef",
+    "category": "food-delivery"
+  },
+  {
+    "name": "Grubhub Plus",
+    "category": "food-delivery"
+  },
+  {
+    "name": "HelloFresh",
+    "category": "food-delivery"
+  },
+  {
+    "name": "Home Chef",
+    "category": "food-delivery"
+  },
+  {
+    "name": "Misfits Market",
+    "category": "food-delivery"
+  },
+  {
+    "name": "Purple Carrot",
+    "category": "food-delivery"
+  },
+  {
+    "name": "Trade Coffee",
+    "category": "food-delivery"
+  },
+  {
+    "name": "Uber One",
+    "category": "food-delivery"
+  },
+  {
+    "name": "Winc",
+    "category": "food-delivery"
+  },
+  {
+    "name": "Apple Arcade",
+    "category": "gaming"
+  },
+  {
+    "name": "Discord Nitro",
+    "category": "gaming"
+  },
+  {
+    "name": "EA Play",
+    "category": "gaming"
+  },
+  {
+    "name": "Final Fantasy XIV",
+    "category": "gaming"
+  },
+  {
+    "name": "Humble Choice",
+    "category": "gaming"
+  },
+  {
+    "name": "Nintendo Switch Online",
+    "category": "gaming"
+  },
+  {
+    "name": "Nvidia GeForce Now",
+    "category": "gaming"
+  },
+  {
+    "name": "PlayStation Plus",
+    "category": "gaming"
+  },
+  {
+    "name": "Roblox Premium",
+    "category": "gaming"
+  },
+  {
+    "name": "Runescape Membership",
+    "category": "gaming"
+  },
+  {
+    "name": "Ubisoft Plus",
+    "category": "gaming"
+  },
+  {
+    "name": "World of Warcraft",
+    "category": "gaming"
+  },
+  {
+    "name": "Xbox Game Pass",
+    "category": "gaming"
+  },
+  {
+    "name": "Apple Music",
+    "category": "music"
+  },
+  {
+    "name": "Audible",
+    "category": "music"
+  },
+  {
+    "name": "Blinkist",
+    "category": "music"
+  },
+  {
+    "name": "Calm",
+    "category": "music"
+  },
+  {
+    "name": "Deezer",
+    "category": "music"
+  },
+  {
+    "name": "Headspace",
+    "category": "music"
+  },
+  {
+    "name": "Pandora",
+    "category": "music"
+  },
+  {
+    "name": "Qobuz",
+    "category": "music"
+  },
+  {
+    "name": "Scribd",
+    "category": "music"
+  },
+  {
+    "name": "SiriusXM",
+    "category": "music"
+  },
+  {
+    "name": "SoundCloud Go",
+    "category": "music"
+  },
+  {
+    "name": "Spotify",
+    "category": "music"
+  },
+  {
+    "name": "Tidal",
+    "category": "music"
+  },
+  {
+    "name": "YouTube Music",
+    "category": "music"
+  },
+  {
+    "name": "Babbel",
+    "category": "news-education"
+  },
+  {
+    "name": "Bloomberg",
+    "category": "news-education"
+  },
+  {
+    "name": "Brilliant",
+    "category": "news-education"
+  },
+  {
+    "name": "Chess.com",
+    "category": "news-education"
+  },
+  {
+    "name": "Codecademy",
+    "category": "news-education"
+  },
+  {
+    "name": "Coursera",
+    "category": "news-education"
+  },
+  {
+    "name": "DataCamp",
+    "category": "news-education"
+  },
+  {
+    "name": "Duolingo",
+    "category": "news-education"
+  },
+  {
+    "name": "Harvard Business Review",
+    "category": "news-education"
+  },
+  {
+    "name": "LinkedIn Learning",
+    "category": "news-education"
+  },
+  {
+    "name": "MasterClass",
+    "category": "news-education"
+  },
+  {
+    "name": "Medium",
+    "category": "news-education"
+  },
+  {
+    "name": "New York Times",
+    "category": "news-education"
+  },
+  {
+    "name": "Pluralsight",
+    "category": "news-education"
+  },
+  {
+    "name": "Rosetta Stone",
+    "category": "news-education"
+  },
+  {
+    "name": "Skillshare",
+    "category": "news-education"
+  },
+  {
+    "name": "The Economist",
+    "category": "news-education"
+  },
+  {
+    "name": "Udemy",
+    "category": "news-education"
+  },
+  {
+    "name": "Wall Street Journal",
+    "category": "news-education"
+  },
+  {
+    "name": "Washington Post",
+    "category": "news-education"
+  },
+  {
+    "name": "1Password",
+    "category": "productivity"
+  },
+  {
+    "name": "Adobe Creative Cloud",
+    "category": "productivity"
+  },
+  {
+    "name": "Canva",
+    "category": "productivity"
+  },
+  {
+    "name": "Dashlane",
+    "category": "productivity"
+  },
+  {
+    "name": "Dropbox",
+    "category": "productivity"
+  },
+  {
+    "name": "Evernote",
+    "category": "productivity"
+  },
+  {
+    "name": "Figma",
+    "category": "productivity"
+  },
+  {
+    "name": "Google One",
+    "category": "productivity"
+  },
+  {
+    "name": "Grammarly",
+    "category": "productivity"
+  },
+  {
+    "name": "LastPass",
+    "category": "productivity"
+  },
+  {
+    "name": "Microsoft 365",
+    "category": "productivity"
+  },
+  {
+    "name": "Miro",
+    "category": "productivity"
+  },
+  {
+    "name": "NordPass",
+    "category": "productivity"
+  },
+  {
+    "name": "Notion",
+    "category": "productivity"
+  },
+  {
+    "name": "Otter",
+    "category": "productivity"
+  },
+  {
+    "name": "Proton Pass",
+    "category": "productivity"
+  },
+  {
+    "name": "Slack",
+    "category": "productivity"
+  },
+  {
+    "name": "Superhuman",
+    "category": "productivity"
+  },
+  {
+    "name": "Todoist",
+    "category": "productivity"
+  },
+  {
+    "name": "Zoom",
+    "category": "productivity"
+  },
+  {
+    "name": "Adobe Stock",
+    "category": "security-storage"
+  },
+  {
+    "name": "Backblaze",
+    "category": "security-storage"
+  },
+  {
+    "name": "Bitdefender",
+    "category": "security-storage"
+  },
+  {
+    "name": "Carbonite",
+    "category": "security-storage"
+  },
+  {
+    "name": "CrashPlan",
+    "category": "security-storage"
+  },
+  {
+    "name": "Envato Elements",
+    "category": "security-storage"
+  },
+  {
+    "name": "ExpressVPN",
+    "category": "security-storage"
+  },
+  {
+    "name": "IDrive",
+    "category": "security-storage"
+  },
+  {
+    "name": "LifeLock",
+    "category": "security-storage"
+  },
+  {
+    "name": "Malwarebytes",
+    "category": "security-storage"
+  },
+  {
+    "name": "McAfee",
+    "category": "security-storage"
+  },
+  {
+    "name": "NordVPN",
+    "category": "security-storage"
+  },
+  {
+    "name": "Norton 360",
+    "category": "security-storage"
+  },
+  {
+    "name": "Proton VPN",
+    "category": "security-storage"
+  },
+  {
+    "name": "Ring Protect",
+    "category": "security-storage"
+  },
+  {
+    "name": "Shutterstock",
+    "category": "security-storage"
+  },
+  {
+    "name": "SimpliSafe",
+    "category": "security-storage"
+  },
+  {
+    "name": "Surfshark",
+    "category": "security-storage"
+  },
+  {
+    "name": "Vivint",
+    "category": "security-storage"
+  },
+  {
+    "name": "iCloud Plus",
+    "category": "security-storage"
+  },
+  {
+    "name": "Amazon Prime",
+    "category": "shopping"
+  },
+  {
+    "name": "BarkBox",
+    "category": "shopping"
+  },
+  {
+    "name": "Book of the Month",
+    "category": "shopping"
+  },
+  {
+    "name": "Chewy Autoship",
+    "category": "shopping"
+  },
+  {
+    "name": "Costco",
+    "category": "shopping"
+  },
+  {
+    "name": "Etsy Plus",
+    "category": "shopping"
+  },
+  {
+    "name": "FabFitFun",
+    "category": "shopping"
+  },
+  {
+    "name": "Instacart Plus",
+    "category": "shopping"
+  },
+  {
+    "name": "KiwiCo",
+    "category": "shopping"
+  },
+  {
+    "name": "Rakuten Kobo",
+    "category": "shopping"
+  },
+  {
+    "name": "Rent the Runway",
+    "category": "shopping"
+  },
+  {
+    "name": "Sams Club",
+    "category": "shopping"
+  },
+  {
+    "name": "Stitch Fix",
+    "category": "shopping"
+  },
+  {
+    "name": "Target Circle 360",
+    "category": "shopping"
+  },
+  {
+    "name": "Thrive Market",
+    "category": "shopping"
+  },
+  {
+    "name": "Walmart Plus",
+    "category": "shopping"
+  },
+  {
+    "name": "AT&T",
+    "category": "telecom"
+  },
+  {
+    "name": "Comcast Business",
+    "category": "telecom"
+  },
+  {
+    "name": "Consumer Cellular",
+    "category": "telecom"
+  },
+  {
+    "name": "Cox",
+    "category": "telecom"
+  },
+  {
+    "name": "Cricket Wireless",
+    "category": "telecom"
+  },
+  {
+    "name": "DirecTV",
+    "category": "telecom"
+  },
+  {
+    "name": "Dish Network",
+    "category": "telecom"
+  },
+  {
+    "name": "Frontier",
+    "category": "telecom"
+  },
+  {
+    "name": "Google Fi",
+    "category": "telecom"
+  },
+  {
+    "name": "Mint Mobile",
+    "category": "telecom"
+  },
+  {
+    "name": "Spectrum",
+    "category": "telecom"
+  },
+  {
+    "name": "T-Mobile",
+    "category": "telecom"
+  },
+  {
+    "name": "Verizon",
+    "category": "telecom"
+  },
+  {
+    "name": "Visible",
+    "category": "telecom"
+  },
+  {
+    "name": "Xfinity",
+    "category": "telecom"
+  },
+  {
+    "name": "Avis Preferred",
+    "category": "transport"
+  },
+  {
+    "name": "Budget Fastbreak",
+    "category": "transport"
+  },
+  {
+    "name": "Citi Bike",
+    "category": "transport"
+  },
+  {
+    "name": "Hertz Gold",
+    "category": "transport"
+  },
+  {
+    "name": "Lyft",
+    "category": "transport"
+  },
+  {
+    "name": "Maven",
+    "category": "transport"
+  },
+  {
+    "name": "National Emerald Club",
+    "category": "transport"
+  },
+  {
+    "name": "Revel",
+    "category": "transport"
+  },
+  {
+    "name": "Sixt Plus",
+    "category": "transport"
+  },
+  {
+    "name": "Turo",
+    "category": "transport"
+  },
+  {
+    "name": "Uber",
+    "category": "transport"
+  },
+  {
+    "name": "Zipcar",
+    "category": "transport"
+  }
+]
