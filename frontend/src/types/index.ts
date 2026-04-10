@@ -60,6 +60,29 @@ export type PaymentMethodListResponse = {
   total: number;
 };
 
+export type UploadSourceType = "upload_csv" | "upload_pdf";
+export type UploadStatus = "queued" | "processing" | "completed" | "failed";
+
+export type Upload = {
+  id: number;
+  file_name: string;
+  source_type: UploadSourceType;
+  provider: string;
+  status: UploadStatus;
+  content_type: string | null;
+  file_size: number | null;
+  error_message: string | null;
+  transaction_count: number;
+  created_at: string;
+  updated_at: string;
+  last_synced_at: string | null;
+};
+
+export type UploadListResponse = {
+  items: Upload[];
+  total: number;
+};
+
 export type SubscriptionStatus = "active" | "paused" | "cancelled";
 export type SubscriptionCadence = "weekly" | "monthly" | "quarterly" | "yearly";
 
