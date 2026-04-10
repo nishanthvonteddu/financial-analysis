@@ -9,6 +9,7 @@ from src.core import database as database_module
 from src.core.logging import get_logger
 from src.models.data_source import DataSource
 from src.models.raw_transaction import RawTransaction
+from src.services.detection_engine import sync_user_subscriptions
 from src.services.parsing.csv_extractor import extract_csv_transactions
 from src.services.parsing.normalizer import normalize_extraction
 from src.services.parsing.pdf_extractor import ScannedPdfError, extract_pdf_transactions
@@ -95,10 +96,13 @@ async def process_stored_upload(upload_id: int) -> None:
                 file_bytes=Path(upload.storage_path).read_bytes(),
             )
             candidate_count = await _store_transactions(upload, extraction)
+            detections = await sync_user_subscriptions(user_id=upload.user_id)
             logger.info(
-                "parsing.pipeline.detection_triggered",
+                "parsing.pipeline.detection_completed",
                 upload_id=upload.id,
                 candidate_count=candidate_count,
+                detected_count=len(detections),
+                detected_vendors=[detection.vendor for detection in detections],
             )
         except ScannedPdfError as exc:
             upload.status = "failed"
