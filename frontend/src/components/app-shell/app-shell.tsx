@@ -9,6 +9,7 @@ import {
   CalendarDays,
   ChevronDown,
   CreditCard,
+  FileUp,
   LayoutDashboard,
   LogOut,
   PanelLeftClose,
@@ -49,6 +50,12 @@ const navItems: NavItem[] = [
     label: "Subscriptions",
   },
   {
+    caption: "Statement ingest",
+    href: "/uploads",
+    icon: FileUp,
+    label: "Uploads",
+  },
+  {
     caption: "Cards and billing",
     href: "/payments",
     icon: CreditCard,
@@ -83,6 +90,11 @@ const routeMeta: Record<string, { description: string; searchPlaceholder: string
     description: "Billing rails, cards, and fallback payment methods live here.",
     searchPlaceholder: "Search cards, billing fallback, payment health",
     title: "Payments",
+  },
+  "/uploads": {
+    description: "Upload statement files, watch queue status, and manage ingestion history.",
+    searchPlaceholder: "Search uploads, providers, queue status, file history",
+    title: "Uploads",
   },
   "/settings": {
     description: "Theme, team-level defaults, and session controls stay in this operator surface.",
@@ -226,10 +238,10 @@ export function AppShell({ children }: AppShellProps) {
                 isSidebarExpanded ? "block" : "hidden xl:block",
               )}
             >
-              <p className="text-xs uppercase tracking-[0.3em] text-white/40">Day 5 status</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-white/40">Milestone status</p>
               <p className="mt-3 text-sm leading-6 text-white/75">
-                Subscription management is live with manual entry, detail routes, and lifecycle
-                edits layered onto the shared shell.
+                Subscription management, parsing, and detection are live. Upload operations now
+                extend that workflow with statement intake and queue visibility.
               </p>
             </div>
           </div>
