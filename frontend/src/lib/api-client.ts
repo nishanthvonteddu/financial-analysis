@@ -10,6 +10,8 @@ import type {
   SubscriptionFilters,
   SubscriptionListResponse,
   SubscriptionUpsertInput,
+  Upload,
+  UploadListResponse,
   User,
 } from "@/types";
 
@@ -40,10 +42,12 @@ async function request<T>(
   init?: RequestInit,
   options?: RequestOptions,
 ): Promise<T> {
+  const isFormData = typeof FormData !== "undefined" && init?.body instanceof FormData;
+
   const response = await fetch(buildUrl(path, options?.query), {
     ...init,
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(options?.token ? { Authorization: `Bearer ${options.token}` } : {}),
       ...init?.headers,
     },
@@ -63,6 +67,63 @@ async function request<T>(
   }
 
   return response.json() as Promise<T>;
+}
+
+function getErrorMessage(status: number, response: unknown) {
+  if (response && typeof response === "object" && "detail" in response) {
+    const detail = response.detail;
+    if (typeof detail === "string" && detail.trim()) {
+      return detail;
+    }
+  }
+
+  return `Request failed with ${status}`;
+}
+
+function uploadFile(
+  token: string,
+  file: File,
+  onProgress?: (progress: number) => void,
+): Promise<Upload> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const formData = new FormData();
+    formData.append("file", file);
+
+    xhr.open("POST", buildUrl("/uploads"));
+    xhr.responseType = "json";
+    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+
+    xhr.upload.addEventListener("progress", (event) => {
+      if (!event.lengthComputable || !onProgress) {
+        return;
+      }
+
+      onProgress(Math.round((event.loaded / event.total) * 100));
+    });
+
+    xhr.addEventListener("load", () => {
+      const response =
+        xhr.response && typeof xhr.response === "object"
+          ? xhr.response
+          : xhr.responseText
+            ? (JSON.parse(xhr.responseText) as unknown)
+            : null;
+
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new Error(getErrorMessage(xhr.status, response)));
+        return;
+      }
+
+      resolve(response as Upload);
+    });
+
+    xhr.addEventListener("error", () => {
+      reject(new Error("Network request failed."));
+    });
+
+    xhr.send(formData);
+  });
 }
 
 export const apiClient = {
@@ -96,6 +157,13 @@ export const apiClient = {
   getPaymentMethods(token: string) {
     return request<PaymentMethodListResponse>("/payment-methods", undefined, { token });
   },
+  getUploads(token: string) {
+    return request<UploadListResponse>("/uploads", undefined, { token });
+  },
+  getUploadStatus(token: string, uploadId: number) {
+    return request<Upload>(`/uploads/${uploadId}/status`, undefined, { token });
+  },
+  uploadFile,
   getSubscriptions(token: string, filters?: SubscriptionFilters) {
     return request<SubscriptionListResponse>("/subscriptions", undefined, {
       query: filters,
@@ -119,6 +187,11 @@ export const apiClient = {
   },
   deleteSubscription(token: string, subscriptionId: number) {
     return request<void>(`/subscriptions/${subscriptionId}`, {
+      method: "DELETE",
+    }, { token });
+  },
+  deleteUpload(token: string, uploadId: number) {
+    return request<void>(`/uploads/${uploadId}`, {
       method: "DELETE",
     }, { token });
   },
