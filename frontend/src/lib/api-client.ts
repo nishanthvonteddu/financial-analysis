@@ -2,6 +2,9 @@ import { API_BASE_URL } from "@/lib/constants";
 import type {
   AuthResponse,
   CategoryListResponse,
+  DashboardLayout,
+  DashboardLayoutPayload,
+  DashboardSummary,
   HealthResponse,
   LoginInput,
   PaymentMethodListResponse,
@@ -156,6 +159,22 @@ export const apiClient = {
   },
   getPaymentMethods(token: string) {
     return request<PaymentMethodListResponse>("/payment-methods", undefined, { token });
+  },
+  getDashboardSummary(token: string) {
+    return request<DashboardSummary>("/dashboard/summary", undefined, { token });
+  },
+  getDashboardLayout(token: string) {
+    return request<DashboardLayout>("/dashboard/layout", undefined, { token });
+  },
+  updateDashboardLayout(token: string, payload: DashboardLayoutPayload) {
+    return request<DashboardLayout>(
+      "/dashboard/layout",
+      {
+        body: JSON.stringify(payload),
+        method: "PUT",
+      },
+      { token },
+    );
   },
   getUploads(token: string) {
     return request<UploadListResponse>("/uploads", undefined, { token });
