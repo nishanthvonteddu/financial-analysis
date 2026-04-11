@@ -60,6 +60,74 @@ export type PaymentMethodListResponse = {
   total: number;
 };
 
+export type DashboardSummaryStats = {
+  total_monthly_spend: string;
+  active_subscriptions: number;
+  upcoming_renewals: number;
+  cancelled_subscriptions: number;
+};
+
+export type DashboardMonthlySpendPoint = {
+  month: string;
+  label: string;
+  total: string;
+};
+
+export type DashboardCategoryBreakdownItem = {
+  category_id: number | null;
+  category_name: string;
+  subscriptions: number;
+  total_monthly_spend: string;
+};
+
+export type DashboardUpcomingRenewalItem = {
+  subscription_id: number;
+  name: string;
+  vendor: string;
+  amount: string;
+  currency: string;
+  next_charge_date: string;
+  days_until_charge: number;
+};
+
+export type DashboardRecentlyEndedItem = {
+  subscription_id: number;
+  name: string;
+  vendor: string;
+  amount: string;
+  currency: string;
+  end_date: string;
+};
+
+export type DashboardSummary = {
+  summary: DashboardSummaryStats;
+  monthly_spend: DashboardMonthlySpendPoint[];
+  category_breakdown: DashboardCategoryBreakdownItem[];
+  upcoming_renewals: DashboardUpcomingRenewalItem[];
+  recently_ended: DashboardRecentlyEndedItem[];
+};
+
+export type DashboardWidgetId =
+  | "monthly-spend"
+  | "category-breakdown"
+  | "upcoming-renewals"
+  | "recently-ended";
+export type DashboardLayoutColumn = "primary" | "secondary";
+
+export type DashboardLayoutWidget = {
+  id: DashboardWidgetId;
+  column: DashboardLayoutColumn;
+};
+
+export type DashboardLayoutPayload = {
+  widgets: DashboardLayoutWidget[];
+};
+
+export type DashboardLayout = DashboardLayoutPayload & {
+  version: number;
+  updated_at: string | null;
+};
+
 export type UploadSourceType = "upload_csv" | "upload_pdf";
 export type UploadStatus = "queued" | "processing" | "completed" | "failed";
 
