@@ -1,179 +1,353 @@
-import { ArrowRight, BellRing, CalendarClock, Layers3, WalletCards } from "lucide-react";
+"use client";
 
+import Link from "next/link";
+import { startTransition, useMemo } from "react";
+import { ArrowDown, ArrowRight, ArrowUp, Columns2, LayoutTemplate, LoaderCircle } from "lucide-react";
+
+import { SnapshotBar } from "@/components/dashboard/snapshot-bar";
 import { Button } from "@/components/ui/button";
-import { CurrencyDisplay } from "@/components/ui/currency-display";
+import { CurrencyDisplay, formatCurrency } from "@/components/ui/currency-display";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { useDashboardLayout, useDashboardSummary, useUpdateDashboardLayout } from "@/hooks/use-dashboard";
+import { cn } from "@/lib/utils";
+import type {
+  DashboardCategoryBreakdownItem,
+  DashboardLayoutWidget,
+  DashboardRecentlyEndedItem,
+  DashboardSummary,
+  DashboardWidgetId,
+} from "@/types";
 
-const metricRows = [
+const widgetMeta: Record<
+  DashboardWidgetId,
   {
-    detail: "11 active plans, 3 annual conversions worth reviewing this week.",
-    label: "Monthly recurring",
-    value: 118.4,
-  },
-  {
-    detail: "The highest renewal cluster lands between April 9 and April 14.",
-    label: "Projected next 14 days",
-    value: 46.75,
-  },
-  {
-    detail: "Shared spend is stable across household, work, and trial categories.",
-    label: "Average plan cost",
-    value: 10.76,
-  },
-];
+    detail: (summary: DashboardSummary) => string;
+    eyebrow: string;
+    title: string;
+  }
+> = {
+  "category-breakdown": {
+    detail: (summary) => {
+      const leader = summary.category_breakdown[0];
+      if (!leader) {
+        return "Category mix will populate after more subscription activity lands.";
+      }
 
-const renewalQueue = [
-  {
-    amount: 14.99,
-    date: "Apr 9",
-    detail: "Streaming bundle • Visa •••• 4109",
-    title: "Prime Video + Music",
+      return `${leader.category_name} is currently pacing the mix at ${formatCurrency({ value: Number.parseFloat(leader.total_monthly_spend) })}.`;
+    },
+    eyebrow: "Prepared",
+    title: "Category breakdown",
   },
-  {
-    amount: 9.99,
-    date: "Apr 11",
-    detail: "Cloud notes • Mastercard •••• 8221",
-    title: "Notion Plus",
-  },
-  {
-    amount: 21,
-    date: "Apr 14",
-    detail: "Meal planner • Visa •••• 4109",
-    title: "Family recipes",
-  },
-];
+  "monthly-spend": {
+    detail: (summary) => {
+      const currentMonth = summary.monthly_spend.at(-1);
+      if (!currentMonth) {
+        return "Monthly spend history becomes available once payment history starts landing.";
+      }
 
-const workspaceMoves = [
-  "Shared navigation now covers dashboard, subscriptions, payments, calendar, and settings.",
-  "The top bar exposes search affordance, notifications, theme control, and user session actions.",
-  "Empty states and reusable headers are in place so the next milestones can plug into the shell quickly.",
-];
+      return `${currentMonth.label} has ${formatCurrency({ value: Number.parseFloat(currentMonth.total) })} recorded so far.`;
+    },
+    eyebrow: "Prepared",
+    title: "Monthly spend",
+  },
+  "recently-ended": {
+    detail: (summary) => {
+      const latest = summary.recently_ended[0];
+      if (!latest) {
+        return "Recently ended subscriptions will appear once cancellations start recording end dates.";
+      }
 
-export default function DashboardPage() {
-  return (
-    <div className="space-y-10">
-      <PageHeader
-        action={
-          <Button className="rounded-full px-5" variant="outline">
-            Review upcoming charges
-            <ArrowRight className="ml-2 size-4" />
-          </Button>
+      return `${latest.name} ended most recently, closing out ${formatCurrency({ value: Number.parseFloat(latest.amount) })}.`;
+    },
+    eyebrow: "Prepared",
+    title: "Recently ended",
+  },
+  "upcoming-renewals": {
+    detail: (summary) => {
+      const next = summary.upcoming_renewals[0];
+      if (!next) {
+        return "Upcoming renewals will surface once active plans carry their next charge dates.";
+      }
+
+      return `${next.name} is next in line, due in ${next.days_until_charge} days.`;
+    },
+    eyebrow: "Prepared",
+    title: "Upcoming renewals",
+  },
+};
+
+function moveItemWithinColumn(
+  widgets: DashboardLayoutWidget[],
+  widgetId: DashboardWidgetId,
+  direction: "down" | "up",
+) {
+  const nextWidgets = [...widgets];
+  const currentIndex = nextWidgets.findIndex((widget) => widget.id === widgetId);
+
+  if (currentIndex === -1) {
+    return widgets;
+  }
+
+  const current = nextWidgets[currentIndex];
+  const columnIndexes = nextWidgets
+    .map((widget, index) => ({ index, widget }))
+    .filter(({ widget }) => widget.column === current.column)
+    .map(({ index }) => index);
+  const columnPosition = columnIndexes.indexOf(currentIndex);
+  const targetIndex =
+    direction === "up" ? columnIndexes[columnPosition - 1] : columnIndexes[columnPosition + 1];
+
+  if (targetIndex === undefined) {
+    return widgets;
+  }
+
+  [nextWidgets[currentIndex], nextWidgets[targetIndex]] = [nextWidgets[targetIndex], nextWidgets[currentIndex]];
+  return nextWidgets;
+}
+
+function toggleWidgetColumn(widgets: DashboardLayoutWidget[], widgetId: DashboardWidgetId) {
+  return widgets.map<DashboardLayoutWidget>((widget) =>
+    widget.id === widgetId
+      ? {
+          ...widget,
+          column: widget.column === "primary" ? "secondary" : "primary",
         }
-        description="A stable operator shell now wraps the authenticated experience, so new milestone work can focus on product behavior instead of rebuilding layout chrome."
-        eyebrow="Day 4 workspace"
-        title="Subscription command center"
-      />
+      : widget,
+  );
+}
 
-      <section className="grid gap-8 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-[2rem] border border-black/10 bg-white/72 p-6 shadow-line backdrop-blur sm:p-8">
-          <div className="flex items-center justify-between border-b border-black/10 pb-5">
-            <div>
-              <p className="text-xs uppercase tracking-[0.32em] text-black/45">Snapshot</p>
-              <h3 className="mt-2 text-2xl font-semibold text-ink">Recurring spend at a glance</h3>
-            </div>
-            <WalletCards className="size-5 text-ember" />
-          </div>
+function WidgetPlaceholder({
+  item,
+  onMoveDown,
+  onMoveUp,
+  onToggleColumn,
+  summary,
+}: {
+  item: DashboardLayoutWidget;
+  onMoveDown: () => void;
+  onMoveUp: () => void;
+  onToggleColumn: () => void;
+  summary: DashboardSummary;
+}) {
+  const meta = widgetMeta[item.id];
 
-          <div className="divide-y divide-black/10">
-            {metricRows.map((row) => (
-              <div className="grid gap-4 py-5 sm:grid-cols-[minmax(0,1fr)_auto]" key={row.label}>
-                <div className="space-y-2">
-                  <p className="text-sm uppercase tracking-[0.28em] text-black/45">{row.label}</p>
-                  <p className="text-sm leading-6 text-black/65">{row.detail}</p>
-                </div>
-                <CurrencyDisplay
-                  className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl"
-                  value={row.value}
-                />
-              </div>
-            ))}
-          </div>
+  return (
+    <article className="group rounded-[1.8rem] border border-black/10 bg-white/82 p-5 shadow-line backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:border-black/16">
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.3em] text-black/45">{meta.eyebrow}</p>
+          <h3 className="text-2xl font-semibold tracking-tight text-ink">{meta.title}</h3>
         </div>
 
-        <div className="space-y-6 rounded-[2rem] border border-black/10 bg-[#101922] p-6 text-white shadow-[0_24px_80px_rgba(17,20,24,0.22)] sm:p-8">
-          <div className="flex items-center justify-between border-b border-white/10 pb-5">
-            <div>
-              <p className="text-xs uppercase tracking-[0.32em] text-white/45">Attention</p>
-              <h3 className="mt-2 text-2xl font-semibold">Renewal watch</h3>
-            </div>
-            <BellRing className="size-5 text-amber-300" />
-          </div>
+        <div className="flex items-center gap-2">
+          <button
+            aria-label={`Move ${meta.title} up`}
+            className="inline-flex size-9 items-center justify-center rounded-full border border-black/10 bg-stone/70 text-black/60 transition hover:border-black/18 hover:text-ink"
+            onClick={onMoveUp}
+            type="button"
+          >
+            <ArrowUp className="size-4" />
+          </button>
+          <button
+            aria-label={`Move ${meta.title} down`}
+            className="inline-flex size-9 items-center justify-center rounded-full border border-black/10 bg-stone/70 text-black/60 transition hover:border-black/18 hover:text-ink"
+            onClick={onMoveDown}
+            type="button"
+          >
+            <ArrowDown className="size-4" />
+          </button>
+          <button
+            aria-label={`Move ${meta.title} to the other column`}
+            className="inline-flex size-9 items-center justify-center rounded-full border border-black/10 bg-stone/70 text-black/60 transition hover:border-black/18 hover:text-ink"
+            onClick={onToggleColumn}
+            type="button"
+          >
+            <Columns2 className="size-4" />
+          </button>
+        </div>
+      </div>
 
-          <div className="space-y-4">
-            {renewalQueue.map((item) => (
-              <div
-                className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4 backdrop-blur"
-                key={item.title}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-lg font-semibold">{item.title}</p>
-                    <p className="mt-1 text-sm text-white/62">{item.detail}</p>
-                  </div>
-                  <p className="rounded-full border border-white/12 px-3 py-1 text-xs uppercase tracking-[0.24em] text-white/72">
-                    {item.date}
+      <p className="mt-6 text-sm leading-6 text-black/62">{meta.detail(summary)}</p>
+      <div className="mt-6 flex items-center justify-between border-t border-black/10 pt-4 text-sm text-black/52">
+        <span>{item.column === "primary" ? "Primary column" : "Secondary column"}</span>
+        <span>Day 11 widget slot</span>
+      </div>
+    </article>
+  );
+}
+
+function SidebarInsight({
+  breakdown,
+  recentlyEnded,
+  upcoming,
+}: {
+  breakdown: DashboardCategoryBreakdownItem | undefined;
+  recentlyEnded: DashboardRecentlyEndedItem | undefined;
+  upcoming: DashboardSummary["upcoming_renewals"];
+}) {
+  return (
+    <section className="space-y-6 rounded-[2rem] border border-white/10 bg-[#101922] p-6 text-white shadow-[0_24px_80px_rgba(17,20,24,0.22)] sm:p-8">
+      <div className="space-y-2 border-b border-white/10 pb-5">
+        <p className="text-xs uppercase tracking-[0.32em] text-white/45">Renewal focus</p>
+        <h3 className="text-2xl font-semibold tracking-tight">What needs attention next</h3>
+        <p className="text-sm leading-6 text-white/62">
+          Day 10 keeps the dashboard operational with live KPIs now, then leaves the richer widgets ready for Day 11.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {upcoming.length === 0 ? (
+          <p className="rounded-[1.4rem] border border-white/10 bg-white/6 p-4 text-sm leading-6 text-white/62">
+            No upcoming renewals are queued yet. As active subscriptions gain charge dates, this rail will start sorting urgency automatically.
+          </p>
+        ) : (
+          upcoming.slice(0, 3).map((item) => (
+            <div className="rounded-[1.4rem] border border-white/10 bg-white/6 p-4" key={item.subscription_id}>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-semibold">{item.name}</p>
+                  <p className="mt-1 text-sm text-white/62">
+                    {item.vendor} · due in {item.days_until_charge} days
                   </p>
                 </div>
                 <CurrencyDisplay
-                  className="mt-4 text-2xl font-semibold text-amber-200"
-                  value={item.amount}
+                  className="text-lg font-semibold text-amber-200"
+                  value={Number.parseFloat(item.amount)}
                 />
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-[2rem] border border-black/10 bg-white/72 p-6 shadow-line backdrop-blur sm:p-8">
-          <div className="flex items-center justify-between border-b border-black/10 pb-5">
-            <div>
-              <p className="text-xs uppercase tracking-[0.32em] text-black/45">Flow</p>
-              <h3 className="mt-2 text-2xl font-semibold text-ink">This week&apos;s pacing</h3>
             </div>
-            <CalendarClock className="size-5 text-ember" />
+          ))
+        )}
+      </div>
+
+      <div className="rounded-[1.4rem] border border-white/10 bg-white/6 p-4">
+        <p className="text-xs uppercase tracking-[0.28em] text-white/42">Category lead</p>
+        <p className="mt-3 text-lg font-semibold">
+          {breakdown?.category_name ?? "Waiting for category mix"}
+        </p>
+        <p className="mt-2 text-sm leading-6 text-white/62">
+          {breakdown
+            ? `${breakdown.subscriptions} subscriptions currently map here at ${formatCurrency({ value: Number.parseFloat(breakdown.total_monthly_spend) })} in monthly-equivalent spend.`
+            : "Once active subscriptions are categorized, this lane will call out the heaviest spend cluster."}
+        </p>
+      </div>
+
+      <div className="rounded-[1.4rem] border border-white/10 bg-white/6 p-4">
+        <p className="text-xs uppercase tracking-[0.28em] text-white/42">Recently ended</p>
+        <p className="mt-3 text-lg font-semibold">
+          {recentlyEnded?.name ?? "No recent cancellations"}
+        </p>
+        <p className="mt-2 text-sm leading-6 text-white/62">
+          {recentlyEnded
+            ? `${recentlyEnded.vendor} most recently closed at ${formatCurrency({ value: Number.parseFloat(recentlyEnded.amount) })}.`
+            : "As plans are cancelled with end dates, this lane will preserve the recent context for review."}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+export default function DashboardPage() {
+  const summaryQuery = useDashboardSummary();
+  const layoutQuery = useDashboardLayout();
+  const updateLayout = useUpdateDashboardLayout();
+
+  const summary = summaryQuery.data;
+  const widgets = layoutQuery.data?.widgets;
+  const groupedWidgets = useMemo(
+    () => ({
+      primary: (widgets ?? []).filter((widget) => widget.column === "primary"),
+      secondary: (widgets ?? []).filter((widget) => widget.column === "secondary"),
+    }),
+    [widgets],
+  );
+
+  const applyLayout = (nextWidgets: DashboardLayoutWidget[]) => {
+    startTransition(() => {
+      void updateLayout.mutateAsync({ widgets: nextWidgets });
+    });
+  };
+
+  return (
+    <div className="space-y-8 animate-page-enter">
+      <PageHeader
+        action={
+          <Button asChild className="rounded-full px-5" variant="outline">
+            <Link href="/subscriptions">
+              Open subscriptions
+              <ArrowRight className="ml-2 size-4" />
+            </Link>
+          </Button>
+        }
+        description="Track recurring spend, keep renewals in view, and stage the widget system with a persistent dashboard layout before the richer analytics surface lands."
+        eyebrow="Day 10 live surface"
+        title="Smart dashboard snapshot"
+      />
+
+      <SnapshotBar isLoading={summaryQuery.isLoading} summary={summary?.summary} />
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.85fr)]">
+        <section className="rounded-[2rem] border border-black/10 bg-white/76 p-5 shadow-line backdrop-blur sm:p-6">
+          <div className="flex flex-col gap-4 border-b border-black/10 pb-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-[0.32em] text-black/45">Widget staging</p>
+              <h2 className="text-2xl font-semibold tracking-tight text-ink">Layout now, widgets next</h2>
+              <p className="max-w-2xl text-sm leading-6 text-black/62">
+                The layout is already persistent, so Day 11 can drop real widgets into stable slots without rebuilding the page frame.
+              </p>
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-stone/70 px-4 py-2 text-sm text-black/58">
+              <LayoutTemplate className="size-4" />
+              {layoutQuery.data ? `Version ${layoutQuery.data.version}` : "Loading layout"}
+            </div>
           </div>
 
-          <div className="divide-y divide-black/10">
-            {renewalQueue.map((item) => (
-              <div className="grid gap-4 py-5 sm:grid-cols-[auto_minmax(0,1fr)_auto]" key={item.title}>
-                <p className="text-xs uppercase tracking-[0.28em] text-black/45">{item.date}</p>
-                <div>
-                  <p className="font-medium text-ink">{item.title}</p>
-                  <p className="mt-1 text-sm text-black/60">{item.detail}</p>
-                </div>
-                <CurrencyDisplay className="text-right font-semibold text-ink" value={item.amount} />
+          {summaryQuery.isLoading || layoutQuery.isLoading ? (
+            <div className="flex min-h-[22rem] items-center justify-center">
+              <div className="flex items-center gap-3 text-sm text-black/58">
+                <LoaderCircle className="size-4 animate-spin" />
+                Loading dashboard workspace...
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          ) : !summary || !widgets || widgets.length === 0 ? (
+            <EmptyState
+              action={
+                <Button asChild className="rounded-full px-5" variant="outline">
+                  <Link href="/uploads">Bring in statement data</Link>
+                </Button>
+              }
+              description="Dashboard analytics will populate as subscriptions, payment history, and renewal dates accumulate in the workspace."
+              eyebrow="No dashboard data"
+              icon={<LayoutTemplate className="size-5" />}
+              title="Nothing to stage yet."
+            />
+          ) : (
+            <div className="mt-6 grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+              {(["primary", "secondary"] as const).map((column) => (
+                <div className={cn("space-y-4", column === "secondary" ? "xl:pt-10" : "")} key={column}>
+                  {groupedWidgets[column].map((item) => (
+                    <WidgetPlaceholder
+                      item={item}
+                      key={item.id}
+                      onMoveDown={() => applyLayout(moveItemWithinColumn(widgets, item.id, "down"))}
+                      onMoveUp={() => applyLayout(moveItemWithinColumn(widgets, item.id, "up"))}
+                      onToggleColumn={() => applyLayout(toggleWidgetColumn(widgets, item.id))}
+                      summary={summary}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
-        <EmptyState
-          action={
-            <Button className="rounded-full px-5" variant="outline">
-              Open subscriptions surface
-            </Button>
-          }
-          description="The shell is live, but downstream milestone features have not populated this lane yet. Shared headers, empty states, dialogs, and formatting utilities are now ready for those flows."
-          eyebrow="Shell readiness"
-          icon={<Layers3 className="size-5" />}
-          title="The next product surfaces can plug in without layout rework."
+        <SidebarInsight
+          breakdown={summary?.category_breakdown[0]}
+          recentlyEnded={summary?.recently_ended[0]}
+          upcoming={summary?.upcoming_renewals ?? []}
         />
-      </section>
-
-      <section className="rounded-[2rem] border border-black/10 bg-white/72 p-6 shadow-line backdrop-blur sm:p-8">
-        <div className="grid gap-5 lg:grid-cols-3">
-          {workspaceMoves.map((move) => (
-            <p
-              className="border-t border-black/10 pt-4 text-sm leading-6 text-black/65 first:border-t-0 first:pt-0 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0 lg:first:border-l-0 lg:first:pl-0"
-              key={move}
-            >
-              {move}
-            </p>
-          ))}
-        </div>
-      </section>
+      </div>
     </div>
   );
 }
