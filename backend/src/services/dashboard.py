@@ -11,6 +11,7 @@ from src.models.payment_history import PaymentHistory
 from src.models.subscription import Subscription
 from src.models.user import User
 from src.schemas.dashboard import (
+    DashboardActiveSubscriptionItem,
     DashboardCategoryBreakdownItem,
     DashboardLayoutResponse,
     DashboardLayoutUpdate,
@@ -30,10 +31,11 @@ MONTHLY_SPEND_MONTHS = 6
 
 DEFAULT_DASHBOARD_LAYOUT = DashboardLayoutUpdate(
     widgets=[
+        DashboardLayoutWidget(id="active-subscriptions", column="primary"),
         DashboardLayoutWidget(id="monthly-spend", column="primary"),
-        DashboardLayoutWidget(id="category-breakdown", column="primary"),
+        DashboardLayoutWidget(id="recently-ended", column="primary"),
+        DashboardLayoutWidget(id="category-breakdown", column="secondary"),
         DashboardLayoutWidget(id="upcoming-renewals", column="secondary"),
-        DashboardLayoutWidget(id="recently-ended", column="secondary"),
     ]
 )
 
@@ -215,6 +217,32 @@ async def get_dashboard_summary(
             upcoming_renewals=len(upcoming_renewals),
             cancelled_subscriptions=len(cancelled_subscriptions),
         ),
+        active_subscriptions=[
+            DashboardActiveSubscriptionItem(
+                subscription_id=subscription.id,
+                name=subscription.name,
+                vendor=subscription.vendor,
+                amount=_quantize_money(Decimal(subscription.amount)),
+                currency=subscription.currency,
+                cadence=subscription.cadence,
+                category_name=(
+                    category_map.get(subscription.category_id)
+                    if subscription.category_id is not None
+                    else "Uncategorized"
+                )
+                or "Uncategorized",
+                next_charge_date=subscription.next_charge_date,
+            )
+            for subscription in sorted(
+                active_subscriptions,
+                key=lambda subscription: (
+                    subscription.next_charge_date is None,
+                    subscription.next_charge_date or date.max,
+                    subscription.name.lower(),
+                    subscription.id,
+                ),
+            )[:6]
+        ],
         monthly_spend=monthly_spend,
         category_breakdown=[
             DashboardCategoryBreakdownItem(
