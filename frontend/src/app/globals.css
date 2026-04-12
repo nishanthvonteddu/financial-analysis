@@ -66,3 +66,25 @@ body {
   animation: page-enter 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: 0.08s;
 }
+
+.dashboard-grid-layout {
+  min-height: 20rem;
+}
+
+.dashboard-grid-layout > .react-grid-item {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.dashboard-grid-layout > .react-grid-item.react-draggable-dragging {
+  z-index: 20;
+}
+
+.dashboard-grid-layout > .react-grid-item.react-grid-placeholder {
+  border-radius: 1.8rem;
+  background: rgba(220, 93, 48, 0.14);
+  border: 1px dashed rgba(220, 93, 48, 0.28);
+}
+
+.dashboard-grid-layout--compact > .react-grid-item {
+  width: 100% !important;
+}
