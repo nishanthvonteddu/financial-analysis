@@ -5,6 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 DASHBOARD_WIDGET_IDS = (
+    "active-subscriptions",
     "monthly-spend",
     "category-breakdown",
     "upcoming-renewals",
@@ -12,6 +13,7 @@ DASHBOARD_WIDGET_IDS = (
 )
 
 DashboardWidgetId = Literal[
+    "active-subscriptions",
     "monthly-spend",
     "category-breakdown",
     "upcoming-renewals",
@@ -31,6 +33,17 @@ class DashboardMonthlySpendPoint(BaseModel):
     month: str
     label: str
     total: Decimal
+
+
+class DashboardActiveSubscriptionItem(BaseModel):
+    subscription_id: int
+    name: str
+    vendor: str
+    amount: Decimal
+    currency: str
+    cadence: str
+    category_name: str
+    next_charge_date: date | None = None
 
 
 class DashboardCategoryBreakdownItem(BaseModel):
@@ -61,6 +74,7 @@ class DashboardRecentlyEndedItem(BaseModel):
 
 class DashboardSummaryResponse(BaseModel):
     summary: DashboardSummaryStats
+    active_subscriptions: list[DashboardActiveSubscriptionItem]
     monthly_spend: list[DashboardMonthlySpendPoint]
     category_breakdown: list[DashboardCategoryBreakdownItem]
     upcoming_renewals: list[DashboardUpcomingRenewalItem]
