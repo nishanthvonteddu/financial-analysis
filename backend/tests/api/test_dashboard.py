@@ -191,6 +191,9 @@ def test_dashboard_summary_and_layout_persistence(client) -> None:
         "upcoming_renewals": 2,
         "cancelled_subscriptions": 1,
     }
+    assert payload["active_subscriptions"][0]["name"] == "Netflix"
+    assert payload["active_subscriptions"][0]["category_name"] == "Entertainment"
+    assert payload["active_subscriptions"][1]["name"] == "Dropbox"
     assert payload["category_breakdown"][0]["category_name"] == "Entertainment"
     assert payload["category_breakdown"][0]["total_monthly_spend"] == "15.00"
     assert payload["category_breakdown"][1]["category_name"] == "Productivity"
@@ -206,10 +209,11 @@ def test_dashboard_summary_and_layout_persistence(client) -> None:
     layout_response = client.get("/api/v1/dashboard/layout", headers=owner_headers)
     assert layout_response.status_code == 200
     assert layout_response.json()["widgets"] == [
+        {"id": "active-subscriptions", "column": "primary"},
         {"id": "monthly-spend", "column": "primary"},
-        {"id": "category-breakdown", "column": "primary"},
+        {"id": "recently-ended", "column": "primary"},
+        {"id": "category-breakdown", "column": "secondary"},
         {"id": "upcoming-renewals", "column": "secondary"},
-        {"id": "recently-ended", "column": "secondary"},
     ]
 
     update_response = client.put(
@@ -217,6 +221,7 @@ def test_dashboard_summary_and_layout_persistence(client) -> None:
         headers=owner_headers,
         json={
             "widgets": [
+                {"id": "active-subscriptions", "column": "primary"},
                 {"id": "upcoming-renewals", "column": "primary"},
                 {"id": "monthly-spend", "column": "primary"},
                 {"id": "category-breakdown", "column": "secondary"},
@@ -226,18 +231,18 @@ def test_dashboard_summary_and_layout_persistence(client) -> None:
     )
     assert update_response.status_code == 200
     assert update_response.json()["version"] == 1
-    assert update_response.json()["widgets"][0]["id"] == "upcoming-renewals"
+    assert update_response.json()["widgets"][1]["id"] == "upcoming-renewals"
 
     persisted_layout_response = client.get("/api/v1/dashboard/layout", headers=owner_headers)
     assert persisted_layout_response.status_code == 200
-    assert persisted_layout_response.json()["widgets"][0] == {
+    assert persisted_layout_response.json()["widgets"][1] == {
         "id": "upcoming-renewals",
         "column": "primary",
     }
 
     other_layout_response = client.get("/api/v1/dashboard/layout", headers=other_headers)
     assert other_layout_response.status_code == 200
-    assert other_layout_response.json()["widgets"][0]["id"] == "monthly-spend"
+    assert other_layout_response.json()["widgets"][0]["id"] == "active-subscriptions"
 
 
 def test_dashboard_layout_requires_each_widget_exactly_once(client) -> None:
@@ -248,6 +253,7 @@ def test_dashboard_layout_requires_each_widget_exactly_once(client) -> None:
         headers=headers,
         json={
             "widgets": [
+                {"id": "active-subscriptions", "column": "primary"},
                 {"id": "monthly-spend", "column": "primary"},
                 {"id": "monthly-spend", "column": "secondary"},
                 {"id": "upcoming-renewals", "column": "secondary"},

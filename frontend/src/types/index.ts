@@ -73,6 +73,17 @@ export type DashboardMonthlySpendPoint = {
   total: string;
 };
 
+export type DashboardActiveSubscriptionItem = {
+  subscription_id: number;
+  name: string;
+  vendor: string;
+  amount: string;
+  currency: string;
+  cadence: string;
+  category_name: string;
+  next_charge_date: string | null;
+};
+
 export type DashboardCategoryBreakdownItem = {
   category_id: number | null;
   category_name: string;
@@ -101,6 +112,7 @@ export type DashboardRecentlyEndedItem = {
 
 export type DashboardSummary = {
   summary: DashboardSummaryStats;
+  active_subscriptions: DashboardActiveSubscriptionItem[];
   monthly_spend: DashboardMonthlySpendPoint[];
   category_breakdown: DashboardCategoryBreakdownItem[];
   upcoming_renewals: DashboardUpcomingRenewalItem[];
@@ -108,6 +120,7 @@ export type DashboardSummary = {
 };
 
 export type DashboardWidgetId =
+  | "active-subscriptions"
   | "monthly-spend"
   | "category-breakdown"
   | "upcoming-renewals"
