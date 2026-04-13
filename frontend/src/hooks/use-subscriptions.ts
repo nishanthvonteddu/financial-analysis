@@ -4,7 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAuth } from "@/hooks/use-auth";
 import { apiClient } from "@/lib/api-client";
-import type { SubscriptionFilters, SubscriptionUpsertInput } from "@/types";
+import type {
+  CategoryInput,
+  PaymentMethodInput,
+  SubscriptionFilters,
+  SubscriptionUpsertInput,
+} from "@/types";
 
 const subscriptionKeys = {
   categories: ["categories"] as const,
@@ -101,6 +106,108 @@ export function useDeleteSubscription(subscriptionId: number) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
       queryClient.removeQueries({ queryKey: subscriptionKeys.detail(subscriptionId) });
+    },
+  });
+}
+
+export function useCreateCategory() {
+  const token = useRequiredToken();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CategoryInput) => apiClient.createCategory(token, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.categories });
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+  });
+}
+
+export function useUpdateCategory() {
+  const token = useRequiredToken();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      categoryId,
+      payload,
+    }: {
+      categoryId: number;
+      payload: CategoryInput;
+    }) => apiClient.updateCategory(token, categoryId, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.categories });
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+  });
+}
+
+export function useDeleteCategory() {
+  const token = useRequiredToken();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (categoryId: number) => apiClient.deleteCategory(token, categoryId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.categories });
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+  });
+}
+
+export function useCreatePaymentMethod() {
+  const token = useRequiredToken();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: PaymentMethodInput) => apiClient.createPaymentMethod(token, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.paymentMethods });
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+  });
+}
+
+export function useUpdatePaymentMethod() {
+  const token = useRequiredToken();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      paymentMethodId,
+      payload,
+    }: {
+      paymentMethodId: number;
+      payload: PaymentMethodInput;
+    }) => apiClient.updatePaymentMethod(token, paymentMethodId, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.paymentMethods });
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+  });
+}
+
+export function useDeletePaymentMethod() {
+  const token = useRequiredToken();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (paymentMethodId: number) => apiClient.deletePaymentMethod(token, paymentMethodId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.paymentMethods });
+      void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+  });
+}
+
+export function useDeleteWorkspaceData() {
+  const token = useRequiredToken();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => apiClient.deleteWorkspaceData(token),
+    onSuccess: () => {
+      void queryClient.invalidateQueries();
     },
   });
 }
