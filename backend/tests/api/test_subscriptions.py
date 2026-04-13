@@ -86,15 +86,52 @@ def test_subscriptions_support_crud_and_filters(client) -> None:
     )
     assert second_response.status_code == 201
 
+    third_payment_method_id = _create_payment_method(client, owner_headers, "Travel Card")
+    third_response = client.post(
+        "/api/v1/subscriptions",
+        headers=owner_headers,
+        json={
+            "name": "Dropbox",
+            "vendor": "Dropbox",
+            "amount": "120.00",
+            "currency": "USD",
+            "cadence": "yearly",
+            "status": "active",
+            "start_date": "2026-01-15",
+            "payment_method_id": third_payment_method_id,
+            "auto_renew": True,
+        },
+    )
+    assert third_response.status_code == 201
+
     list_response = client.get(
         "/api/v1/subscriptions",
         headers=owner_headers,
-        params={"status": "active", "search": "net", "limit": 10, "offset": 0},
+        params={
+            "status": "active",
+            "search": "net",
+            "payment_method_id": payment_method_id,
+            "cadence": "monthly",
+            "min_amount": "12.00",
+            "max_amount": "20.00",
+            "limit": 10,
+            "offset": 0,
+        },
     )
     assert list_response.status_code == 200
     listed = list_response.json()
     assert listed["total"] == 1
     assert listed["items"][0]["name"] == "Netflix"
+
+    yearly_response = client.get(
+        "/api/v1/subscriptions",
+        headers=owner_headers,
+        params={"cadence": "yearly", "min_amount": "100.00", "max_amount": "140.00"},
+    )
+    assert yearly_response.status_code == 200
+    yearly_listed = yearly_response.json()
+    assert yearly_listed["total"] == 1
+    assert yearly_listed["items"][0]["name"] == "Dropbox"
 
     get_response = client.get(f"/api/v1/subscriptions/{created['id']}", headers=owner_headers)
     assert get_response.status_code == 200
@@ -211,3 +248,14 @@ def test_subscriptions_enforce_validation_and_ownership(client) -> None:
         },
     )
     assert invalid_url_response.status_code == 422
+
+    invalid_range_response = client.get(
+        "/api/v1/subscriptions",
+        headers=owner_headers,
+        params={"min_amount": "30.00", "max_amount": "10.00"},
+    )
+    assert invalid_range_response.status_code == 422
+    assert (
+        invalid_range_response.json()["detail"]
+        == "min_amount must be less than or equal to max_amount."
+    )
