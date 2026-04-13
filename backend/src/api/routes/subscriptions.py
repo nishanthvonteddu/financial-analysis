@@ -1,6 +1,7 @@
+from decimal import Decimal
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
@@ -23,6 +24,8 @@ from src.services.subscription import (
 router = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
 DbSession = Annotated[AsyncSession, Depends(get_db)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
+MinAmountQuery = Annotated[Decimal | None, Query(default=None)]
+MaxAmountQuery = Annotated[Decimal | None, Query(default=None)]
 
 
 @router.get("", response_model=SubscriptionListResponse, status_code=status.HTTP_200_OK)
@@ -32,16 +35,28 @@ async def get_subscriptions(
     status_filter: str | None = Query(default=None, alias="status"),
     category_id: int | None = Query(default=None),
     payment_method_id: int | None = Query(default=None),
+    cadence: str | None = Query(default=None),
+    min_amount: MinAmountQuery = None,
+    max_amount: MaxAmountQuery = None,
     search: str | None = Query(default=None),
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=25, ge=1, le=100),
 ) -> SubscriptionListResponse:
+    if min_amount is not None and max_amount is not None and min_amount > max_amount:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="min_amount must be less than or equal to max_amount.",
+        )
+
     items, total = await list_subscriptions(
         session,
         user=current_user,
         status_filter=status_filter,
         category_id=category_id,
         payment_method_id=payment_method_id,
+        cadence=cadence,
+        min_amount=min_amount,
+        max_amount=max_amount,
         search=search,
         offset=offset,
         limit=limit,
