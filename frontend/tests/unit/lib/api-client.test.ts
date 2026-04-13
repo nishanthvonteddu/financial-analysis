@@ -93,13 +93,18 @@ describe("apiClient", () => {
     );
 
     await apiClient.getSubscriptions("access-token", {
+      cadence: "monthly",
+      category_id: 3,
       limit: 25,
+      max_amount: 18,
+      min_amount: 10,
+      payment_method_id: 7,
       search: "netflix",
       status: "active",
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:8000/api/v1/subscriptions?limit=25&search=netflix&status=active",
+      "http://localhost:8000/api/v1/subscriptions?cadence=monthly&category_id=3&limit=25&max_amount=18&min_amount=10&payment_method_id=7&search=netflix&status=active",
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: "Bearer access-token",
