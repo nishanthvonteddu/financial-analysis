@@ -1,12 +1,16 @@
 import { API_BASE_URL } from "@/lib/constants";
 import type {
   AuthResponse,
+  Category,
+  CategoryInput,
   CategoryListResponse,
   DashboardLayout,
   DashboardLayoutPayload,
   DashboardSummary,
   HealthResponse,
   LoginInput,
+  PaymentMethod,
+  PaymentMethodInput,
   PaymentMethodListResponse,
   RegisterInput,
   Subscription,
@@ -157,8 +161,42 @@ export const apiClient = {
   getCategories(token: string) {
     return request<CategoryListResponse>("/categories", undefined, { token });
   },
+  createCategory(token: string, payload: CategoryInput) {
+    return request<Category>("/categories", {
+      body: JSON.stringify(payload),
+      method: "POST",
+    }, { token });
+  },
+  updateCategory(token: string, categoryId: number, payload: CategoryInput) {
+    return request<Category>(`/categories/${categoryId}`, {
+      body: JSON.stringify(payload),
+      method: "PATCH",
+    }, { token });
+  },
+  deleteCategory(token: string, categoryId: number) {
+    return request<void>(`/categories/${categoryId}`, {
+      method: "DELETE",
+    }, { token });
+  },
   getPaymentMethods(token: string) {
     return request<PaymentMethodListResponse>("/payment-methods", undefined, { token });
+  },
+  createPaymentMethod(token: string, payload: PaymentMethodInput) {
+    return request<PaymentMethod>("/payment-methods", {
+      body: JSON.stringify(payload),
+      method: "POST",
+    }, { token });
+  },
+  updatePaymentMethod(token: string, paymentMethodId: number, payload: PaymentMethodInput) {
+    return request<PaymentMethod>(`/payment-methods/${paymentMethodId}`, {
+      body: JSON.stringify(payload),
+      method: "PATCH",
+    }, { token });
+  },
+  deletePaymentMethod(token: string, paymentMethodId: number) {
+    return request<void>(`/payment-methods/${paymentMethodId}`, {
+      method: "DELETE",
+    }, { token });
   },
   getDashboardSummary(token: string) {
     return request<DashboardSummary>("/dashboard/summary", undefined, { token });
@@ -211,6 +249,11 @@ export const apiClient = {
   },
   deleteUpload(token: string, uploadId: number) {
     return request<void>(`/uploads/${uploadId}`, {
+      method: "DELETE",
+    }, { token });
+  },
+  deleteWorkspaceData(token: string) {
+    return request<void>("/auth/me/data", {
       method: "DELETE",
     }, { token });
   },
