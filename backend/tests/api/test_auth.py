@@ -88,6 +88,10 @@ def test_login_is_rate_limited_after_repeated_attempts(client) -> None:
 def test_delete_my_workspace_data_resets_user_owned_records(client) -> None:
     headers = _auth_headers(client, "cleanup@example.com")
 
+    default_layout_response = client.get("/api/v1/dashboard/layout", headers=headers)
+    assert default_layout_response.status_code == 200
+    default_widgets = default_layout_response.json()["widgets"]
+
     payment_method_response = client.post(
         "/api/v1/payment-methods",
         headers=headers,
@@ -113,17 +117,15 @@ def test_delete_my_workspace_data_resets_user_owned_records(client) -> None:
     )
     assert subscription_response.status_code == 201
 
+    updated_widgets = [
+        *[widget for widget in default_widgets if widget["id"] == "upcoming-renewals"],
+        *[widget for widget in default_widgets if widget["id"] != "upcoming-renewals"],
+    ]
+
     layout_response = client.put(
         "/api/v1/dashboard/layout",
         headers=headers,
-        json={
-            "widgets": [
-                {"id": "upcoming-renewals", "column": "primary"},
-                {"id": "monthly-spend", "column": "primary"},
-                {"id": "category-breakdown", "column": "secondary"},
-                {"id": "recently-ended", "column": "secondary"},
-            ]
-        },
+        json={"widgets": updated_widgets},
     )
     assert layout_response.status_code == 200
     assert layout_response.json()["widgets"][0]["id"] == "upcoming-renewals"
@@ -141,4 +143,4 @@ def test_delete_my_workspace_data_resets_user_owned_records(client) -> None:
 
     reset_layout_response = client.get("/api/v1/dashboard/layout", headers=headers)
     assert reset_layout_response.status_code == 200
-    assert reset_layout_response.json()["widgets"][0]["id"] == "monthly-spend"
+    assert reset_layout_response.json()["widgets"] == default_widgets
