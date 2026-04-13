@@ -1,30 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useState } from "react";
-import { ArrowRight, LayoutGrid, List, LoaderCircle, Search, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, LayoutGrid, List, LoaderCircle, SlidersHorizontal, Sparkles } from "lucide-react";
 
+import { SearchBar } from "@/components/subscriptions/search-bar";
 import { SubscriptionCard } from "@/components/subscriptions/subscription-card";
 import { SubscriptionForm } from "@/components/subscriptions/subscription-form";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { useFilters } from "@/hooks/use-filters";
 import { useCreateSubscription, useSubscriptionCatalog, useSubscriptionList } from "@/hooks/use-subscriptions";
-import { subscriptionStatusOptions } from "@/lib/validators";
-import type { SubscriptionStatus } from "@/types";
+import { subscriptionCadenceOptions, subscriptionStatusOptions } from "@/lib/validators";
 
 export default function SubscriptionsPage() {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | SubscriptionStatus>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const deferredSearch = useDeferredValue(search);
+  const {
+    activeFilterCount,
+    clearFilters,
+    filters,
+    hasActiveFilters,
+    queryFilters,
+    setCadence,
+    setCategoryId,
+    setMaxAmount,
+    setMinAmount,
+    setPaymentMethodId,
+    setSearch,
+    setStatus,
+  } = useFilters();
 
   const createSubscription = useCreateSubscription();
   const { categoriesQuery, paymentMethodsQuery } = useSubscriptionCatalog();
   const subscriptionsQuery = useSubscriptionList({
     limit: 100,
-    search: deferredSearch.trim() || undefined,
-    status: statusFilter === "all" ? undefined : statusFilter,
+    ...queryFilters,
   });
 
   const categories = categoriesQuery.data?.items ?? [];
@@ -64,8 +75,8 @@ export default function SubscriptionsPage() {
                   {subscriptionsQuery.data?.total ?? subscriptions.length} subscriptions in view
                 </h2>
                 <p className="text-sm leading-6 text-black/62">
-                  Filter by status, switch the density, and open a detail route for edits,
-                  cancellation, or lifecycle review.
+                  Search by vendor, pin the exact billing rail, constrain price ranges, and keep
+                  the filters live in the URL while you move through the workspace.
                 </p>
               </div>
 
@@ -95,30 +106,116 @@ export default function SubscriptionsPage() {
               </div>
             </div>
 
-            <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
-              <label className="relative flex items-center">
-                <Search className="pointer-events-none absolute left-4 size-4 text-black/38" />
-                <input
-                  className="h-12 w-full rounded-full border border-black/10 bg-white/88 pl-11 pr-4 text-sm text-ink outline-none transition focus:border-black/20 focus:ring-2 focus:ring-ember/15"
-                  onChange={(event) => setSearch(event.target.value)}
+            <div className="mt-5 space-y-4">
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+                <SearchBar
+                  onChange={setSearch}
                   placeholder="Search plans, vendors, notes"
-                  type="search"
-                  value={search}
+                  value={filters.search}
                 />
-              </label>
 
-              <select
-                className="h-12 rounded-full border border-black/10 bg-white/88 px-4 text-sm capitalize text-ink outline-none transition focus:border-black/20 focus:ring-2 focus:ring-ember/15"
-                onChange={(event) => setStatusFilter(event.target.value as "all" | SubscriptionStatus)}
-                value={statusFilter}
-              >
-                <option value="all">All statuses</option>
-                {subscriptionStatusOptions.map((status) => (
-                  <option className="capitalize" key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
+                <select
+                  aria-label="Filter by status"
+                  className="h-12 rounded-full border border-black/10 bg-white/88 px-4 text-sm capitalize text-ink outline-none transition focus:border-black/20 focus:ring-2 focus:ring-ember/15"
+                  onChange={(event) => setStatus(event.target.value as typeof filters.status)}
+                  value={filters.status}
+                >
+                  <option value="all">All statuses</option>
+                  {subscriptionStatusOptions.map((status) => (
+                    <option className="capitalize" key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="rounded-[1.7rem] border border-black/10 bg-stone/65 p-4">
+                <div className="flex flex-col gap-3 border-b border-black/10 pb-4 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-black/42">Filter panel</p>
+                    <h3 className="mt-1 text-lg font-semibold text-ink">
+                      {activeFilterCount} live constraint{activeFilterCount === 1 ? "" : "s"}
+                    </h3>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-sm text-black/58">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/75 px-3 py-1.5">
+                      <SlidersHorizontal className="size-4" />
+                      URL synced
+                    </span>
+                    <Button
+                      className="rounded-full"
+                      onClick={clearFilters}
+                      type="button"
+                      variant="ghost"
+                    >
+                      Reset all
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                  <select
+                    aria-label="Filter by category"
+                    className="h-11 rounded-2xl border border-black/10 bg-white px-4 text-sm text-ink outline-none transition focus:border-black/20 focus:ring-2 focus:ring-ember/15"
+                    onChange={(event) => setCategoryId(event.target.value)}
+                    value={filters.categoryId}
+                  >
+                    <option value="all">All categories</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={String(category.id)}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    aria-label="Filter by payment method"
+                    className="h-11 rounded-2xl border border-black/10 bg-white px-4 text-sm text-ink outline-none transition focus:border-black/20 focus:ring-2 focus:ring-ember/15"
+                    onChange={(event) => setPaymentMethodId(event.target.value)}
+                    value={filters.paymentMethodId}
+                  >
+                    <option value="all">All payment methods</option>
+                    {paymentMethods.map((paymentMethod) => (
+                      <option key={paymentMethod.id} value={String(paymentMethod.id)}>
+                        {paymentMethod.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    aria-label="Filter by cadence"
+                    className="h-11 rounded-2xl border border-black/10 bg-white px-4 text-sm capitalize text-ink outline-none transition focus:border-black/20 focus:ring-2 focus:ring-ember/15"
+                    onChange={(event) => setCadence(event.target.value as typeof filters.cadence)}
+                    value={filters.cadence}
+                  >
+                    <option value="all">All cadences</option>
+                    {subscriptionCadenceOptions.map((cadence) => (
+                      <option className="capitalize" key={cadence} value={cadence}>
+                        {cadence}
+                      </option>
+                    ))}
+                  </select>
+
+                  <input
+                    aria-label="Minimum monthly amount"
+                    className="h-11 rounded-2xl border border-black/10 bg-white px-4 text-sm text-ink outline-none transition focus:border-black/20 focus:ring-2 focus:ring-ember/15"
+                    inputMode="decimal"
+                    onChange={(event) => setMinAmount(event.target.value)}
+                    placeholder="Min amount"
+                    value={filters.minAmount}
+                  />
+
+                  <input
+                    aria-label="Maximum monthly amount"
+                    className="h-11 rounded-2xl border border-black/10 bg-white px-4 text-sm text-ink outline-none transition focus:border-black/20 focus:ring-2 focus:ring-ember/15"
+                    inputMode="decimal"
+                    onChange={(event) => setMaxAmount(event.target.value)}
+                    placeholder="Max amount"
+                    value={filters.maxAmount}
+                  />
+                </div>
+              </div>
             </div>
           </section>
 
@@ -132,9 +229,11 @@ export default function SubscriptionsPage() {
           ) : subscriptions.length === 0 ? (
             <EmptyState
               action={
-                <Button className="rounded-full px-5" onClick={() => setSearch("")} variant="outline">
-                  Clear filters
-                </Button>
+                hasActiveFilters ? (
+                  <Button className="rounded-full px-5" onClick={clearFilters} variant="outline">
+                    Clear filters
+                  </Button>
+                ) : undefined
               }
               description="No plans match the current search or filter. Save a new subscription on the right to populate the workspace."
               eyebrow="Empty state"
