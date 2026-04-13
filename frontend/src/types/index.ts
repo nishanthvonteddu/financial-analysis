@@ -44,6 +44,11 @@ export type CategoryListResponse = {
   total: number;
 };
 
+export type CategoryInput = {
+  description?: string;
+  name: string;
+};
+
 export type PaymentMethod = {
   id: number;
   user_id: number | null;
@@ -58,6 +63,13 @@ export type PaymentMethod = {
 export type PaymentMethodListResponse = {
   items: PaymentMethod[];
   total: number;
+};
+
+export type PaymentMethodInput = {
+  is_default: boolean;
+  label: string;
+  last4?: string;
+  provider: string;
 };
 
 export type DashboardSummaryStats = {
@@ -198,8 +210,11 @@ export type SubscriptionListResponse = {
 };
 
 export type SubscriptionFilters = {
+  cadence?: string;
   category_id?: number;
   limit?: number;
+  max_amount?: number;
+  min_amount?: number;
   offset?: number;
   payment_method_id?: number;
   search?: string;

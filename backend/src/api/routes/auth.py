@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
@@ -14,7 +14,12 @@ from src.schemas.auth import (
     TokenResponse,
     UserResponse,
 )
-from src.services.auth import login_user, refresh_user_tokens, register_user
+from src.services.auth import (
+    delete_user_workspace_data,
+    login_user,
+    refresh_user_tokens,
+    register_user,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 DbSession = Annotated[AsyncSession, Depends(get_db)]
@@ -63,3 +68,12 @@ async def refresh(
 @router.get("/me", response_model=UserResponse, status_code=status.HTTP_200_OK)
 async def me(current_user: CurrentUser) -> UserResponse:
     return UserResponse.model_validate(current_user)
+
+
+@router.delete("/me/data", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_my_workspace_data(
+    session: DbSession,
+    current_user: CurrentUser,
+) -> Response:
+    await delete_user_workspace_data(session, current_user)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

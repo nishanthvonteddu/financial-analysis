@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from fastapi import HTTPException, status
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -45,6 +47,9 @@ async def list_subscriptions(
     status_filter: str | None,
     category_id: int | None,
     payment_method_id: int | None,
+    cadence: str | None,
+    min_amount: Decimal | None,
+    max_amount: Decimal | None,
     search: str | None,
     offset: int,
     limit: int,
@@ -57,6 +62,12 @@ async def list_subscriptions(
         conditions.append(Subscription.category_id == category_id)
     if payment_method_id is not None:
         conditions.append(Subscription.payment_method_id == payment_method_id)
+    if cadence:
+        conditions.append(Subscription.cadence == cadence.strip().lower())
+    if min_amount is not None:
+        conditions.append(Subscription.amount >= min_amount)
+    if max_amount is not None:
+        conditions.append(Subscription.amount <= max_amount)
     if search:
         pattern = f"%{search.strip().lower()}%"
         conditions.append(
@@ -75,7 +86,16 @@ async def list_subscriptions(
     )
     items = list((await session.scalars(statement)).all())
     total = await session.scalar(select(func.count()).select_from(Subscription).where(*conditions))
-    logger.info("subscriptions.listed", user_id=user.id, total=total, offset=offset, limit=limit)
+    logger.info(
+        "subscriptions.listed",
+        user_id=user.id,
+        total=total,
+        offset=offset,
+        limit=limit,
+        cadence=cadence,
+        min_amount=str(min_amount) if min_amount is not None else None,
+        max_amount=str(max_amount) if max_amount is not None else None,
+    )
     return items, int(total or 0)
 
 
