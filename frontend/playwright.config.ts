@@ -32,7 +32,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "zsh ../backend/scripts/start_playwright_server.sh",
+      command: "bash ../backend/scripts/start_playwright_server.sh",
       url: "http://127.0.0.1:8000/api/v1/health",
       reuseExistingServer: !process.env.CI,
     },
