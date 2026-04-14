@@ -58,10 +58,12 @@ function AuthHarness() {
 describe("useAuth", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    window.localStorage.clear();
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -86,6 +88,20 @@ describe("useAuth", () => {
     expect(screen.getByTestId("state")).toHaveTextContent("owner@example.com");
   });
 
+  it("restores a persisted session after hydration", async () => {
+    window.localStorage.setItem("mysubscription.auth", JSON.stringify(buildSession()));
+
+    render(
+      createElement(AuthProvider, null, createElement(AuthHarness)),
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getByTestId("state")).toHaveTextContent("owner@example.com");
+  });
+
   it("refreshes the session before the access token expires", async () => {
     vi.mocked(apiClient.login).mockResolvedValue(buildSession());
     vi.mocked(apiClient.refresh).mockResolvedValue(
@@ -105,5 +121,6 @@ describe("useAuth", () => {
     });
 
     expect(apiClient.refresh).toHaveBeenCalledWith("refresh-token");
+    expect(window.localStorage.getItem("mysubscription.auth")).toContain("refreshed-token");
   });
 });
