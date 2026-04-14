@@ -24,8 +24,8 @@ from src.services.subscription import (
 router = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
 DbSession = Annotated[AsyncSession, Depends(get_db)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
-MinAmountQuery = Annotated[Decimal | None, Query(default=None)]
-MaxAmountQuery = Annotated[Decimal | None, Query(default=None)]
+MinAmountQuery = Annotated[Decimal | None, Query()]
+MaxAmountQuery = Annotated[Decimal | None, Query()]
 
 
 @router.get("", response_model=SubscriptionListResponse, status_code=status.HTTP_200_OK)
