@@ -23,6 +23,11 @@ export default function CalendarPage() {
       />
 
       <EmptyState
+        action={
+          <Button asChild className="rounded-full px-5" variant="outline">
+            <Link href="/subscriptions">Review upcoming renewals in subscriptions</Link>
+          </Button>
+        }
         description="Calendar grids, reminder windows, and cross-household renewal planning are future work. Day 4 only establishes the operator shell that will contain them."
         eyebrow="Future reminder work"
         icon={<CalendarDays className="size-5" />}
