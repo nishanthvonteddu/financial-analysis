@@ -1,23 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition } from "react";
+import { startTransition, useMemo } from "react";
 import { ArrowRight, Activity, LayoutTemplate } from "lucide-react";
 
+import { WorkspaceOnboarding } from "@/components/onboarding/workspace-onboarding";
 import { SnapshotBar } from "@/components/dashboard/snapshot-bar";
 import { DashboardWidgetBoard } from "@/components/dashboard/widget-board";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { useDashboardLayout, useDashboardSummary, useUpdateDashboardLayout } from "@/hooks/use-dashboard";
+import { useOnboarding } from "@/hooks/use-onboarding";
+import { useSubscriptionCatalog, useSubscriptionList } from "@/hooks/use-subscriptions";
+import { useUploadHistory } from "@/hooks/use-uploads";
 import type { DashboardLayoutWidget } from "@/types";
 
 export default function DashboardPage() {
   const summaryQuery = useDashboardSummary();
   const layoutQuery = useDashboardLayout();
   const updateLayout = useUpdateDashboardLayout();
+  const subscriptionsQuery = useSubscriptionList({ limit: 1 });
+  const uploadsQuery = useUploadHistory();
+  const { categoriesQuery, paymentMethodsQuery } = useSubscriptionCatalog();
+  const { isComplete, isReady } = useOnboarding();
 
   const summary = summaryQuery.data;
   const widgets = layoutQuery.data?.widgets;
+  const isWorkspaceSnapshotLoading =
+    subscriptionsQuery.isLoading ||
+    uploadsQuery.isLoading ||
+    categoriesQuery.isLoading ||
+    paymentMethodsQuery.isLoading;
+  const hasWorkspaceData = useMemo(
+    () =>
+      (subscriptionsQuery.data?.total ?? 0) > 0 ||
+      (uploadsQuery.data?.total ?? 0) > 0 ||
+      (categoriesQuery.data?.total ?? 0) > 0 ||
+      (paymentMethodsQuery.data?.total ?? 0) > 0,
+    [categoriesQuery.data?.total, paymentMethodsQuery.data?.total, subscriptionsQuery.data?.total, uploadsQuery.data?.total],
+  );
+  const showOnboarding = isReady && !isComplete && !isWorkspaceSnapshotLoading && !hasWorkspaceData;
 
   const applyLayout = (nextWidgets: DashboardLayoutWidget[]) => {
     startTransition(() => {
@@ -29,17 +51,21 @@ export default function DashboardPage() {
     <div className="space-y-8 animate-page-enter">
       <PageHeader
         action={
-          <Button asChild className="rounded-full px-5" variant="outline">
-            <Link href="/subscriptions">
-              Open subscriptions
-              <ArrowRight className="ml-2 size-4" />
-            </Link>
-          </Button>
+          showOnboarding ? undefined : (
+            <Button asChild className="rounded-full px-5" variant="outline">
+              <Link href="/subscriptions">
+                Open subscriptions
+                <ArrowRight className="ml-2 size-4" />
+              </Link>
+            </Button>
+          )
         }
         description="Operate from a live dashboard where five persistent widgets keep spend, renewals, category mix, and subscription churn in one working surface."
         eyebrow="Day 11 widget system"
         title="Smart dashboard workspace"
       />
+
+      {showOnboarding ? <WorkspaceOnboarding /> : null}
 
       <SnapshotBar isLoading={summaryQuery.isLoading} summary={summary?.summary} />
 
