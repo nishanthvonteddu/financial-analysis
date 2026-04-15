@@ -8,6 +8,7 @@ import { LayoutTemplate, LoaderCircle } from "lucide-react";
 import { DashboardWidgetCard, DashboardBoardFootnote, dashboardWidgetMeta } from "@/components/dashboard/widget-library";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { DashboardLayoutWidget, DashboardSummary, DashboardWidgetId } from "@/types";
 
@@ -168,10 +169,26 @@ export function DashboardWidgetBoard({
       </div>
 
       {isLoading ? (
-        <div className="flex min-h-[28rem] items-center justify-center">
-          <div className="flex items-center gap-3 text-sm text-black/58">
-            <LoaderCircle className="size-4 animate-spin" />
-            Loading dashboard workspace...
+        <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(260px,0.75fr)]">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div className="rounded-[1.7rem] border border-black/10 bg-white/80 p-5" key={index}>
+                <Skeleton className="h-5 w-28" />
+                <Skeleton className="mt-4 h-9 w-32" />
+                <Skeleton className="mt-6 h-24 w-full" />
+              </div>
+            ))}
+          </div>
+          <div className="rounded-[1.7rem] border border-black/10 bg-stone/60 p-5">
+            <div className="flex items-center gap-3 text-sm text-black/58">
+              <LoaderCircle className="size-4 animate-spin" />
+              Loading dashboard workspace...
+            </div>
+            <div className="mt-5 space-y-3">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-11/12" />
+            </div>
           </div>
         </div>
       ) : !summary || !widgets || widgets.length === 0 ? (
