@@ -10,21 +10,25 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isReady } = useAuth();
 
   useEffect(() => {
+    if (!isReady) {
+      return;
+    }
+
     if (!isAuthenticated) {
       const nextPath = pathname ? `?next=${encodeURIComponent(pathname)}` : "";
       router.replace(`/login${nextPath}`);
     }
-  }, [isAuthenticated, pathname, router]);
+  }, [isAuthenticated, isReady, pathname, router]);
 
-  if (!isAuthenticated) {
+  if (!isReady || !isAuthenticated) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-        <LoadingSpinner label="Checking session" size="lg" />
+        <LoadingSpinner label={isReady ? "Checking session" : "Restoring session"} size="lg" />
         <p className="text-xs uppercase tracking-[0.28em] text-black/45">
-          Redirecting to secure sign-in
+          {isReady ? "Redirecting to secure sign-in" : "Restoring secure workspace"}
         </p>
       </div>
     );

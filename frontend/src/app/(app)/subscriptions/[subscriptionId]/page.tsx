@@ -281,6 +281,7 @@ export default function SubscriptionDetailPage() {
               }}
               paymentMethods={paymentMethods}
               submitLabel="Save changes"
+              testId="subscription-edit-form"
               title="Edit subscription"
             />
           ) : null}

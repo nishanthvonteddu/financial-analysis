@@ -3,12 +3,14 @@
 import type { ReactNode } from "react";
 import { createContext, useEffect, useState } from "react";
 
+import { AUTH_STORAGE_KEY } from "@/lib/constants";
 import { apiClient } from "@/lib/api-client";
 import type { AuthResponse, LoginInput, RegisterInput, User } from "@/types";
 
 type AuthContextValue = {
   accessToken: string | null;
   isAuthenticated: boolean;
+  isReady: boolean;
   isRefreshing: boolean;
   login: (input: LoginInput) => Promise<void>;
   logout: () => void;
@@ -18,6 +20,46 @@ type AuthContextValue = {
 };
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
+
+function isAuthResponse(value: unknown): value is AuthResponse {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const session = value as Partial<AuthResponse>;
+  return (
+    typeof session.access_token === "string" &&
+    typeof session.refresh_token === "string" &&
+    typeof session.token_type === "string" &&
+    typeof session.access_token_expires_at === "string" &&
+    typeof session.refresh_token_expires_at === "string" &&
+    Boolean(session.user) &&
+    typeof session.user?.email === "string"
+  );
+}
+
+function readStoredSession() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const stored = window.localStorage.getItem(AUTH_STORAGE_KEY);
+  if (!stored) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as unknown;
+    if (isAuthResponse(parsed)) {
+      return parsed;
+    }
+  } catch {
+    // Fall through to clearing the malformed session payload.
+  }
+
+  window.localStorage.removeItem(AUTH_STORAGE_KEY);
+  return null;
+}
 
 function getRefreshDelay(expiresAt: string): number {
   const remainingMs = new Date(expiresAt).getTime() - Date.now();
@@ -31,6 +73,7 @@ function getRefreshDelay(expiresAt: string): number {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AuthResponse | null>(null);
+  const [isReady, setIsReady] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const applySession = (nextSession: AuthResponse) => {
@@ -42,6 +85,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    setSession(readStoredSession());
+    setIsReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isReady || typeof window === "undefined") {
+      return;
+    }
+
+    if (session) {
+      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+      return;
+    }
+
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+  }, [isReady, session]);
+
+  useEffect(() => {
+    if (!isReady) {
+      return undefined;
+    }
+
     if (!session?.refresh_token) {
       return undefined;
     }
@@ -63,11 +128,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [session]);
+  }, [isReady, session]);
 
   const value: AuthContextValue = {
     accessToken: session?.access_token ?? null,
     isAuthenticated: Boolean(session?.access_token),
+    isReady,
     isRefreshing,
     login: async (input: LoginInput) => {
       const nextSession = await apiClient.login(input);

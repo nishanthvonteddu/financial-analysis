@@ -19,6 +19,7 @@ describe("useFilters", () => {
   beforeEach(() => {
     replace.mockReset();
     currentSearchParams = new URLSearchParams();
+    vi.useRealTimers();
   });
 
   it("reads the current URL state into filter values", () => {
@@ -54,6 +55,71 @@ describe("useFilters", () => {
         "/subscriptions?cadence=yearly&category_id=4&max_amount=42&min_amount=12&payment_method_id=8&search=hulu&status=paused",
         { scroll: false },
       );
+    });
+  });
+
+  it("clears a pending debounced search immediately when filters reset", async () => {
+    currentSearchParams = new URLSearchParams("search=netflix");
+
+    const { result } = renderHook(() => useFilters({ searchDelay: 300 }));
+
+    act(() => {
+      result.current.clearFilters();
+    });
+
+    await waitFor(() => {
+      expect(replace).not.toHaveBeenCalledWith(expect.stringContaining("search=netflix"), expect.anything());
+      expect(replace).toHaveBeenCalledWith("/subscriptions", { scroll: false });
+    });
+  });
+
+  it("does not clobber local range filters when its own intermediate URL sync lands", async () => {
+    const { result, rerender } = renderHook(() => useFilters({ searchDelay: 0 }));
+
+    act(() => {
+      result.current.setMinAmount("14");
+    });
+
+    await waitFor(() => {
+      expect(replace).toHaveBeenLastCalledWith("/subscriptions?min_amount=14", { scroll: false });
+    });
+
+    currentSearchParams = new URLSearchParams("min_amount=14");
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.filters.minAmount).toBe("14");
+      expect(result.current.filters.maxAmount).toBe("");
+    });
+
+    act(() => {
+      result.current.setMaxAmount("16");
+    });
+
+    await waitFor(() => {
+      const [nextUrl, options] = replace.mock.lastCall ?? [];
+      expect(options).toEqual({ scroll: false });
+
+      const url = new URL(String(nextUrl), "http://localhost");
+      expect(url.pathname).toBe("/subscriptions");
+      expect(url.searchParams.get("min_amount")).toBe("14");
+      expect(url.searchParams.get("max_amount")).toBe("16");
+    });
+
+    currentSearchParams = new URLSearchParams("max_amount=16");
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.filters.minAmount).toBe("14");
+      expect(result.current.filters.maxAmount).toBe("16");
+    });
+
+    currentSearchParams = new URLSearchParams("max_amount=16&min_amount=14");
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.filters.minAmount).toBe("14");
+      expect(result.current.filters.maxAmount).toBe("16");
     });
   });
 });

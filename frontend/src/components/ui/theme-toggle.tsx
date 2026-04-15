@@ -9,9 +9,10 @@ import { cn } from "@/lib/utils";
 type ThemeToggleProps = {
   className?: string;
   compact?: boolean;
+  testId?: string;
 };
 
-export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
+export function ThemeToggle({ className, compact = false, testId }: ThemeToggleProps) {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -31,6 +32,7 @@ export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
         compact && "w-11 px-0",
         className,
       )}
+      data-testid={testId}
       onClick={() => setTheme(nextTheme)}
       title={label}
       type="button"

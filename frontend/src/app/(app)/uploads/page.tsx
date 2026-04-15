@@ -61,8 +61,7 @@ export default function UploadsPage() {
       return;
     }
 
-    const stillExists = selectedUploadId !== null && uploads.some((upload) => upload.id === selectedUploadId);
-    if (!stillExists) {
+    if (selectedUploadId === null) {
       startTransition(() => {
         setSelectedUploadId(uploads[0]?.id ?? null);
       });

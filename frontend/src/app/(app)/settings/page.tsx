@@ -575,7 +575,7 @@ export default function SettingsPage() {
                 Toggle the shell between light and dark modes without leaving the workspace.
               </p>
               <div className="mt-4">
-                <ThemeToggle />
+                <ThemeToggle testId="settings-theme-toggle" />
               </div>
             </div>
 

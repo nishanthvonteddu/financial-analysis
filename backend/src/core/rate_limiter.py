@@ -4,6 +4,8 @@ from time import monotonic
 
 from fastapi import HTTPException, Request, status
 
+from src.config import get_settings
+
 
 class InMemoryRateLimiter:
     def __init__(self) -> None:
@@ -34,6 +36,9 @@ rate_limiter = InMemoryRateLimiter()
 
 def rate_limit(bucket: str, *, limit: int = 5, window_seconds: int = 60) -> Callable[..., None]:
     def dependency(request: Request) -> None:
+        if get_settings().disable_rate_limiting:
+            return
+
         client_host = request.client.host if request.client else "anonymous"
         rate_limiter.check(
             f"{bucket}:{client_host}",

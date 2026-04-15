@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     email_backend: str = "console"
     email_from: str = "no-reply@mysubscription-tracker.local"
     app_base_url: str = "http://localhost:8000"
+    disable_rate_limiting: bool = False
     aws_region: str = "us-east-1"
     aws_bucket_name: str | None = None
     upload_job_backend: str = "inline"
