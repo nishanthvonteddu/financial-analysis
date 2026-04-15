@@ -34,6 +34,7 @@ type NavItem = {
   href: string;
   icon: typeof LayoutDashboard;
   label: string;
+  mobileLabel: string;
 };
 
 const navItems: NavItem[] = [
@@ -42,36 +43,42 @@ const navItems: NavItem[] = [
     href: "/dashboard",
     icon: LayoutDashboard,
     label: "Dashboard",
+    mobileLabel: "Home",
   },
   {
     caption: "Plans and spend",
     href: "/subscriptions",
     icon: Sparkles,
     label: "Subscriptions",
+    mobileLabel: "Plans",
   },
   {
     caption: "Statement ingest",
     href: "/uploads",
     icon: FileUp,
     label: "Uploads",
+    mobileLabel: "Files",
   },
   {
     caption: "Cards and billing",
     href: "/payments",
     icon: CreditCard,
     label: "Payments",
+    mobileLabel: "Pay",
   },
   {
     caption: "Renewal timing",
     href: "/calendar",
     icon: CalendarDays,
     label: "Calendar",
+    mobileLabel: "Dates",
   },
   {
     caption: "Workspace controls",
     href: "/settings",
     icon: Settings2,
     label: "Settings",
+    mobileLabel: "Prefs",
   },
 ];
 
@@ -349,8 +356,8 @@ export function AppShell({ children }: AppShellProps) {
           </main>
 
           <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-[rgba(250,248,244,0.96)] px-3 py-2 backdrop-blur md:hidden">
-            <div className="grid grid-cols-5 gap-1">
-              {navItems.map(({ href, icon: Icon, label }) => {
+            <div className="grid grid-cols-6 gap-1">
+              {navItems.map(({ href, icon: Icon, mobileLabel }) => {
                 const active = isActivePath(pathname, href);
 
                 return (
@@ -364,7 +371,7 @@ export function AppShell({ children }: AppShellProps) {
                     key={href}
                   >
                     <Icon className="size-4" />
-                    <span>{label}</span>
+                    <span>{mobileLabel}</span>
                   </Link>
                 );
               })}
