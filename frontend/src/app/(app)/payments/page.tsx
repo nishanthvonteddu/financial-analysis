@@ -23,6 +23,11 @@ export default function PaymentsPage() {
       />
 
       <EmptyState
+        action={
+          <Button asChild className="rounded-full px-5" variant="outline">
+            <Link href="/settings">Add a payment rail in settings</Link>
+          </Button>
+        }
         description="The app shell now reserves a destination for cards, billing instruments, and charge fallback rules, but the underlying product behavior is intentionally deferred to later milestones."
         eyebrow="Upcoming surface"
         icon={<CreditCard className="size-5" />}

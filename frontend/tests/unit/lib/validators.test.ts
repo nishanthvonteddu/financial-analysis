@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildSubscriptionFormValues,
   subscriptionFormSchema,
   toSubscriptionPayload,
 } from "@/lib/validators";
@@ -93,5 +94,11 @@ describe("subscription validators", () => {
     expect(result.error?.flatten().fieldErrors.end_date).toContain(
       "End date must be on or after the start date.",
     );
+  });
+
+  it("uses the preferred currency when building a new subscription draft", () => {
+    const draft = buildSubscriptionFormValues(undefined, "eur");
+
+    expect(draft.currency).toBe("EUR");
   });
 });

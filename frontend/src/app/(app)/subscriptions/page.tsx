@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, LayoutGrid, List, LoaderCircle, SlidersHorizontal, Sparkles } from "lucide-react";
+import { ArrowRight, LayoutGrid, List, SlidersHorizontal, Sparkles } from "lucide-react";
 
 import { SearchBar } from "@/components/subscriptions/search-bar";
 import { SubscriptionCard } from "@/components/subscriptions/subscription-card";
@@ -10,7 +10,9 @@ import { SubscriptionForm } from "@/components/subscriptions/subscription-form";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useFilters } from "@/hooks/use-filters";
+import { useOnboarding } from "@/hooks/use-onboarding";
 import { useCreateSubscription, useSubscriptionCatalog, useSubscriptionList } from "@/hooks/use-subscriptions";
 import { subscriptionCadenceOptions, subscriptionStatusOptions } from "@/lib/validators";
 
@@ -37,6 +39,7 @@ export default function SubscriptionsPage() {
     limit: 100,
     ...queryFilters,
   });
+  const { preferredCurrency } = useOnboarding();
 
   const categories = categoriesQuery.data?.items ?? [];
   const paymentMethods = paymentMethodsQuery.data?.items ?? [];
@@ -78,6 +81,11 @@ export default function SubscriptionsPage() {
                   Search by vendor, pin the exact billing rail, constrain price ranges, and keep
                   the filters live in the URL while you move through the workspace.
                 </p>
+                {subscriptionsQuery.isFetching && subscriptions.length > 0 ? (
+                  <p className="text-xs uppercase tracking-[0.24em] text-black/42">
+                    Updating results without clearing the list
+                  </p>
+                ) : null}
               </div>
 
               <div className="flex items-center gap-2 self-start rounded-full border border-black/10 bg-stone/70 p-1">
@@ -220,12 +228,20 @@ export default function SubscriptionsPage() {
           </section>
 
           {subscriptionsQuery.isLoading ? (
-            <div className="flex min-h-64 items-center justify-center rounded-[2rem] border border-black/10 bg-white/76 shadow-line backdrop-blur">
-              <div className="flex items-center gap-3 text-sm text-black/58">
-                <LoaderCircle className="size-4 animate-spin" />
-                Loading subscriptions...
-              </div>
-            </div>
+            <section className="grid gap-4 md:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  className="rounded-[1.8rem] border border-black/10 bg-white/76 p-5 shadow-line backdrop-blur"
+                  key={index}
+                >
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="mt-4 h-8 w-40" />
+                  <Skeleton className="mt-3 h-4 w-28" />
+                  <Skeleton className="mt-6 h-20 w-full" />
+                  <Skeleton className="mt-4 h-10 w-36" />
+                </div>
+              ))}
+            </section>
           ) : subscriptions.length === 0 ? (
             <EmptyState
               action={
@@ -233,12 +249,20 @@ export default function SubscriptionsPage() {
                   <Button className="rounded-full px-5" onClick={clearFilters} variant="outline">
                     Clear filters
                   </Button>
-                ) : undefined
+                ) : (
+                  <Button asChild className="rounded-full px-5" variant="outline">
+                    <Link href="/settings">Set up categories and payment rails</Link>
+                  </Button>
+                )
               }
-              description="No plans match the current search or filter. Save a new subscription on the right to populate the workspace."
-              eyebrow="Empty state"
+              description={
+                hasActiveFilters
+                  ? "No plans match the current search or filter. Clear the active constraints to widen the view again."
+                  : `No subscriptions are saved yet. Use the form on the right to add the first plan with ${preferredCurrency} as the default billing code.`
+              }
+              eyebrow={hasActiveFilters ? "Filtered view" : "First subscription"}
               icon={<Sparkles className="size-5" />}
-              title="No subscriptions in view."
+              title={hasActiveFilters ? "No subscriptions match these filters." : "The subscription list is still empty."}
             />
           ) : (
             <section
@@ -272,6 +296,7 @@ export default function SubscriptionsPage() {
             await createSubscription.mutateAsync(payload);
           }}
           paymentMethods={paymentMethods}
+          preferredCurrency={preferredCurrency}
           submitLabel="Save subscription"
           testId="subscription-create-form"
           title="Add a subscription"
