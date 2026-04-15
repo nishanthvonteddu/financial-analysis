@@ -24,6 +24,7 @@ type SubscriptionFormProps = {
   onCancel?: () => void;
   onSubmit: (payload: SubscriptionUpsertInput) => Promise<void>;
   paymentMethods: PaymentMethod[];
+  preferredCurrency?: string;
   submitLabel: string;
   testId?: string;
   title: string;
@@ -45,6 +46,7 @@ export function SubscriptionForm({
   onCancel,
   onSubmit,
   paymentMethods,
+  preferredCurrency = "USD",
   submitLabel,
   testId,
   title,
@@ -55,13 +57,13 @@ export function SubscriptionForm({
     register,
     reset,
   } = useForm<SubscriptionFormValues>({
-    defaultValues: buildSubscriptionFormValues(initialSubscription),
+    defaultValues: buildSubscriptionFormValues(initialSubscription, preferredCurrency),
     resolver: zodResolver(subscriptionFormSchema),
   });
 
   useEffect(() => {
-    reset(buildSubscriptionFormValues(initialSubscription));
-  }, [initialSubscription, reset]);
+    reset(buildSubscriptionFormValues(initialSubscription, preferredCurrency));
+  }, [initialSubscription, preferredCurrency, reset]);
 
   const isWorking = disabled || isSubmitting;
 
@@ -81,7 +83,7 @@ export function SubscriptionForm({
         onSubmit={handleSubmit(async (values) => {
           await onSubmit(toSubscriptionPayload(values));
           if (!initialSubscription) {
-            reset(buildSubscriptionFormValues());
+            reset(buildSubscriptionFormValues(undefined, preferredCurrency));
           }
         })}
       >
@@ -138,6 +140,11 @@ export function SubscriptionForm({
                 placeholder="USD"
                 {...register("currency")}
               />
+              {!initialSubscription ? (
+                <p className="text-xs uppercase tracking-[0.24em] text-black/42">
+                  Workspace default: {preferredCurrency}
+                </p>
+              ) : null}
               <FieldError message={errors.currency?.message} />
             </div>
 
