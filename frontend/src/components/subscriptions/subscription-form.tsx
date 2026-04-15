@@ -25,6 +25,7 @@ type SubscriptionFormProps = {
   onSubmit: (payload: SubscriptionUpsertInput) => Promise<void>;
   paymentMethods: PaymentMethod[];
   submitLabel: string;
+  testId?: string;
   title: string;
 };
 
@@ -45,6 +46,7 @@ export function SubscriptionForm({
   onSubmit,
   paymentMethods,
   submitLabel,
+  testId,
   title,
 }: SubscriptionFormProps) {
   const {
@@ -75,6 +77,7 @@ export function SubscriptionForm({
 
       <form
         className="space-y-6 pt-6"
+        data-testid={testId}
         onSubmit={handleSubmit(async (values) => {
           await onSubmit(toSubscriptionPayload(values));
           if (!initialSubscription) {

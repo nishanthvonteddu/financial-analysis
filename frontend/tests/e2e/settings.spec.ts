@@ -15,7 +15,7 @@ test("adds a category and changes the theme", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: categoryName })).toBeVisible();
 
-  await page.getByRole("button", { name: /Switch to dark mode/i }).click();
+  await page.getByTestId("settings-theme-toggle").click();
   await expect(page.locator("html")).toHaveClass(/dark/);
 
   await page.reload();

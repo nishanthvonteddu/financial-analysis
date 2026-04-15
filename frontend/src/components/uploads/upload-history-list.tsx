@@ -77,6 +77,7 @@ export function UploadHistoryList({
                 "group grid w-full gap-4 px-5 py-4 text-left transition sm:px-6",
                 isSelected ? "bg-[#f7f0e7]" : "hover:bg-black/[0.025]",
               )}
+              data-upload-file-name={upload.file_name}
               key={upload.id}
               onClick={() => onSelect(upload.id)}
               type="button"

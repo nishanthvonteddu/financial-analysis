@@ -56,6 +56,8 @@ test("searches and filters subscriptions from the list surface", async ({ page, 
   await expect(page.getByRole("heading", { name: "Netflix Family" })).not.toBeVisible();
 
   await page.getByRole("button", { name: "Reset all" }).click();
+  await expect(page).not.toHaveURL(/search=/);
+  await expect(page).not.toHaveURL(/status=/);
   await page.getByLabel("Filter by cadence").selectOption("yearly");
   await expect(page).toHaveURL(/cadence=yearly/);
   await expect(page.getByRole("heading", { name: "Notion Pro" })).toBeVisible();

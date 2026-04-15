@@ -19,6 +19,7 @@ describe("useFilters", () => {
   beforeEach(() => {
     replace.mockReset();
     currentSearchParams = new URLSearchParams();
+    vi.useRealTimers();
   });
 
   it("reads the current URL state into filter values", () => {
@@ -54,6 +55,21 @@ describe("useFilters", () => {
         "/subscriptions?cadence=yearly&category_id=4&max_amount=42&min_amount=12&payment_method_id=8&search=hulu&status=paused",
         { scroll: false },
       );
+    });
+  });
+
+  it("clears a pending debounced search immediately when filters reset", async () => {
+    currentSearchParams = new URLSearchParams("search=netflix");
+
+    const { result } = renderHook(() => useFilters({ searchDelay: 300 }));
+
+    act(() => {
+      result.current.clearFilters();
+    });
+
+    await waitFor(() => {
+      expect(replace).not.toHaveBeenCalledWith(expect.stringContaining("search=netflix"), expect.anything());
+      expect(replace).toHaveBeenCalledWith("/subscriptions", { scroll: false });
     });
   });
 });

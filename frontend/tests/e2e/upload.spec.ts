@@ -43,7 +43,7 @@ test("uploads CSV and PDF statements and shows detected subscriptions", async ({
   await csvCreate;
   await csvCompleted;
 
-  await expect(page.getByText("hulu-statement.csv")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "hulu-statement.csv" })).toBeVisible();
 
   const pdfCreate = page.waitForResponse(
     (response) =>
@@ -67,7 +67,12 @@ test("uploads CSV and PDF statements and shows detected subscriptions", async ({
   await pdfCreate;
   await pdfCompleted;
 
-  await expect(page.getByText("netflix-statement.pdf")).toBeVisible();
+  await page
+    .getByRole("button")
+    .filter({ has: page.getByText("netflix-statement.pdf", { exact: true }) })
+    .first()
+    .click();
+  await expect(page.getByRole("heading", { name: "netflix-statement.pdf" })).toBeVisible();
 
   await page.goto("/subscriptions");
   await expect(page.getByRole("heading", { name: "Hulu" })).toBeVisible();

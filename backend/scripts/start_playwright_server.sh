@@ -16,6 +16,7 @@ export DATABASE_URL="sqlite+aiosqlite:///$DB_PATH"
 export LOCAL_STORAGE_PATH="$STORAGE_PATH"
 export BACKEND_CORS_ORIGINS='["http://127.0.0.1:3000"]'
 export ACCESS_TOKEN_EXPIRE_MINUTES=120
+export DISABLE_RATE_LIMITING=true
 
 uv run python - <<'PY'
 import asyncio

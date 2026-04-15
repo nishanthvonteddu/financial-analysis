@@ -90,6 +90,7 @@ export function useFilters(options: UseFiltersOptions = {}) {
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<SubscriptionFilterState>(() => readFilterState(searchParams));
   const debouncedSearch = useDebounce(filters.search, searchDelay);
+  const effectiveSearch = filters.search.trim() ? debouncedSearch.trim() : "";
 
   useEffect(() => {
     const nextFilters = readFilterState(searchParams);
@@ -105,7 +106,7 @@ export function useFilters(options: UseFiltersOptions = {}) {
       max_amount: filters.maxAmount || undefined,
       min_amount: filters.minAmount || undefined,
       payment_method_id: filters.paymentMethodId === "all" ? undefined : filters.paymentMethodId,
-      search: debouncedSearch.trim() || undefined,
+      search: effectiveSearch || undefined,
       status: filters.status === "all" ? undefined : filters.status,
     };
 
@@ -127,7 +128,7 @@ export function useFilters(options: UseFiltersOptions = {}) {
       router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
     });
   }, [
-    debouncedSearch,
+    effectiveSearch,
     filters.cadence,
     filters.categoryId,
     filters.maxAmount,
@@ -146,7 +147,7 @@ export function useFilters(options: UseFiltersOptions = {}) {
     min_amount: parseAmount(filters.minAmount),
     payment_method_id:
       filters.paymentMethodId === "all" ? undefined : Number(filters.paymentMethodId),
-    search: debouncedSearch.trim() || undefined,
+    search: effectiveSearch || undefined,
     status: filters.status === "all" ? undefined : filters.status,
   };
 

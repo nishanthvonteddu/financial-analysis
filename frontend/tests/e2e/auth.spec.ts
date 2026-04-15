@@ -58,22 +58,23 @@ test("refreshes the session before expiry", async ({ page, request }) => {
     access_token_expires_at: new Date(Date.now() + 1_500).toISOString(),
   });
 
-  const refreshResponse = page.waitForResponse(
-    (response) =>
-      response.url().endsWith("/auth/refresh") &&
-      response.request().method() === "POST" &&
-      response.ok(),
-  );
+  await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { name: "Smart dashboard snapshot" })).toBeVisible();
 
-  await page.goto("/dashboard");
-  await refreshResponse;
+  await expect
+    .poll(
+      async () =>
+        page.evaluate((key) => {
+          const value = window.localStorage.getItem(key);
+          return value ? (JSON.parse(value) as { access_token: string }).access_token : null;
+        }, AUTH_STORAGE_KEY),
+      {
+        message: "Expected the auth provider to refresh the access token before expiry.",
+        timeout: 15_000,
+      },
+    )
+    .not.toBe(session.access_token);
 
-  const storedSession = await page.evaluate((key) => {
-    const value = window.localStorage.getItem(key);
-    return value ? (JSON.parse(value) as { access_token: string }) : null;
-  }, AUTH_STORAGE_KEY);
-
-  expect(storedSession?.access_token).not.toBe(session.access_token);
   await expect(page).toHaveURL(/\/dashboard$/);
 });
 

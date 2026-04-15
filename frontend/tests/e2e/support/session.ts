@@ -78,13 +78,23 @@ export async function registerTestUser(
 }
 
 export async function seedSession(page: Page, session: TestSession) {
-  await page.goto(`${FRONTEND_BASE_URL}/login`);
-  await page.evaluate(
+  const payload = { key: AUTH_STORAGE_KEY, nextSession: session };
+
+  await page.addInitScript(
     ({ key, nextSession }) => {
       window.localStorage.setItem(key, JSON.stringify(nextSession));
     },
-    { key: AUTH_STORAGE_KEY, nextSession: session },
+    payload,
   );
+
+  if (page.url().startsWith(FRONTEND_BASE_URL)) {
+    await page.evaluate(
+      ({ key, nextSession }) => {
+        window.localStorage.setItem(key, JSON.stringify(nextSession));
+      },
+      payload,
+    );
+  }
 }
 
 export function ensureAuthArtifactDir() {

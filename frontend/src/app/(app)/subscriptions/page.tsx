@@ -273,6 +273,7 @@ export default function SubscriptionsPage() {
           }}
           paymentMethods={paymentMethods}
           submitLabel="Save subscription"
+          testId="subscription-create-form"
           title="Add a subscription"
         />
       </div>
