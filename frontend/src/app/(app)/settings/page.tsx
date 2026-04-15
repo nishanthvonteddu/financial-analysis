@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
-import { CreditCard, FolderTree, LoaderCircle, PencilLine, ShieldAlert, Trash2, UserRound } from "lucide-react";
+import { CreditCard, FolderTree, PencilLine, ShieldAlert, Trash2, UserRound } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
+import { useOnboarding } from "@/hooks/use-onboarding";
 import {
   useCreateCategory,
   useCreatePaymentMethod,
@@ -19,7 +21,9 @@ import {
 import type { Category, PaymentMethod } from "@/types";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 type CategoryDraft = {
@@ -54,11 +58,11 @@ function getErrorMessage(error: unknown) {
   return "Something went wrong. Try again.";
 }
 
-function getCurrencySummary(currencies: string[]) {
+function getCurrencySummary(currencies: string[], preferredCurrency: string) {
   if (currencies.length === 0) {
     return {
-      detail: "No saved subscriptions yet. New plans still default to USD until the workspace fills in.",
-      label: "USD",
+      detail: `No saved subscriptions yet. New plans default to ${preferredCurrency} until live billing data takes over.`,
+      label: preferredCurrency,
     };
   }
 
@@ -104,6 +108,7 @@ function SectionShell({
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const { preferredCurrency } = useOnboarding();
   const [categoryDraft, setCategoryDraft] = useState<CategoryDraft>(emptyCategoryDraft);
   const [paymentMethodDraft, setPaymentMethodDraft] = useState<PaymentMethodDraft>(emptyPaymentMethodDraft);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -126,8 +131,12 @@ export default function SettingsPage() {
   const categories = categoriesQuery.data?.items ?? [];
   const paymentMethods = paymentMethodsQuery.data?.items ?? [];
   const currencySummary = useMemo(
-    () => getCurrencySummary((subscriptionsQuery.data?.items ?? []).map((subscription) => subscription.currency)),
-    [subscriptionsQuery.data?.items],
+    () =>
+      getCurrencySummary(
+        (subscriptionsQuery.data?.items ?? []).map((subscription) => subscription.currency),
+        preferredCurrency,
+      ),
+    [preferredCurrency, subscriptionsQuery.data?.items],
   );
 
   const isCatalogLoading = categoriesQuery.isLoading || paymentMethodsQuery.isLoading;
@@ -166,6 +175,7 @@ export default function SettingsPage() {
           title="Categories management"
         >
           <form
+            id="settings-category-create"
             className="grid gap-3 rounded-[1.6rem] border border-black/10 bg-stone/55 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)_auto]"
             onSubmit={async (event) => {
               event.preventDefault();
@@ -203,12 +213,28 @@ export default function SettingsPage() {
 
           <div className="mt-5 space-y-3">
             {categoriesQuery.isLoading ? (
-              <div className="flex items-center gap-3 text-sm text-black/58">
-                <LoaderCircle className="size-4 animate-spin" />
-                Loading categories...
-              </div>
+              Array.from({ length: 3 }).map((_, index) => (
+                <div className="rounded-[1.5rem] border border-black/10 bg-white/85 p-4" key={index}>
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="mt-3 h-4 w-10/12" />
+                  <div className="mt-5 flex gap-2">
+                    <Skeleton className="h-9 w-20 rounded-full" />
+                    <Skeleton className="h-9 w-24 rounded-full" />
+                  </div>
+                </div>
+              ))
             ) : categories.length === 0 ? (
-              <p className="text-sm text-black/58">No categories yet. Add the first one above.</p>
+              <EmptyState
+                action={
+                  <Button asChild className="rounded-full px-5" variant="outline">
+                    <a href="#settings-category-create">Add the first category</a>
+                  </Button>
+                }
+                description="Categories help the dashboard and search filters read like an operating tool instead of a raw list."
+                eyebrow="Category setup"
+                icon={<FolderTree className="size-5" />}
+                title="No categories yet."
+              />
             ) : (
               categories.map((category) => {
                 const isEditing = editingCategory?.id === category.id;
@@ -318,6 +344,7 @@ export default function SettingsPage() {
           title="Payment methods management"
         >
           <form
+            id="settings-payment-method-create"
             className="grid gap-3 rounded-[1.6rem] border border-black/10 bg-stone/55 p-4 md:grid-cols-2"
             onSubmit={async (event) => {
               event.preventDefault();
@@ -390,14 +417,28 @@ export default function SettingsPage() {
 
           <div className="mt-5 space-y-3">
             {paymentMethodsQuery.isLoading ? (
-              <div className="flex items-center gap-3 text-sm text-black/58">
-                <LoaderCircle className="size-4 animate-spin" />
-                Loading payment methods...
-              </div>
+              Array.from({ length: 3 }).map((_, index) => (
+                <div className="rounded-[1.5rem] border border-black/10 bg-white/85 p-4" key={index}>
+                  <Skeleton className="h-5 w-36" />
+                  <Skeleton className="mt-3 h-4 w-32" />
+                  <div className="mt-5 flex gap-2">
+                    <Skeleton className="h-9 w-20 rounded-full" />
+                    <Skeleton className="h-9 w-24 rounded-full" />
+                  </div>
+                </div>
+              ))
             ) : paymentMethods.length === 0 ? (
-              <p className="text-sm text-black/58">
-                No payment methods yet. Add the primary billing rail above.
-              </p>
+              <EmptyState
+                action={
+                  <Button asChild className="rounded-full px-5" variant="outline">
+                    <a href="#settings-payment-method-create">Add the first payment rail</a>
+                  </Button>
+                }
+                description="Save the primary billing rail here so upcoming plan management and alerting flows already have a default instrument to reference."
+                eyebrow="Billing setup"
+                icon={<CreditCard className="size-5" />}
+                title="No payment methods yet."
+              />
             ) : (
               paymentMethods.map((paymentMethod) => {
                 const isEditing = editingPaymentMethod?.id === paymentMethod.id;
@@ -565,6 +606,20 @@ export default function SettingsPage() {
               <p className="mt-2 text-2xl font-semibold text-ink">{currencySummary.label}</p>
               <p className="mt-2 text-sm leading-6 text-black/58">{currencySummary.detail}</p>
             </div>
+
+            {categories.length === 0 && paymentMethods.length === 0 ? (
+              <EmptyState
+                action={
+                  <Button asChild className="rounded-full px-5" variant="outline">
+                    <Link href="/dashboard">Return to setup guide</Link>
+                  </Button>
+                }
+                className="rounded-[1.35rem] bg-white/82 p-4 shadow-none"
+                description="This workspace is still in first-run mode. Finish the dashboard setup guide or seed categories and payment rails here."
+                eyebrow="First-run workspace"
+                title="Settings is ready for initial setup."
+              />
+            ) : null}
           </div>
 
           <div className="space-y-4">
