@@ -27,7 +27,9 @@ export function useUploadHistory() {
   return useQuery({
     enabled: Boolean(accessToken),
     queryFn: () => apiClient.getUploads(accessToken!),
+    placeholderData: (previousData) => previousData,
     queryKey: uploadKeys.history,
+    staleTime: 20_000,
     refetchIntervalInBackground: true,
     refetchOnMount: "always",
     refetchInterval: (query) => {
@@ -45,7 +47,9 @@ export function useUploadStatus(uploadId: number | null) {
   return useQuery({
     enabled: Boolean(accessToken) && uploadId !== null,
     queryFn: () => apiClient.getUploadStatus(accessToken!, uploadId!),
+    placeholderData: (previousData) => previousData,
     queryKey: uploadId === null ? ["uploads", "status", "idle"] : uploadKeys.status(uploadId),
+    staleTime: 10_000,
     refetchIntervalInBackground: true,
     refetchOnMount: "always",
     refetchInterval: (query) => {
