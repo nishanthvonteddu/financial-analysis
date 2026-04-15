@@ -40,9 +40,10 @@ function formatSize(size: number) {
 type UploadDropzoneProps = {
   disabled?: boolean;
   onUpload: (file: File, onProgress: (progress: number) => void) => Promise<void>;
+  sectionId?: string;
 };
 
-export function UploadDropzone({ disabled = false, onUpload }: UploadDropzoneProps) {
+export function UploadDropzone({ disabled = false, onUpload, sectionId }: UploadDropzoneProps) {
   const inputId = useId();
   const [dragActive, setDragActive] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -97,7 +98,10 @@ export function UploadDropzone({ disabled = false, onUpload }: UploadDropzonePro
   }
 
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-black/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(245,239,231,0.92))] shadow-line backdrop-blur">
+    <section
+      className="overflow-hidden rounded-[2rem] border border-black/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(245,239,231,0.92))] shadow-line backdrop-blur"
+      id={sectionId}
+    >
       <div className="border-b border-black/10 px-5 py-5 sm:px-6">
         <p className="text-xs uppercase tracking-[0.32em] text-black/45">Ingest</p>
         <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
