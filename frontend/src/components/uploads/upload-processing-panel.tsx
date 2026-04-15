@@ -130,7 +130,13 @@ export function UploadProcessingPanel({ upload, visualStep }: UploadProcessingPa
           <p className="text-xs uppercase tracking-[0.32em] text-white/45">Queue notes</p>
           <div className="space-y-3 text-sm leading-6 text-white/72">
             <p>
-              Current backend status: <span className="font-semibold capitalize text-white">{upload.status}</span>
+              Current backend status:{" "}
+              <span
+                className="font-semibold capitalize text-white"
+                data-testid="upload-current-status"
+              >
+                {upload.status}
+              </span>
             </p>
             <p>
               Last sync: <span className="text-white">{formatTimestamp(upload.last_synced_at)}</span>

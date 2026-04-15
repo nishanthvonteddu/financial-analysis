@@ -254,7 +254,10 @@ export function AppShell({ children }: AppShellProps) {
                 <p className="text-xs uppercase tracking-[0.32em] text-black/45">
                   {currentNavItem.label}
                 </p>
-                <h1 className="mt-1 truncate text-2xl font-semibold text-ink sm:text-3xl">
+                <h1
+                  className="mt-1 truncate text-2xl font-semibold text-ink sm:text-3xl"
+                  data-testid="app-shell-route-title"
+                >
                   {meta.title}
                 </h1>
               </div>

@@ -3,20 +3,9 @@ import { expect, test } from "@playwright/test";
 
 import { buildCsvStatement, buildPdfStatement, resetWorkspace } from "./support/session";
 
-async function waitForUploadCompletion(page: Page) {
-  return page.waitForResponse(async (response) => {
-    if (
-      !response.url().includes("/api/v1/uploads/") ||
-      !response.url().endsWith("/status") ||
-      response.request().method() !== "GET" ||
-      !response.ok()
-    ) {
-      return false;
-    }
-
-    const payload = (await response.json().catch(() => null)) as { status?: string } | null;
-    return payload?.status === "completed";
-  });
+async function waitForUploadCompletion(page: Page, fileName: string) {
+  await expect(page.getByTestId("upload-selected-file-name")).toHaveText(fileName);
+  await expect(page.getByTestId("upload-current-status")).toHaveText("completed");
 }
 
 test.beforeEach(async ({ request }) => {
@@ -32,7 +21,6 @@ test("uploads CSV and PDF statements and shows detected subscriptions", async ({
       response.request().method() === "POST" &&
       response.ok(),
   );
-  const csvCompleted = waitForUploadCompletion(page);
 
   await page.getByLabel("Upload statement").setInputFiles({
     buffer: Buffer.from(buildCsvStatement("HULU", "8.99")),
@@ -41,7 +29,7 @@ test("uploads CSV and PDF statements and shows detected subscriptions", async ({
   });
 
   await csvCreate;
-  await csvCompleted;
+  await waitForUploadCompletion(page, "hulu-statement.csv");
 
   await expect(page.getByRole("heading", { name: "hulu-statement.csv" })).toBeVisible();
 
@@ -51,7 +39,6 @@ test("uploads CSV and PDF statements and shows detected subscriptions", async ({
       response.request().method() === "POST" &&
       response.ok(),
   );
-  const pdfCompleted = waitForUploadCompletion(page);
 
   await page.getByLabel("Upload statement").setInputFiles({
     buffer: buildPdfStatement([
@@ -65,13 +52,9 @@ test("uploads CSV and PDF statements and shows detected subscriptions", async ({
   });
 
   await pdfCreate;
-  await pdfCompleted;
+  await waitForUploadCompletion(page, "netflix-statement.pdf");
 
-  await page
-    .getByRole("button")
-    .filter({ has: page.getByText("netflix-statement.pdf", { exact: true }) })
-    .first()
-    .click();
+  await page.locator('button[data-upload-file-name="netflix-statement.pdf"]').click();
   await expect(page.getByRole("heading", { name: "netflix-statement.pdf" })).toBeVisible();
 
   await page.goto("/subscriptions");

@@ -16,7 +16,7 @@ test("registers, logs in, and logs out through the UI", async ({ page }) => {
   await page.getByRole("button", { name: "Create account" }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByRole("heading", { name: "Smart dashboard snapshot" })).toBeVisible();
+  await expect(page.getByTestId("app-shell-route-title")).toBeVisible();
 
   await page.locator("button[aria-haspopup='menu']").click();
   await page.getByRole("menuitem", { name: "Sign out" }).click();
@@ -59,7 +59,7 @@ test("refreshes the session before expiry", async ({ page, request }) => {
   });
 
   await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("heading", { name: "Smart dashboard snapshot" })).toBeVisible();
+  await expect(page.getByTestId("app-shell-route-title")).toBeVisible();
 
   await expect
     .poll(

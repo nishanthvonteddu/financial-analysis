@@ -64,8 +64,10 @@ test("searches and filters subscriptions from the list surface", async ({ page, 
 
   await page.getByRole("button", { name: "Reset all" }).click();
   await page.getByLabel("Minimum monthly amount").fill("14");
+  await expect(page).toHaveURL(/min_amount=14/);
   await page.getByLabel("Maximum monthly amount").fill("16");
   await expect(page).toHaveURL(/min_amount=14/);
+  await expect(page).toHaveURL(/max_amount=16/);
   await expect(page.getByRole("heading", { name: "Netflix Family" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Hulu Basic" })).not.toBeVisible();
 });

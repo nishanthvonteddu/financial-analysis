@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 
 import { useDebounce } from "@/hooks/use-debounce";
 import { subscriptionCadenceOptions, subscriptionStatusOptions } from "@/lib/validators";
@@ -83,18 +83,63 @@ function areStatesEqual(left: SubscriptionFilterState, right: SubscriptionFilter
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function mergePendingFilterState(
+  current: SubscriptionFilterState,
+  next: SubscriptionFilterState,
+  pendingQueries: string[],
+) {
+  if (pendingQueries.length === 0) {
+    return next;
+  }
+
+  const pendingStates = pendingQueries.map((query) => readFilterState(new URLSearchParams(query)));
+
+  const shouldPreserveValue = <Key extends keyof SubscriptionFilterState>(key: Key) =>
+    current[key] !== defaultFilterState[key] &&
+    next[key] === defaultFilterState[key] &&
+    pendingStates.some((state) => state[key] === current[key]);
+
+  return {
+    cadence: shouldPreserveValue("cadence") ? current.cadence : next.cadence,
+    categoryId: shouldPreserveValue("categoryId") ? current.categoryId : next.categoryId,
+    maxAmount: shouldPreserveValue("maxAmount") ? current.maxAmount : next.maxAmount,
+    minAmount: shouldPreserveValue("minAmount") ? current.minAmount : next.minAmount,
+    paymentMethodId: shouldPreserveValue("paymentMethodId")
+      ? current.paymentMethodId
+      : next.paymentMethodId,
+    search: shouldPreserveValue("search") ? current.search : next.search,
+    status: shouldPreserveValue("status") ? current.status : next.status,
+  };
+}
+
 export function useFilters(options: UseFiltersOptions = {}) {
   const { searchDelay = 300 } = options;
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<SubscriptionFilterState>(() => readFilterState(searchParams));
+  const pendingQuerySyncsRef = useRef<string[]>([]);
   const debouncedSearch = useDebounce(filters.search, searchDelay);
   const effectiveSearch = filters.search.trim() ? debouncedSearch.trim() : "";
 
   useEffect(() => {
+    const currentQuery = searchParams.toString();
+    const pendingIndex = pendingQuerySyncsRef.current.indexOf(currentQuery);
+
+    if (pendingIndex !== -1) {
+      pendingQuerySyncsRef.current = pendingQuerySyncsRef.current.slice(pendingIndex + 1);
+      return;
+    }
+
     const nextFilters = readFilterState(searchParams);
-    setFilters((current) => (areStatesEqual(current, nextFilters) ? current : nextFilters));
+    setFilters((current) => {
+      const mergedFilters = mergePendingFilterState(
+        current,
+        nextFilters,
+        pendingQuerySyncsRef.current,
+      );
+      return areStatesEqual(current, mergedFilters) ? current : mergedFilters;
+    });
   }, [searchParams]);
 
   useEffect(() => {
@@ -122,6 +167,10 @@ export function useFilters(options: UseFiltersOptions = {}) {
     const currentQuery = searchParams.toString();
     if (nextQuery === currentQuery) {
       return;
+    }
+
+    if (pendingQuerySyncsRef.current.at(-1) !== nextQuery) {
+      pendingQuerySyncsRef.current.push(nextQuery);
     }
 
     startTransition(() => {

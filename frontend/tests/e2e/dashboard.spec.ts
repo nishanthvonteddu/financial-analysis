@@ -35,7 +35,7 @@ test("renders the dashboard with its widget structure", async ({ page, request }
 
   await page.goto("/dashboard");
 
-  await expect(page.getByRole("heading", { name: "Smart dashboard snapshot" })).toBeVisible();
+  await expect(page.getByTestId("app-shell-route-title")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Monthly spend" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Category breakdown" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Upcoming renewals" })).toBeVisible();

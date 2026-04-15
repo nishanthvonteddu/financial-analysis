@@ -28,6 +28,8 @@ export function useUploadHistory() {
     enabled: Boolean(accessToken),
     queryFn: () => apiClient.getUploads(accessToken!),
     queryKey: uploadKeys.history,
+    refetchIntervalInBackground: true,
+    refetchOnMount: "always",
     refetchInterval: (query) => {
       const items = query.state.data?.items ?? [];
       return items.some((item) => item.status === "queued" || item.status === "processing")
@@ -44,6 +46,8 @@ export function useUploadStatus(uploadId: number | null) {
     enabled: Boolean(accessToken) && uploadId !== null,
     queryFn: () => apiClient.getUploadStatus(accessToken!, uploadId!),
     queryKey: uploadId === null ? ["uploads", "status", "idle"] : uploadKeys.status(uploadId),
+    refetchIntervalInBackground: true,
+    refetchOnMount: "always",
     refetchInterval: (query) => {
       const upload = query.state.data;
       return upload?.status === "queued" || upload?.status === "processing" ? 1_250 : false;
@@ -60,6 +64,7 @@ export function useCreateUpload() {
       apiClient.uploadFile(token, file, onProgress),
     onSuccess: (upload) => {
       queryClient.setQueryData(uploadKeys.status(upload.id), upload);
+      void queryClient.invalidateQueries({ queryKey: uploadKeys.status(upload.id) });
       void queryClient.invalidateQueries({ queryKey: uploadKeys.history });
     },
   });
