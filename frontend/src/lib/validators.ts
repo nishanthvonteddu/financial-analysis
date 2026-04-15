@@ -75,7 +75,10 @@ export const subscriptionFormSchema = z
 
 export type SubscriptionFormValues = z.infer<typeof subscriptionFormSchema>;
 
-export function buildSubscriptionFormValues(subscription?: Subscription | null): SubscriptionFormValues {
+export function buildSubscriptionFormValues(
+  subscription?: Subscription | null,
+  defaultCurrency = "USD",
+): SubscriptionFormValues {
   if (!subscription) {
     const today = new Date().toISOString().slice(0, 10);
     return {
@@ -83,7 +86,7 @@ export function buildSubscriptionFormValues(subscription?: Subscription | null):
       auto_renew: true,
       cadence: "monthly",
       category_id: "",
-      currency: "USD",
+      currency: defaultCurrency.trim().toUpperCase().slice(0, 3) || "USD",
       day_of_month: "",
       description: "",
       end_date: "",
