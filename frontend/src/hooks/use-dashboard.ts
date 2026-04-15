@@ -33,7 +33,9 @@ export function useDashboardSummary() {
   return useQuery({
     enabled: Boolean(accessToken),
     queryFn: () => apiClient.getDashboardSummary(accessToken!),
+    placeholderData: (previousData) => previousData,
     queryKey: dashboardKeys.summary,
+    staleTime: 30_000,
   });
 }
 
@@ -43,7 +45,9 @@ export function useDashboardLayout() {
   return useQuery({
     enabled: Boolean(accessToken),
     queryFn: () => apiClient.getDashboardLayout(accessToken!),
+    placeholderData: (previousData) => previousData,
     queryKey: dashboardKeys.layout,
+    staleTime: 30_000,
   });
 }
 
