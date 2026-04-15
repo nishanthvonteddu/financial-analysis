@@ -36,13 +36,17 @@ export function useSubscriptionCatalog() {
   const categoriesQuery = useQuery({
     enabled,
     queryFn: () => apiClient.getCategories(accessToken!),
+    placeholderData: (previousData) => previousData,
     queryKey: subscriptionKeys.categories,
+    staleTime: 60_000,
   });
 
   const paymentMethodsQuery = useQuery({
     enabled,
     queryFn: () => apiClient.getPaymentMethods(accessToken!),
+    placeholderData: (previousData) => previousData,
     queryKey: subscriptionKeys.paymentMethods,
+    staleTime: 60_000,
   });
 
   return {
@@ -57,7 +61,9 @@ export function useSubscriptionList(filters: SubscriptionFilters) {
   return useQuery({
     enabled: Boolean(accessToken),
     queryFn: () => apiClient.getSubscriptions(accessToken!, filters),
+    placeholderData: (previousData) => previousData,
     queryKey: subscriptionKeys.list(filters),
+    staleTime: 30_000,
   });
 }
 
@@ -67,7 +73,9 @@ export function useSubscription(subscriptionId: number) {
   return useQuery({
     enabled: Boolean(accessToken) && Number.isFinite(subscriptionId),
     queryFn: () => apiClient.getSubscription(accessToken!, subscriptionId),
+    placeholderData: (previousData) => previousData,
     queryKey: subscriptionKeys.detail(subscriptionId),
+    staleTime: 30_000,
   });
 }
 
