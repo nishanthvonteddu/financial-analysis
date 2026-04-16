@@ -14,10 +14,20 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         structlog.contextvars.bind_contextvars(request_id=request_id)
 
         start = time.perf_counter()
-        response = await call_next(request)
-        duration_ms = round((time.perf_counter() - start) * 1000, 2)
-
         logger = structlog.get_logger("request")
+        try:
+            response = await call_next(request)
+        except Exception:
+            duration_ms = round((time.perf_counter() - start) * 1000, 2)
+            logger.exception(
+                "http.request.failed",
+                method=request.method,
+                path=request.url.path,
+                duration_ms=duration_ms,
+            )
+            raise
+
+        duration_ms = round((time.perf_counter() - start) * 1000, 2)
         logger.info(
             "http.request.completed",
             method=request.method,
