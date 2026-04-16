@@ -44,7 +44,7 @@ test("shows an error for invalid credentials", async ({ page, request }) => {
   await page.getByLabel("Password").fill("wrong-password");
   await page.getByRole("button", { name: "Sign in" }).click();
 
-  await expect(page.getByText("The email or password did not match an active account.")).toBeVisible();
+  await expect(page.locator("form").getByText("The email or password did not match an active account.")).toBeVisible();
 });
 
 test("refreshes the session before expiry", async ({ page, request }) => {
