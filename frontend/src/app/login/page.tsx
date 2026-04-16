@@ -20,6 +20,18 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
+function getLoginErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message === "Invalid email or password.") {
+    return "The email or password did not match an active account.";
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "The email or password did not match an active account.";
+}
+
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -50,8 +62,7 @@ function LoginPageContent() {
       toast.success("Signed in.");
       router.replace(searchParams.get("next") ?? "/dashboard");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "The email or password did not match an active account.";
+      const message = getLoginErrorMessage(error);
       toast.error(message);
       setError("root", {
         message,
