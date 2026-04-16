@@ -58,8 +58,7 @@ def _build_pdf_statement(lines: list[str]) -> bytes:
     for offset in offsets:
         content += f"{offset:010d} 00000 n \n"
     content += (
-        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\n"
-        f"startxref\n{xref_offset}\n%%EOF\n"
+        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref_offset}\n%%EOF\n"
     )
     return content.encode("latin1")
 
