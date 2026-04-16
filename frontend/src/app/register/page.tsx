@@ -21,6 +21,18 @@ const registerSchema = z.object({
 
 type RegisterValues = z.infer<typeof registerSchema>;
 
+function getRegisterErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message === "A user with that email already exists.") {
+    return "That account already exists or could not be created right now.";
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "That account already exists or could not be created right now.";
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const { isAuthenticated, register: registerAccount } = useAuth();
@@ -51,8 +63,7 @@ export default function RegisterPage() {
       toast.success("Account created.");
       router.replace("/dashboard");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "That account already exists or could not be created right now.";
+      const message = getRegisterErrorMessage(error);
       toast.error(message);
       setError("root", {
         message,
