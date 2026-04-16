@@ -100,6 +100,14 @@ def test_delete_my_workspace_data_resets_user_owned_records(client) -> None:
     assert payment_method_response.status_code == 201
     payment_method_id = payment_method_response.json()["id"]
 
+    category_response = client.post(
+        "/api/v1/categories",
+        headers=headers,
+        json={"name": "Streaming", "description": "Monthly streaming services"},
+    )
+    assert category_response.status_code == 201
+    category_id = category_response.json()["id"]
+
     subscription_response = client.post(
         "/api/v1/subscriptions",
         headers=headers,
@@ -111,6 +119,7 @@ def test_delete_my_workspace_data_resets_user_owned_records(client) -> None:
             "cadence": "monthly",
             "status": "active",
             "start_date": "2026-04-01",
+            "category_id": category_id,
             "payment_method_id": payment_method_id,
             "auto_renew": True,
         },
@@ -140,6 +149,10 @@ def test_delete_my_workspace_data_resets_user_owned_records(client) -> None:
     payment_methods_response = client.get("/api/v1/payment-methods", headers=headers)
     assert payment_methods_response.status_code == 200
     assert payment_methods_response.json()["total"] == 0
+
+    categories_response = client.get("/api/v1/categories", headers=headers)
+    assert categories_response.status_code == 200
+    assert categories_response.json()["total"] == 0
 
     reset_layout_response = client.get("/api/v1/dashboard/layout", headers=headers)
     assert reset_layout_response.status_code == 200
