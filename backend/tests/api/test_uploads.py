@@ -1,3 +1,6 @@
+from datetime import date, timedelta
+
+
 def _auth_headers(client, email: str) -> dict[str, str]:
     response = client.post(
         "/api/v1/auth/register",
@@ -13,11 +16,7 @@ def _auth_headers(client, email: str) -> dict[str, str]:
 
 def test_upload_endpoints_process_csv_history_status_and_delete(client) -> None:
     headers = _auth_headers(client, "uploader@example.com")
-    csv_content = (
-        "Posting Date,Details,Amount\n"
-        "04/01/2026,NETFLIX,-15.49\n"
-        "04/02/2026,Hulu,-8.99\n"
-    )
+    csv_content = "Posting Date,Details,Amount\n04/01/2026,NETFLIX,-15.49\n04/02/2026,Hulu,-8.99\n"
 
     create_response = client.post(
         "/api/v1/uploads",
@@ -51,11 +50,12 @@ def test_upload_endpoints_process_csv_history_status_and_delete(client) -> None:
 
 def test_upload_processing_triggers_subscription_detection(client) -> None:
     headers = _auth_headers(client, "detection@example.com")
+    charge_dates = [date.today() - timedelta(days=60), date.today() - timedelta(days=30), date.today()]
     csv_content = (
         "Posting Date,Details,Amount\n"
-        "01/01/2026,NETFLIX,-15.49\n"
-        "02/01/2026,NETFLIX,-15.49\n"
-        "03/01/2026,NETFLIX,-15.49\n"
+        f"{charge_dates[0].strftime('%m/%d/%Y')},NETFLIX,-15.49\n"
+        f"{charge_dates[1].strftime('%m/%d/%Y')},NETFLIX,-15.49\n"
+        f"{charge_dates[2].strftime('%m/%d/%Y')},NETFLIX,-15.49\n"
     )
 
     create_response = client.post(
