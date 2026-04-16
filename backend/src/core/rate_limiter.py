@@ -5,6 +5,9 @@ from time import monotonic
 from fastapi import HTTPException, Request, status
 
 from src.config import get_settings
+from src.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class InMemoryRateLimiter:
@@ -23,6 +26,12 @@ class InMemoryRateLimiter:
             bucket.popleft()
 
         if len(bucket) >= limit:
+            logger.warning(
+                "rate_limit.exceeded",
+                bucket=key,
+                limit=limit,
+                window_seconds=window_seconds,
+            )
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail="Too many requests. Try again in a minute.",
