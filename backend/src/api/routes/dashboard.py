@@ -22,7 +22,12 @@ DbSession = Annotated[AsyncSession, Depends(get_db)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-@router.get("/summary", response_model=DashboardSummaryResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "/summary",
+    response_model=DashboardSummaryResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get dashboard summary metrics",
+)
 async def get_dashboard_summary_route(
     session: DbSession,
     current_user: CurrentUser,
@@ -30,7 +35,12 @@ async def get_dashboard_summary_route(
     return await get_dashboard_summary(session, user=current_user)
 
 
-@router.get("/layout", response_model=DashboardLayoutResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "/layout",
+    response_model=DashboardLayoutResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get the saved dashboard layout",
+)
 async def get_dashboard_layout_route(
     session: DbSession,
     current_user: CurrentUser,
@@ -38,7 +48,12 @@ async def get_dashboard_layout_route(
     return await get_dashboard_layout(session, user=current_user)
 
 
-@router.put("/layout", response_model=DashboardLayoutResponse, status_code=status.HTTP_200_OK)
+@router.put(
+    "/layout",
+    response_model=DashboardLayoutResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Replace the saved dashboard layout",
+)
 async def update_dashboard_layout_route(
     payload: DashboardLayoutUpdate,
     session: DbSession,

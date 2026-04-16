@@ -27,6 +27,20 @@ type RequestOptions = {
   token?: string;
 };
 
+async function parseResponseBody(response: Response) {
+  const contentType = response.headers.get("Content-Type") ?? "";
+  if (!contentType.includes("application/json")) {
+    const text = await response.text();
+    return text.trim() || null;
+  }
+
+  try {
+    return (await response.json()) as unknown;
+  } catch {
+    return null;
+  }
+}
+
 function buildUrl(path: string, query?: RequestOptions["query"]) {
   const url = new URL(`${API_BASE_URL}${path}`);
 
@@ -61,19 +75,20 @@ async function request<T>(
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed with ${response.status}`);
+    const body = await parseResponseBody(response);
+    throw new Error(getErrorMessage(response.status, body));
   }
 
   if (response.status === 204) {
     return undefined as T;
   }
 
-  const contentType = response.headers.get("Content-Type") ?? "";
-  if (!contentType.includes("application/json")) {
+  const body = await parseResponseBody(response);
+  if (body === null || typeof body !== "object") {
     return undefined as T;
   }
 
-  return response.json() as Promise<T>;
+  return body as T;
 }
 
 function getErrorMessage(status: number, response: unknown) {
@@ -110,12 +125,16 @@ function uploadFile(
     });
 
     xhr.addEventListener("load", () => {
-      const response =
-        xhr.response && typeof xhr.response === "object"
-          ? xhr.response
-          : xhr.responseText
-            ? (JSON.parse(xhr.responseText) as unknown)
-            : null;
+      let response: unknown = null;
+      if (xhr.response && typeof xhr.response === "object") {
+        response = xhr.response;
+      } else if (xhr.responseText) {
+        try {
+          response = JSON.parse(xhr.responseText) as unknown;
+        } catch {
+          response = xhr.responseText;
+        }
+      }
 
       if (xhr.status < 200 || xhr.status >= 300) {
         reject(new Error(getErrorMessage(xhr.status, response)));

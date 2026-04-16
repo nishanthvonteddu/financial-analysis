@@ -14,7 +14,12 @@ DbSession = Annotated[AsyncSession, Depends(get_db)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-@router.post("", response_model=UploadResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=UploadResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create an upload",
+)
 async def create_upload_route(
     background_tasks: BackgroundTasks,
     session: DbSession,
@@ -29,7 +34,12 @@ async def create_upload_route(
     )
 
 
-@router.get("", response_model=UploadListResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "",
+    response_model=UploadListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="List uploads",
+)
 async def list_uploads_route(
     session: DbSession,
     current_user: CurrentUser,
@@ -37,7 +47,12 @@ async def list_uploads_route(
     return await list_uploads(session, user=current_user)
 
 
-@router.get("/{upload_id}/status", response_model=UploadResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "/{upload_id}/status",
+    response_model=UploadResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get upload processing status",
+)
 async def get_upload_status_route(
     upload_id: int,
     session: DbSession,
@@ -46,7 +61,11 @@ async def get_upload_status_route(
     return await get_upload_status(session, upload_id=upload_id, user=current_user)
 
 
-@router.delete("/{upload_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{upload_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete an upload",
+)
 async def delete_upload_route(
     upload_id: int,
     session: DbSession,

@@ -1,12 +1,13 @@
 from datetime import timedelta
 
 from fastapi import HTTPException, status
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import get_settings
 from src.core.logging import get_logger
 from src.core.security import create_token, decode_token, hash_password, verify_password
+from src.models.category import Category
 from src.models.dashboard_layout import DashboardLayout
 from src.models.data_source import DataSource
 from src.models.payment_history import PaymentHistory
@@ -122,16 +123,21 @@ async def delete_user_workspace_data(session: AsyncSession, user: User) -> None:
             delete(PaymentHistory).where(PaymentHistory.subscription_id.in_(subscription_ids)),
         )
 
+    category_total = await session.scalar(
+        select(func.count()).select_from(Category).where(Category.user_id == user.id)
+    )
     await session.execute(delete(DashboardLayout).where(DashboardLayout.user_id == user.id))
     await session.execute(delete(RawTransaction).where(RawTransaction.user_id == user.id))
     await session.execute(delete(DataSource).where(DataSource.user_id == user.id))
     await session.execute(delete(Subscription).where(Subscription.user_id == user.id))
     await session.execute(delete(PaymentMethod).where(PaymentMethod.user_id == user.id))
+    await session.execute(delete(Category).where(Category.user_id == user.id))
     await session.commit()
 
     logger.info(
         "auth.workspace_data_deleted",
         user_id=user.id,
+        categories_removed=int(category_total or 0),
         dashboard_layouts_removed=True,
         payment_methods_removed=True,
         subscriptions_removed=len(subscription_ids),

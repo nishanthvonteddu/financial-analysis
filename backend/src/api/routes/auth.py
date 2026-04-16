@@ -31,6 +31,8 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
     response_model=TokenResponse,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(rate_limit("auth-register"))],
+    summary="Register a new user",
+    description="Create an account and return fresh access and refresh tokens for immediate use.",
 )
 async def register(
     payload: RegisterRequest,
@@ -44,6 +46,8 @@ async def register(
     response_model=TokenResponse,
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(rate_limit("auth-login"))],
+    summary="Log in with email and password",
+    description="Authenticate an existing user and return new bearer tokens.",
 )
 async def login(
     payload: LoginRequest,
@@ -57,6 +61,8 @@ async def login(
     response_model=TokenResponse,
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(rate_limit("auth-refresh"))],
+    summary="Refresh an authenticated session",
+    description="Exchange a valid refresh token for a new access and refresh token pair.",
 )
 async def refresh(
     payload: RefreshRequest,
@@ -65,12 +71,21 @@ async def refresh(
     return await refresh_user_tokens(session, payload.refresh_token)
 
 
-@router.get("/me", response_model=UserResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get the current user profile",
+)
 async def me(current_user: CurrentUser) -> UserResponse:
     return UserResponse.model_validate(current_user)
 
 
-@router.delete("/me/data", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/me/data",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete all workspace-owned user data",
+)
 async def delete_my_workspace_data(
     session: DbSession,
     current_user: CurrentUser,

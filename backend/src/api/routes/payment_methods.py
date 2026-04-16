@@ -25,7 +25,12 @@ DbSession = Annotated[AsyncSession, Depends(get_db)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-@router.get("", response_model=PaymentMethodListResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "",
+    response_model=PaymentMethodListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="List payment methods",
+)
 async def get_payment_methods(
     session: DbSession,
     current_user: CurrentUser,
@@ -37,7 +42,12 @@ async def get_payment_methods(
     )
 
 
-@router.post("", response_model=PaymentMethodResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=PaymentMethodResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a payment method",
+)
 async def create_payment_method_route(
     payload: PaymentMethodCreate,
     session: DbSession,
@@ -51,6 +61,7 @@ async def create_payment_method_route(
     "/{payment_method_id}",
     response_model=PaymentMethodResponse,
     status_code=status.HTTP_200_OK,
+    summary="Get a payment method",
 )
 async def get_payment_method(
     payment_method_id: int,
@@ -65,6 +76,7 @@ async def get_payment_method(
     "/{payment_method_id}",
     response_model=PaymentMethodResponse,
     status_code=status.HTTP_200_OK,
+    summary="Update a payment method",
 )
 async def update_payment_method_route(
     payment_method_id: int,
@@ -81,7 +93,11 @@ async def update_payment_method_route(
     return PaymentMethodResponse.model_validate(payment_method)
 
 
-@router.delete("/{payment_method_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{payment_method_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a payment method",
+)
 async def delete_payment_method_route(
     payment_method_id: int,
     session: DbSession,

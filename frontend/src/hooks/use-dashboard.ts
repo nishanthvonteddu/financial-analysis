@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
 import { apiClient } from "@/lib/api-client";
@@ -73,6 +74,7 @@ export function useUpdateDashboardLayout() {
       if (context?.previousLayout !== undefined) {
         queryClient.setQueryData(dashboardKeys.layout, context.previousLayout);
       }
+      toast.error("Could not save the dashboard layout.");
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: dashboardKeys.layout });

@@ -27,6 +27,7 @@
     "react-grid-layout": "^2.2.3",
     "react-hook-form": "^7.57.0",
     "recharts": "^3.8.1",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.0.5"
   },

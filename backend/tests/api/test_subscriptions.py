@@ -202,6 +202,23 @@ def test_subscriptions_enforce_validation_and_ownership(client) -> None:
     assert cross_user_payment_method_response.status_code == 404
     assert cross_user_payment_method_response.json()["detail"] == "Payment method not found."
 
+    other_category_id = _create_category(client, other_headers, "Other Category")
+    cross_user_category_response = client.post(
+        "/api/v1/subscriptions",
+        headers=owner_headers,
+        json={
+            "name": "Cross Account Category",
+            "vendor": "Cross Account Category",
+            "amount": "12.00",
+            "currency": "USD",
+            "cadence": "monthly",
+            "start_date": "2026-04-01",
+            "category_id": other_category_id,
+        },
+    )
+    assert cross_user_category_response.status_code == 404
+    assert cross_user_category_response.json()["detail"] == "Category not found."
+
     owner_subscription_response = client.post(
         "/api/v1/subscriptions",
         headers=owner_headers,

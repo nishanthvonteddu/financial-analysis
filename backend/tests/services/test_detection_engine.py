@@ -183,6 +183,7 @@ def test_sync_user_subscriptions_creates_detected_subscriptions_and_payment_hist
         assert {subscription.vendor for subscription in subscriptions} == {"Local Gym", "Netflix"}
         assert len(payment_history) == 6
         assert len(categories) == 1
+        assert categories[0].user_id == 1
         assert categories[0].slug == "entertainment"
 
         netflix = next(

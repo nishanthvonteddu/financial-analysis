@@ -181,14 +181,23 @@ def _display_category_name(name: str) -> str:
     return " ".join(part.capitalize() for part in normalized.split()) or "General"
 
 
-async def _get_or_create_category(session: AsyncSession, category_name: str) -> Category:
+async def _get_or_create_category(
+    session: AsyncSession,
+    *,
+    user_id: int,
+    category_name: str,
+) -> Category:
     slug = _slugify_category(category_name)
-    statement = select(Category).where(func.lower(Category.slug) == slug)
+    statement = select(Category).where(
+        Category.user_id == user_id,
+        func.lower(Category.slug) == slug,
+    )
     category = await session.scalar(statement)
     if category is not None:
         return category
 
     category = Category(
+        user_id=user_id,
         name=_display_category_name(category_name),
         slug=slug,
         description="Auto-created from detected subscription imports.",
@@ -275,7 +284,9 @@ async def sync_detected_subscriptions(
         existing_history = list(
             (
                 await session.scalars(
-                    select(PaymentHistory).where(PaymentHistory.raw_transaction_id.in_(raw_transaction_ids))
+                    select(PaymentHistory).where(
+                        PaymentHistory.raw_transaction_id.in_(raw_transaction_ids)
+                    )
                 )
             ).all()
         )
@@ -289,7 +300,9 @@ async def sync_detected_subscriptions(
     updated_count = 0
     for detection in detections:
         category = (
-            await _get_or_create_category(session, detection.category)
+            await _get_or_create_category(
+                session, user_id=user_id, category_name=detection.category
+            )
             if detection.category is not None
             else None
         )

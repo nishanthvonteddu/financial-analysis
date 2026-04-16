@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,6 +29,16 @@ class Settings(BaseSettings):
     aws_bucket_name: str | None = None
     upload_job_backend: str = "inline"
     redis_url: str = "redis://localhost:6379/0"
+
+    @model_validator(mode="after")
+    def validate_security_defaults(self) -> "Settings":
+        environment = self.environment.lower()
+        if (
+            environment not in {"development", "test"}
+            and self.jwt_secret_key == "dev-secret-change-me"
+        ):
+            raise ValueError("JWT_SECRET_KEY must be overridden outside development and test.")
+        return self
 
     model_config = SettingsConfigDict(
         env_file=".env.development",

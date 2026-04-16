@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { AuthShell } from "@/components/auth/auth-shell";
@@ -19,6 +20,18 @@ const registerSchema = z.object({
 });
 
 type RegisterValues = z.infer<typeof registerSchema>;
+
+function getRegisterErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message === "A user with that email already exists.") {
+    return "That account already exists or could not be created right now.";
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "That account already exists or could not be created right now.";
+}
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -47,10 +60,13 @@ export default function RegisterPage() {
   const onSubmit = handleSubmit(async (values) => {
     try {
       await registerAccount(values);
+      toast.success("Account created.");
       router.replace("/dashboard");
-    } catch {
+    } catch (error) {
+      const message = getRegisterErrorMessage(error);
+      toast.error(message);
       setError("root", {
-        message: "That account already exists or could not be created right now.",
+        message,
       });
     }
   });

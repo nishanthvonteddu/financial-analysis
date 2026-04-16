@@ -129,4 +129,19 @@ describe("apiClient", () => {
       }),
     );
   });
+
+  it("surfaces API error details instead of a generic status", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ detail: "Category not found." }), {
+        status: 404,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    );
+
+    await expect(apiClient.deleteCategory("access-token", 99)).rejects.toThrow(
+      "Category not found.",
+    );
+  });
 });

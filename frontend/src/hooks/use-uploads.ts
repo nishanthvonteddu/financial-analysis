@@ -1,10 +1,11 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
 import { apiClient } from "@/lib/api-client";
-import type { Upload } from "@/types";
+import type { Upload, UploadListResponse } from "@/types";
 
 const uploadKeys = {
   history: ["uploads", "history"] as const,
@@ -67,9 +68,21 @@ export function useCreateUpload() {
     mutationFn: ({ file, onProgress }: { file: File; onProgress?: (progress: number) => void }) =>
       apiClient.uploadFile(token, file, onProgress),
     onSuccess: (upload) => {
+      toast.success(`Upload queued: ${upload.file_name}`);
+      queryClient.setQueryData<UploadListResponse>(uploadKeys.history, (previous) => {
+        const nextItems = [upload, ...(previous?.items ?? []).filter((item) => item.id !== upload.id)];
+
+        return {
+          items: nextItems,
+          total: nextItems.length,
+        };
+      });
       queryClient.setQueryData(uploadKeys.status(upload.id), upload);
       void queryClient.invalidateQueries({ queryKey: uploadKeys.status(upload.id) });
       void queryClient.invalidateQueries({ queryKey: uploadKeys.history });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not upload the file.");
     },
   });
 }
@@ -81,8 +94,12 @@ export function useDeleteUpload() {
   return useMutation({
     mutationFn: (uploadId: number) => apiClient.deleteUpload(token, uploadId),
     onSuccess: (_, uploadId) => {
+      toast.success("Upload removed.");
       void queryClient.invalidateQueries({ queryKey: uploadKeys.history });
       queryClient.removeQueries({ queryKey: uploadKeys.status(uploadId) });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not delete the upload.");
     },
   });
 }
