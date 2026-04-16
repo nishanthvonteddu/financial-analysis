@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
 import { apiClient } from "@/lib/api-client";
@@ -86,7 +87,11 @@ export function useCreateSubscription() {
   return useMutation({
     mutationFn: (payload: SubscriptionUpsertInput) => apiClient.createSubscription(token, payload),
     onSuccess: () => {
+      toast.success("Subscription saved.");
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not save the subscription.");
     },
   });
 }
@@ -99,8 +104,12 @@ export function useUpdateSubscription(subscriptionId: number) {
     mutationFn: (payload: Partial<SubscriptionUpsertInput>) =>
       apiClient.updateSubscription(token, subscriptionId, payload),
     onSuccess: () => {
+      toast.success("Subscription updated.");
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.detail(subscriptionId) });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not update the subscription.");
     },
   });
 }
@@ -112,8 +121,12 @@ export function useDeleteSubscription(subscriptionId: number) {
   return useMutation({
     mutationFn: () => apiClient.deleteSubscription(token, subscriptionId),
     onSuccess: () => {
+      toast.success("Subscription removed.");
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
       queryClient.removeQueries({ queryKey: subscriptionKeys.detail(subscriptionId) });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not delete the subscription.");
     },
   });
 }
@@ -125,8 +138,12 @@ export function useCreateCategory() {
   return useMutation({
     mutationFn: (payload: CategoryInput) => apiClient.createCategory(token, payload),
     onSuccess: () => {
+      toast.success("Category saved.");
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.categories });
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not save the category.");
     },
   });
 }
@@ -144,8 +161,12 @@ export function useUpdateCategory() {
       payload: CategoryInput;
     }) => apiClient.updateCategory(token, categoryId, payload),
     onSuccess: () => {
+      toast.success("Category updated.");
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.categories });
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not update the category.");
     },
   });
 }
@@ -157,8 +178,12 @@ export function useDeleteCategory() {
   return useMutation({
     mutationFn: (categoryId: number) => apiClient.deleteCategory(token, categoryId),
     onSuccess: () => {
+      toast.success("Category deleted.");
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.categories });
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not delete the category.");
     },
   });
 }
@@ -170,8 +195,12 @@ export function useCreatePaymentMethod() {
   return useMutation({
     mutationFn: (payload: PaymentMethodInput) => apiClient.createPaymentMethod(token, payload),
     onSuccess: () => {
+      toast.success("Payment method saved.");
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.paymentMethods });
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not save the payment method.");
     },
   });
 }
@@ -189,8 +218,12 @@ export function useUpdatePaymentMethod() {
       payload: PaymentMethodInput;
     }) => apiClient.updatePaymentMethod(token, paymentMethodId, payload),
     onSuccess: () => {
+      toast.success("Payment method updated.");
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.paymentMethods });
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not update the payment method.");
     },
   });
 }
@@ -202,8 +235,12 @@ export function useDeletePaymentMethod() {
   return useMutation({
     mutationFn: (paymentMethodId: number) => apiClient.deletePaymentMethod(token, paymentMethodId),
     onSuccess: () => {
+      toast.success("Payment method deleted.");
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.paymentMethods });
       void queryClient.invalidateQueries({ queryKey: subscriptionKeys.lists() });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not delete the payment method.");
     },
   });
 }
@@ -215,7 +252,11 @@ export function useDeleteWorkspaceData() {
   return useMutation({
     mutationFn: () => apiClient.deleteWorkspaceData(token),
     onSuccess: () => {
+      toast.success("Workspace data cleared.");
       void queryClient.invalidateQueries();
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Could not clear workspace data.");
     },
   });
 }
