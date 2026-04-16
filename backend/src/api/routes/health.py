@@ -6,7 +6,7 @@ router = APIRouter(prefix="/health")
 logger = get_logger(__name__)
 
 
-@router.get("", status_code=status.HTTP_200_OK)
+@router.get("", status_code=status.HTTP_200_OK, summary="Check API health")
 async def health_check() -> dict[str, str]:
     logger.info("health.check", service="api", status="ok")
     return {
