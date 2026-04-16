@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import { Suspense, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { AuthShell } from "@/components/auth/auth-shell";
@@ -46,10 +47,14 @@ function LoginPageContent() {
   const onSubmit = handleSubmit(async (values) => {
     try {
       await login(values);
+      toast.success("Signed in.");
       router.replace(searchParams.get("next") ?? "/dashboard");
-    } catch {
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "The email or password did not match an active account.";
+      toast.error(message);
       setError("root", {
-        message: "The email or password did not match an active account.",
+        message,
       });
     }
   });
