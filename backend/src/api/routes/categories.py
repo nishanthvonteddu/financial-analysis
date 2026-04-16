@@ -25,54 +25,78 @@ DbSession = Annotated[AsyncSession, Depends(get_db)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-@router.get("", response_model=CategoryListResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "",
+    response_model=CategoryListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="List categories",
+)
 async def get_categories(
     session: DbSession,
-    _current_user: CurrentUser,
+    current_user: CurrentUser,
 ) -> CategoryListResponse:
-    items, total = await list_categories(session)
+    items, total = await list_categories(session, current_user)
     return CategoryListResponse(
         items=[CategoryResponse.model_validate(item) for item in items],
         total=total,
     )
 
 
-@router.post("", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=CategoryResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a category",
+)
 async def create_category_route(
     payload: CategoryCreate,
     session: DbSession,
-    _current_user: CurrentUser,
+    current_user: CurrentUser,
 ) -> CategoryResponse:
-    category = await create_category(session, payload)
+    category = await create_category(session, current_user, payload)
     return CategoryResponse.model_validate(category)
 
 
-@router.get("/{category_id}", response_model=CategoryResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "/{category_id}",
+    response_model=CategoryResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get a category",
+)
 async def get_category(
     category_id: int,
     session: DbSession,
-    _current_user: CurrentUser,
+    current_user: CurrentUser,
 ) -> CategoryResponse:
-    category = await get_category_or_404(session, category_id)
+    category = await get_category_or_404(session, category_id, current_user)
     return CategoryResponse.model_validate(category)
 
 
-@router.patch("/{category_id}", response_model=CategoryResponse, status_code=status.HTTP_200_OK)
+@router.patch(
+    "/{category_id}",
+    response_model=CategoryResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update a category",
+)
 async def update_category_route(
     category_id: int,
     payload: CategoryUpdate,
     session: DbSession,
-    _current_user: CurrentUser,
+    current_user: CurrentUser,
 ) -> CategoryResponse:
-    category = await update_category(session, category_id, payload)
+    category = await update_category(session, category_id, current_user, payload)
     return CategoryResponse.model_validate(category)
 
 
-@router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{category_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a category",
+)
 async def delete_category_route(
     category_id: int,
     session: DbSession,
-    _current_user: CurrentUser,
+    current_user: CurrentUser,
 ) -> Response:
-    await delete_category(session, category_id)
+    await delete_category(session, category_id, current_user)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
