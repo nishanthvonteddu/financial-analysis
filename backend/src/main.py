@@ -29,7 +29,50 @@ def create_app() -> FastAPI:
     if settings.sentry_dsn:
         sentry_sdk.init(dsn=settings.sentry_dsn, environment=settings.environment)
 
-    app = FastAPI(title=settings.app_name, lifespan=lifespan)
+    app = FastAPI(
+        title=settings.app_name,
+        description=(
+            "API for subscription tracking, statement uploads, dashboard summaries, "
+            "workspace settings, and authenticated operator workflows."
+        ),
+        lifespan=lifespan,
+        openapi_tags=[
+            {"name": "health", "description": "Service readiness and uptime checks."},
+            {
+                "name": "auth",
+                "description": "Registration, login, token refresh, and workspace reset endpoints.",
+            },
+            {
+                "name": "categories",
+                "description": (
+                    "User-scoped subscription categories used across forms, "
+                    "filters, and dashboards."
+                ),
+            },
+            {
+                "name": "payment-methods",
+                "description": (
+                    "User-scoped payment rails used by subscriptions "
+                    "and payment history."
+                ),
+            },
+            {
+                "name": "subscriptions",
+                "description": "CRUD and filtering for recurring subscription records.",
+            },
+            {
+                "name": "dashboard",
+                "description": "Dashboard summary metrics and persistent widget layout state.",
+            },
+            {
+                "name": "uploads",
+                "description": (
+                    "Statement file ingestion, upload history, "
+                    "and processing status checks."
+                ),
+            },
+        ],
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.backend_cors_origins,
