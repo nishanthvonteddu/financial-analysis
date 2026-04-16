@@ -29,13 +29,7 @@ class _FakePdf:
 def test_pdf_extractor_returns_text_and_transactions(monkeypatch) -> None:
     def _open(_: object) -> _FakePdf:
         return _FakePdf(
-            [
-                _FakePage(
-                    "CHASE STATEMENT 2026\n"
-                    "04/01 NETFLIX 15.49\n"
-                    "04/02 SPOTIFY 10.99\n"
-                )
-            ]
+            [_FakePage("CHASE STATEMENT 2026\n04/01 NETFLIX 15.49\n04/02 SPOTIFY 10.99\n")]
         )
 
     monkeypatch.setattr("src.services.parsing.pdf_extractor.pdfplumber.open", _open)
