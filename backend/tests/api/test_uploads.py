@@ -50,7 +50,11 @@ def test_upload_endpoints_process_csv_history_status_and_delete(client) -> None:
 
 def test_upload_processing_triggers_subscription_detection(client) -> None:
     headers = _auth_headers(client, "detection@example.com")
-    charge_dates = [date.today() - timedelta(days=60), date.today() - timedelta(days=30), date.today()]
+    charge_dates = [
+        date.today() - timedelta(days=60),
+        date.today() - timedelta(days=30),
+        date.today(),
+    ]
     csv_content = (
         "Posting Date,Details,Amount\n"
         f"{charge_dates[0].strftime('%m/%d/%Y')},NETFLIX,-15.49\n"
