@@ -28,7 +28,16 @@ MinAmountQuery = Annotated[Decimal | None, Query()]
 MaxAmountQuery = Annotated[Decimal | None, Query()]
 
 
-@router.get("", response_model=SubscriptionListResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "",
+    response_model=SubscriptionListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="List subscriptions",
+    description=(
+        "Return a paginated, filterable list of subscriptions "
+        "owned by the authenticated user."
+    ),
+)
 async def get_subscriptions(
     session: DbSession,
     current_user: CurrentUser,
@@ -69,7 +78,12 @@ async def get_subscriptions(
     )
 
 
-@router.post("", response_model=SubscriptionResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=SubscriptionResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a subscription",
+)
 async def create_subscription_route(
     payload: SubscriptionCreate,
     session: DbSession,
@@ -83,6 +97,7 @@ async def create_subscription_route(
     "/{subscription_id}",
     response_model=SubscriptionResponse,
     status_code=status.HTTP_200_OK,
+    summary="Get a subscription",
 )
 async def get_subscription(
     subscription_id: int,
@@ -101,6 +116,7 @@ async def get_subscription(
     "/{subscription_id}",
     response_model=SubscriptionResponse,
     status_code=status.HTTP_200_OK,
+    summary="Update a subscription",
 )
 async def update_subscription_route(
     subscription_id: int,
@@ -117,7 +133,11 @@ async def update_subscription_route(
     return SubscriptionResponse.model_validate(subscription)
 
 
-@router.delete("/{subscription_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{subscription_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a subscription",
+)
 async def delete_subscription_route(
     subscription_id: int,
     session: DbSession,
