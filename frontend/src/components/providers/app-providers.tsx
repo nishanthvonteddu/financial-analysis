@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
+import { AppToaster } from "@/components/providers/app-toaster";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { OnboardingProvider } from "@/components/providers/onboarding-provider";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -27,7 +28,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <OnboardingProvider>{children}</OnboardingProvider>
+          <OnboardingProvider>
+            {children}
+            <AppToaster />
+          </OnboardingProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
