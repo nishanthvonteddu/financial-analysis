@@ -14,8 +14,9 @@ from src.schemas.subscription import SubscriptionCreate, SubscriptionUpdate
 logger = get_logger(__name__)
 
 
-async def _get_category_or_404(session: AsyncSession, category_id: int) -> Category:
-    category = await session.get(Category, category_id)
+async def _get_category_or_404(session: AsyncSession, category_id: int, user: User) -> Category:
+    statement = select(Category).where(Category.id == category_id, Category.user_id == user.id)
+    category = await session.scalar(statement)
     if category is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found.")
     return category
@@ -125,7 +126,7 @@ async def create_subscription(
     payload: SubscriptionCreate,
 ) -> Subscription:
     if payload.category_id is not None:
-        await _get_category_or_404(session, payload.category_id)
+        await _get_category_or_404(session, payload.category_id, user)
     if payload.payment_method_id is not None:
         await _get_payment_method_or_404(
             session,
@@ -156,7 +157,7 @@ async def update_subscription(
     changes = payload.model_dump(exclude_unset=True)
 
     if "category_id" in changes and changes["category_id"] is not None:
-        await _get_category_or_404(session, changes["category_id"])
+        await _get_category_or_404(session, changes["category_id"], user)
     if "payment_method_id" in changes and changes["payment_method_id"] is not None:
         await _get_payment_method_or_404(
             session,
