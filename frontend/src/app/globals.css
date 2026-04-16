@@ -40,10 +40,27 @@ body {
     hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--font-space-grotesk), sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at top left, rgba(245, 149, 88, 0.15), transparent 24%),
+    linear-gradient(180deg, rgba(12, 18, 27, 0.92), rgba(18, 26, 36, 0.96)),
+    hsl(var(--background));
 }
 
 ::selection {
   background: rgba(220, 93, 48, 0.18);
+}
+
+.dark ::selection {
+  background: rgba(244, 202, 173, 0.18);
+}
+
+a {
+  transition: color 180ms ease, opacity 180ms ease, transform 180ms ease;
 }
 
 @keyframes page-enter {
@@ -65,6 +82,24 @@ body {
 .animate-page-enter-delayed {
   animation: page-enter 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: 0.08s;
+}
+
+@keyframes float-slow {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 9s ease-in-out infinite;
 }
 
 .dashboard-grid-layout {
