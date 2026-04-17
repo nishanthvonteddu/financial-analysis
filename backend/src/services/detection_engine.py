@@ -5,7 +5,6 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
-from statistics import median
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +15,7 @@ from src.models.category import Category
 from src.models.payment_history import PaymentHistory
 from src.models.raw_transaction import RawTransaction
 from src.models.subscription import Subscription
+from src.models.subscription_event import SubscriptionEvent
 from src.services.confidence import calculate_amount_consistency, score_subscription_confidence
 from src.services.frequency import analyze_frequency
 
@@ -63,6 +63,10 @@ def _category_for_group(transactions: list[RawTransaction]) -> str | None:
     if not counts:
         return None
     return counts.most_common(1)[0][0]
+
+
+def _quantize_money(value: Decimal) -> Decimal:
+    return value.quantize(Decimal("0.01"))
 
 
 def _is_known_service_group(transactions: list[RawTransaction]) -> bool:
@@ -142,7 +146,7 @@ def detect_subscriptions(
         )
         display_name = _display_merchant(ordered_transactions)
         absolute_amounts = [abs(transaction.amount) for transaction in ordered_transactions]
-        representative_amount = median(absolute_amounts).quantize(Decimal("0.01"))
+        representative_amount = _quantize_money(absolute_amounts[-1])
         monthly_like = {"monthly", "quarterly", "semiannual", "annual"}
         day_of_month = last_charge_date.day if frequency.cadence in monthly_like else None
 
@@ -238,6 +242,76 @@ def _apply_detection_to_subscription(
             f"Auto-detected from {detection.transaction_count} payments "
             f"with confidence {detection.confidence}/100."
         )
+
+
+async def _sync_price_change_events(
+    session: AsyncSession,
+    *,
+    subscription: Subscription,
+    transactions: list[RawTransaction],
+    currency: str,
+) -> None:
+    ordered_transactions = sorted(
+        transactions,
+        key=lambda transaction: (transaction.posted_at, transaction.id or 0),
+    )
+    if len(ordered_transactions) < 2:
+        return
+
+    existing_events = list(
+        (
+            await session.scalars(
+                select(SubscriptionEvent).where(
+                    SubscriptionEvent.subscription_id == subscription.id,
+                    SubscriptionEvent.event_type == "price_changed",
+                )
+            )
+        ).all()
+    )
+    existing_by_key = {
+        (
+            event.effective_date,
+            str(event.payload.get("previous_amount") or ""),
+            str(event.payload.get("new_amount") or ""),
+        ): event
+        for event in existing_events
+    }
+
+    previous_amount = _quantize_money(abs(ordered_transactions[0].amount))
+    for transaction in ordered_transactions[1:]:
+        current_amount = _quantize_money(abs(transaction.amount))
+        if current_amount == previous_amount:
+            continue
+
+        payload = {
+            "currency": currency,
+            "new_amount": str(current_amount),
+            "previous_amount": str(previous_amount),
+            "raw_transaction_id": transaction.id,
+            "reference": transaction.external_id,
+        }
+        key = (
+            transaction.posted_at,
+            str(payload["previous_amount"]),
+            str(payload["new_amount"]),
+        )
+        note = f"Price changed from {previous_amount} to {current_amount}."
+        event = existing_by_key.get(key)
+        if event is None:
+            session.add(
+                SubscriptionEvent(
+                    subscription_id=subscription.id,
+                    event_type="price_changed",
+                    effective_date=transaction.posted_at,
+                    note=note,
+                    payload=payload,
+                )
+            )
+        else:
+            event.note = note
+            event.payload = payload
+
+        previous_amount = current_amount
 
 
 async def sync_detected_subscriptions(
@@ -372,6 +446,17 @@ async def sync_detected_subscriptions(
                 payment_history.currency = transaction.currency
                 payment_history.payment_status = "settled"
                 payment_history.reference = transaction.external_id
+
+        await _sync_price_change_events(
+            session,
+            subscription=subscription,
+            transactions=[
+                transaction_lookup[raw_transaction_id]
+                for raw_transaction_id in detection.raw_transaction_ids
+                if raw_transaction_id in transaction_lookup
+            ],
+            currency=detection.currency,
+        )
 
         logger.info(
             "subscription_detection.subscription_synced",
