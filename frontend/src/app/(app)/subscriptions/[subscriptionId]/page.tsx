@@ -13,6 +13,7 @@ import {
 import { useState } from "react";
 
 import { SubscriptionForm } from "@/components/subscriptions/subscription-form";
+import { PaymentTimeline } from "@/components/subscriptions/payment-timeline";
 import { StatusBadge } from "@/components/subscriptions/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import {
   useDeleteSubscription,
   useSubscription,
   useSubscriptionCatalog,
+  useSubscriptionPaymentHistory,
   useUpdateSubscription,
 } from "@/hooks/use-subscriptions";
 import { subscriptionStatusOptions } from "@/lib/validators";
@@ -58,6 +60,7 @@ export default function SubscriptionDetailPage() {
   const subscriptionId = Number(params.subscriptionId);
   const { categoriesQuery, paymentMethodsQuery } = useSubscriptionCatalog();
   const subscriptionQuery = useSubscription(subscriptionId);
+  const paymentHistoryQuery = useSubscriptionPaymentHistory(subscriptionId);
   const updateSubscription = useUpdateSubscription(subscriptionId);
   const deleteSubscription = useDeleteSubscription(subscriptionId);
 
@@ -287,6 +290,8 @@ export default function SubscriptionDetailPage() {
           ) : null}
         </div>
       </div>
+
+      <PaymentTimeline history={paymentHistoryQuery.data} isLoading={paymentHistoryQuery.isLoading} />
 
       <ConfirmDialog
         confirmLabel={deleteSubscription.isPending ? "Deleting..." : "Delete subscription"}
