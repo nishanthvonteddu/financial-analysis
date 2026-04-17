@@ -153,6 +153,57 @@ export type DashboardLayout = DashboardLayoutPayload & {
   updated_at: string | null;
 };
 
+export type ExpenseReportCategoryBreakdownItem = {
+  category_name: string;
+  total_amount: string;
+  transaction_count: number;
+};
+
+export type ExpenseReportMerchantBreakdownItem = {
+  merchant: string;
+  total_amount: string;
+  transaction_count: number;
+};
+
+export type ExpenseReportTimelinePoint = {
+  period_start: string;
+  label: string;
+  total_amount: string;
+};
+
+export type ExpenseReportSummary = {
+  upload_name: string | null;
+  provider: string | null;
+  transaction_count: number;
+  recurring_transaction_count: number;
+  merchant_count: number;
+  average_transaction: string;
+  largest_transaction: string;
+  category_breakdown: ExpenseReportCategoryBreakdownItem[];
+  top_merchants: ExpenseReportMerchantBreakdownItem[];
+  spend_timeline: ExpenseReportTimelinePoint[];
+};
+
+export type ExpenseReport = {
+  id: number;
+  user_id: number;
+  data_source_id: number | null;
+  period_start: string;
+  period_end: string;
+  currency: string;
+  total_amount: string;
+  report_status: string;
+  generated_at: string | null;
+  created_at: string;
+  updated_at: string;
+  summary: ExpenseReportSummary;
+};
+
+export type ExpenseReportListResponse = {
+  items: ExpenseReport[];
+  total: number;
+};
+
 export type UploadSourceType = "upload_csv" | "upload_pdf";
 export type UploadStatus = "queued" | "processing" | "completed" | "failed";
 
@@ -207,6 +258,44 @@ export type SubscriptionListResponse = {
   total: number;
   limit: number;
   offset: number;
+};
+
+export type SubscriptionPaymentHistoryItem = {
+  id: number;
+  payment_method_id: number | null;
+  payment_method_label: string | null;
+  paid_at: string;
+  amount: string;
+  currency: string;
+  payment_status: string;
+  reference: string | null;
+};
+
+export type SubscriptionPriceChange = {
+  id: number;
+  effective_date: string;
+  previous_amount: string;
+  new_amount: string;
+  currency: string;
+  note: string | null;
+};
+
+export type SubscriptionPaymentHistorySummary = {
+  payment_count: number;
+  total_paid: string;
+  average_payment: string;
+  latest_payment_amount: string | null;
+  latest_payment_at: string | null;
+  first_payment_at: string | null;
+  price_change_count: number;
+};
+
+export type SubscriptionPaymentHistory = {
+  subscription_id: number;
+  subscription_name: string;
+  summary: SubscriptionPaymentHistorySummary;
+  items: SubscriptionPaymentHistoryItem[];
+  price_changes: SubscriptionPriceChange[];
 };
 
 export type SubscriptionFilters = {
