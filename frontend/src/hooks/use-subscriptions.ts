@@ -18,6 +18,8 @@ const subscriptionKeys = {
   lists: () => ["subscriptions", "list"] as const,
   list: (filters: SubscriptionFilters) => ["subscriptions", "list", filters] as const,
   paymentMethods: ["payment-methods"] as const,
+  paymentHistory: (subscriptionId: number) =>
+    ["subscriptions", "payment-history", subscriptionId] as const,
 };
 
 function useRequiredToken() {
@@ -76,6 +78,18 @@ export function useSubscription(subscriptionId: number) {
     queryFn: () => apiClient.getSubscription(accessToken!, subscriptionId),
     placeholderData: (previousData) => previousData,
     queryKey: subscriptionKeys.detail(subscriptionId),
+    staleTime: 30_000,
+  });
+}
+
+export function useSubscriptionPaymentHistory(subscriptionId: number) {
+  const { accessToken } = useAuth();
+
+  return useQuery({
+    enabled: Boolean(accessToken) && Number.isFinite(subscriptionId),
+    queryFn: () => apiClient.getSubscriptionPaymentHistory(accessToken!, subscriptionId),
+    placeholderData: (previousData) => previousData,
+    queryKey: subscriptionKeys.paymentHistory(subscriptionId),
     staleTime: 30_000,
   });
 }
