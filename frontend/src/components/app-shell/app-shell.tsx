@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import {
+  BarChart3,
   Bell,
   CalendarDays,
   ChevronDown,
@@ -44,6 +45,13 @@ const navItems: NavItem[] = [
     icon: LayoutDashboard,
     label: "Dashboard",
     mobileLabel: "Home",
+  },
+  {
+    caption: "Expense analysis",
+    href: "/reports",
+    icon: BarChart3,
+    label: "Reports",
+    mobileLabel: "Reports",
   },
   {
     caption: "Plans and spend",
@@ -92,6 +100,11 @@ const routeMeta: Record<string, { description: string; searchPlaceholder: string
     description: "Live overview of recurring spend, next charges, and the queues that need attention.",
     searchPlaceholder: "Search subscriptions, merchants, reminders",
     title: "Overview",
+  },
+  "/reports": {
+    description: "Chart-backed expense reports generated from uploaded statements and payment history.",
+    searchPlaceholder: "Search reports, upload names, merchants, categories",
+    title: "Reports",
   },
   "/payments": {
     description: "Billing rails, cards, and fallback payment methods live here.",
