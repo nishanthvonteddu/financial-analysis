@@ -1,4 +1,5 @@
-from decimal import Decimal
+from datetime import UTC, datetime
+from decimal import ROUND_HALF_UP, Decimal
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, or_, select
@@ -6,12 +7,33 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.logging import get_logger
 from src.models.category import Category
+from src.models.payment_history import PaymentHistory
 from src.models.payment_method import PaymentMethod
 from src.models.subscription import Subscription
+from src.models.subscription_event import SubscriptionEvent
 from src.models.user import User
-from src.schemas.subscription import SubscriptionCreate, SubscriptionUpdate
+from src.schemas.subscription import (
+    SubscriptionCreate,
+    SubscriptionPaymentHistoryItem,
+    SubscriptionPaymentHistoryResponse,
+    SubscriptionPaymentHistorySummary,
+    SubscriptionPriceChangeResponse,
+    SubscriptionUpdate,
+)
 
 logger = get_logger(__name__)
+
+
+def _quantize_money(value: Decimal) -> Decimal:
+    return value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
+def _as_utc_datetime(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is not None:
+        return value
+    return value.replace(tzinfo=UTC)
 
 
 async def _get_category_or_404(session: AsyncSession, category_id: int, user: User) -> Category:
@@ -198,3 +220,121 @@ async def delete_subscription(
     await session.delete(subscription)
     await session.commit()
     logger.info("subscriptions.deleted", user_id=user.id, subscription_id=subscription_id)
+
+
+async def get_subscription_payment_history(
+    session: AsyncSession,
+    *,
+    subscription_id: int,
+    user: User,
+) -> SubscriptionPaymentHistoryResponse:
+    subscription = await get_subscription_or_404(
+        session,
+        subscription_id=subscription_id,
+        user=user,
+    )
+    payments = list(
+        (
+            await session.scalars(
+                select(PaymentHistory)
+                .where(PaymentHistory.subscription_id == subscription.id)
+                .order_by(PaymentHistory.paid_at.desc(), PaymentHistory.id.desc())
+            )
+        ).all()
+    )
+    payment_method_ids = sorted(
+        {
+            payment.payment_method_id
+            for payment in payments
+            if payment.payment_method_id is not None
+        }
+    )
+    payment_method_map: dict[int, str] = {}
+    if payment_method_ids:
+        payment_method_map = {
+            payment_method.id: payment_method.label
+            for payment_method in (
+                await session.scalars(
+                    select(PaymentMethod).where(PaymentMethod.id.in_(payment_method_ids))
+                )
+            ).all()
+        }
+
+    price_change_events = list(
+        (
+            await session.scalars(
+                select(SubscriptionEvent)
+                .where(
+                    SubscriptionEvent.subscription_id == subscription.id,
+                    SubscriptionEvent.event_type == "price_changed",
+                )
+                .order_by(
+                    SubscriptionEvent.effective_date.desc(),
+                    SubscriptionEvent.id.desc(),
+                )
+            )
+        ).all()
+    )
+
+    total_paid = _quantize_money(
+        sum((Decimal(payment.amount) for payment in payments), Decimal("0.00"))
+    )
+    average_payment = (
+        _quantize_money(total_paid / Decimal(len(payments)))
+        if payments
+        else Decimal("0.00")
+    )
+    latest_payment = payments[0] if payments else None
+    first_payment = payments[-1] if payments else None
+
+    return SubscriptionPaymentHistoryResponse(
+        subscription_id=subscription.id,
+        subscription_name=subscription.name,
+        summary=SubscriptionPaymentHistorySummary(
+            payment_count=len(payments),
+            total_paid=total_paid,
+            average_payment=average_payment,
+            latest_payment_amount=(
+                _quantize_money(Decimal(latest_payment.amount))
+                if latest_payment is not None
+                else None
+            ),
+            latest_payment_at=(
+                _as_utc_datetime(latest_payment.paid_at) if latest_payment is not None else None
+            ),
+            first_payment_at=(
+                _as_utc_datetime(first_payment.paid_at) if first_payment is not None else None
+            ),
+            price_change_count=len(price_change_events),
+        ),
+        items=[
+            SubscriptionPaymentHistoryItem(
+                id=payment.id,
+                payment_method_id=payment.payment_method_id,
+                payment_method_label=(
+                    payment_method_map.get(payment.payment_method_id)
+                    if payment.payment_method_id is not None
+                    else None
+                ),
+                paid_at=_as_utc_datetime(payment.paid_at) or payment.paid_at,
+                amount=_quantize_money(Decimal(payment.amount)),
+                currency=payment.currency,
+                payment_status=payment.payment_status,
+                reference=payment.reference,
+            )
+            for payment in payments
+        ],
+        price_changes=[
+            SubscriptionPriceChangeResponse(
+                id=event.id,
+                effective_date=event.effective_date,
+                previous_amount=_quantize_money(
+                    Decimal(str(event.payload.get("previous_amount", "0.00")))
+                ),
+                new_amount=_quantize_money(Decimal(str(event.payload.get("new_amount", "0.00")))),
+                currency=str(event.payload.get("currency") or subscription.currency),
+                note=event.note,
+            )
+            for event in price_change_events
+        ],
+    )
