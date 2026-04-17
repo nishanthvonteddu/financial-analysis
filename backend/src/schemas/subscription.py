@@ -235,3 +235,41 @@ class SubscriptionListResponse(BaseModel):
     total: int
     limit: int
     offset: int
+
+
+class SubscriptionPaymentHistoryItem(BaseModel):
+    id: int
+    payment_method_id: int | None
+    payment_method_label: str | None
+    paid_at: datetime
+    amount: Decimal
+    currency: str
+    payment_status: str
+    reference: str | None
+
+
+class SubscriptionPriceChangeResponse(BaseModel):
+    id: int
+    effective_date: date
+    previous_amount: Decimal
+    new_amount: Decimal
+    currency: str
+    note: str | None
+
+
+class SubscriptionPaymentHistorySummary(BaseModel):
+    payment_count: int
+    total_paid: Decimal
+    average_payment: Decimal
+    latest_payment_amount: Decimal | None = None
+    latest_payment_at: datetime | None = None
+    first_payment_at: datetime | None = None
+    price_change_count: int
+
+
+class SubscriptionPaymentHistoryResponse(BaseModel):
+    subscription_id: int
+    subscription_name: str
+    summary: SubscriptionPaymentHistorySummary
+    items: list[SubscriptionPaymentHistoryItem]
+    price_changes: list[SubscriptionPriceChangeResponse]
