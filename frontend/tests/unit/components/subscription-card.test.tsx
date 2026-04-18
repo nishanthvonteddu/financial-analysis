@@ -19,6 +19,15 @@ const subscription: Subscription = {
   next_charge_date: "2026-05-01",
   notes: "Shared with household",
   payment_method_id: 9,
+  renewal: {
+    days_overdue: null,
+    days_until_charge: 10,
+    last_renewed_at: "2026-04-01T00:00:00Z",
+    next_charge_date: "2026-05-01",
+    state: "scheduled",
+    trial_days_remaining: null,
+    trial_ends_at: null,
+  },
   start_date: "2026-04-01",
   status: "active",
   updated_at: "2026-04-06T00:00:00Z",
@@ -40,6 +49,7 @@ describe("SubscriptionCard", () => {
 
     expect(screen.getByText("Netflix Family")).toBeVisible();
     expect(screen.getByText("Streaming")).toBeVisible();
+    expect(screen.getByText("Last renewed Apr 1, 2026")).toBeVisible();
     expect(screen.getByText("Paid with Visa ending in 4242")).toBeVisible();
     expect(screen.getByRole("link", { name: /open detail/i })).toHaveAttribute(
       "href",
@@ -52,5 +62,23 @@ describe("SubscriptionCard", () => {
 
     expect(screen.getByText("Renews May 1, 2026")).toBeVisible();
     expect(screen.getByText("$15.49")).toBeVisible();
+  });
+
+  it("surfaces renewal alerts for overdue plans", () => {
+    render(
+      <SubscriptionCard
+        subscription={{
+          ...subscription,
+          renewal: {
+            ...subscription.renewal,
+            days_overdue: 3,
+            days_until_charge: null,
+            state: "overdue",
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText("Overdue by 3 days")).toBeVisible();
   });
 });
