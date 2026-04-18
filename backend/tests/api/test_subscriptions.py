@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 
 def _auth_headers(client, email: str) -> dict[str, str]:
@@ -276,3 +276,65 @@ def test_subscriptions_enforce_validation_and_ownership(client) -> None:
         invalid_range_response.json()["detail"]
         == "min_amount must be less than or equal to max_amount."
     )
+
+
+def test_subscriptions_include_renewal_state_metadata(client) -> None:
+    owner_headers = _auth_headers(client, "renewals@example.com")
+    today = date.today()
+
+    trial_response = client.post(
+        "/api/v1/subscriptions",
+        headers=owner_headers,
+        json={
+            "name": "Music Trial",
+            "vendor": "Music Trial",
+            "amount": "9.99",
+            "currency": "USD",
+            "cadence": "monthly",
+            "status": "active",
+            "start_date": str(today - timedelta(days=9)),
+            "next_charge_date": str(today + timedelta(days=5)),
+            "auto_renew": True,
+        },
+    )
+    assert trial_response.status_code == 201
+
+    overdue_response = client.post(
+        "/api/v1/subscriptions",
+        headers=owner_headers,
+        json={
+            "name": "Overdue Plan",
+            "vendor": "Overdue Plan",
+            "amount": "19.99",
+            "currency": "USD",
+            "cadence": "monthly",
+            "status": "active",
+            "start_date": str(today - timedelta(days=60)),
+            "next_charge_date": str(today - timedelta(days=3)),
+            "auto_renew": True,
+        },
+    )
+    assert overdue_response.status_code == 201
+
+    trial_payload = client.get(
+        f"/api/v1/subscriptions/{trial_response.json()['id']}",
+        headers=owner_headers,
+    ).json()
+    overdue_payload = client.get(
+        f"/api/v1/subscriptions/{overdue_response.json()['id']}",
+        headers=owner_headers,
+    ).json()
+    listed = client.get("/api/v1/subscriptions", headers=owner_headers).json()["items"]
+
+    assert trial_payload["renewal"]["state"] == "trialing"
+    assert trial_payload["renewal"]["last_renewed_at"] is None
+    assert trial_payload["renewal"]["trial_ends_at"] == str(today + timedelta(days=5))
+    assert trial_payload["renewal"]["trial_days_remaining"] == 5
+
+    assert overdue_payload["renewal"]["state"] == "overdue"
+    assert overdue_payload["renewal"]["days_overdue"] == 3
+    assert overdue_payload["renewal"]["trial_days_remaining"] is None
+
+    renewal_by_name = {item["name"]: item["renewal"] for item in listed}
+    assert renewal_by_name["Music Trial"]["state"] == "trialing"
+    assert renewal_by_name["Overdue Plan"]["state"] == "overdue"

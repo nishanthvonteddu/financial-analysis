@@ -20,6 +20,8 @@ from src.services.subscription import (
     get_subscription_or_404,
     get_subscription_payment_history,
     list_subscriptions,
+    serialize_subscription,
+    serialize_subscriptions,
     update_subscription,
 )
 
@@ -73,7 +75,7 @@ async def get_subscriptions(
         limit=limit,
     )
     return SubscriptionListResponse(
-        items=[SubscriptionResponse.model_validate(item) for item in items],
+        items=await serialize_subscriptions(session, items),
         total=total,
         limit=limit,
         offset=offset,
@@ -92,7 +94,7 @@ async def create_subscription_route(
     current_user: CurrentUser,
 ) -> SubscriptionResponse:
     subscription = await create_subscription(session, user=current_user, payload=payload)
-    return SubscriptionResponse.model_validate(subscription)
+    return await serialize_subscription(session, subscription)
 
 
 @router.get(
@@ -129,7 +131,7 @@ async def get_subscription(
         subscription_id=subscription_id,
         user=current_user,
     )
-    return SubscriptionResponse.model_validate(subscription)
+    return await serialize_subscription(session, subscription)
 
 
 @router.patch(
@@ -150,7 +152,7 @@ async def update_subscription_route(
         user=current_user,
         payload=payload,
     )
-    return SubscriptionResponse.model_validate(subscription)
+    return await serialize_subscription(session, subscription)
 
 
 @router.delete(

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Globe2 } from "lucide-react";
 
+import { RenewalBadge } from "@/components/subscriptions/renewal-badge";
 import { StatusBadge } from "@/components/subscriptions/status-badge";
 import { Button } from "@/components/ui/button";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
@@ -20,11 +21,9 @@ function formatDate(value: string | null) {
     return "No date set";
   }
 
-  const parts = value.split("-").map((part) => Number(part));
-  const date =
-    parts.length === 3 && parts.every((part) => Number.isFinite(part))
-      ? new Date(parts[0], parts[1] - 1, parts[2])
-      : new Date(value);
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T12:00:00Z`)
+    : new Date(value);
   if (Number.isNaN(date.getTime())) {
     return value;
   }
@@ -32,6 +31,7 @@ function formatDate(value: string | null) {
   return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
+    timeZone: "UTC",
     year: "numeric",
   }).format(date);
 }
@@ -95,7 +95,11 @@ export function SubscriptionCard({
 
         <div className="flex flex-wrap items-center gap-3 text-sm text-black/58">
           <StatusBadge status={subscription.status} />
+          <RenewalBadge renewal={subscription.renewal} />
           <span>Renews {formatDate(subscription.next_charge_date ?? subscription.start_date)}</span>
+          {subscription.renewal.last_renewed_at ? (
+            <span>Last renewed {formatDate(subscription.renewal.last_renewed_at)}</span>
+          ) : null}
           {paymentMethodLabel ? <span>Paid with {paymentMethodLabel}</span> : null}
           {hostLabel ? (
             <span className="inline-flex items-center gap-1.5">

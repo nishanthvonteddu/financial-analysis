@@ -229,6 +229,17 @@ export type UploadListResponse = {
 
 export type SubscriptionStatus = "active" | "paused" | "cancelled";
 export type SubscriptionCadence = "weekly" | "monthly" | "quarterly" | "yearly";
+export type SubscriptionRenewalState = "inactive" | "overdue" | "scheduled" | "trialing";
+
+export type SubscriptionRenewal = {
+  state: SubscriptionRenewalState;
+  last_renewed_at: string | null;
+  next_charge_date: string | null;
+  days_until_charge: number | null;
+  days_overdue: number | null;
+  trial_ends_at: string | null;
+  trial_days_remaining: number | null;
+};
 
 export type Subscription = {
   id: number;
@@ -249,6 +260,7 @@ export type Subscription = {
   day_of_month: number | null;
   auto_renew: boolean;
   notes: string | null;
+  renewal: SubscriptionRenewal;
   created_at: string;
   updated_at: string;
 };

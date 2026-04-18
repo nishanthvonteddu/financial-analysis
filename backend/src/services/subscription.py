@@ -1,5 +1,6 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from decimal import ROUND_HALF_UP, Decimal
+from typing import Literal
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, or_, select
@@ -18,6 +19,8 @@ from src.schemas.subscription import (
     SubscriptionPaymentHistoryResponse,
     SubscriptionPaymentHistorySummary,
     SubscriptionPriceChangeResponse,
+    SubscriptionRenewalSnapshot,
+    SubscriptionResponse,
     SubscriptionUpdate,
 )
 
@@ -120,6 +123,108 @@ async def list_subscriptions(
         max_amount=str(max_amount) if max_amount is not None else None,
     )
     return items, int(total or 0)
+
+
+def _build_subscription_renewal_snapshot(
+    subscription: Subscription,
+    *,
+    last_renewed_at: datetime | None,
+    as_of: date,
+) -> SubscriptionRenewalSnapshot:
+    last_renewed_date = last_renewed_at.date() if last_renewed_at is not None else None
+    next_charge_date = subscription.next_charge_date
+
+    is_trialing = (
+        subscription.status != "cancelled"
+        and subscription.auto_renew
+        and next_charge_date is not None
+        and subscription.start_date <= as_of
+        and next_charge_date >= as_of
+        and last_renewed_date is None
+    )
+    is_overdue = (
+        subscription.status != "cancelled"
+        and subscription.auto_renew
+        and next_charge_date is not None
+        and next_charge_date < as_of
+        and (last_renewed_date is None or last_renewed_date < next_charge_date)
+    )
+
+    state: Literal["inactive", "overdue", "scheduled", "trialing"] = "inactive"
+    if is_overdue:
+        state = "overdue"
+    elif is_trialing:
+        state = "trialing"
+    elif subscription.status != "cancelled" and next_charge_date is not None:
+        state = "scheduled"
+
+    return SubscriptionRenewalSnapshot(
+        state=state,
+        last_renewed_at=last_renewed_at,
+        next_charge_date=next_charge_date,
+        days_until_charge=(
+            (next_charge_date - as_of).days
+            if next_charge_date is not None and next_charge_date >= as_of
+            else None
+        ),
+        days_overdue=((as_of - next_charge_date).days if is_overdue and next_charge_date else None),
+        trial_ends_at=next_charge_date if is_trialing else None,
+        trial_days_remaining=(
+            (next_charge_date - as_of).days
+            if is_trialing and next_charge_date is not None
+            else None
+        ),
+    )
+
+
+async def serialize_subscriptions(
+    session: AsyncSession,
+    subscriptions: list[Subscription],
+    *,
+    as_of: date | None = None,
+) -> list[SubscriptionResponse]:
+    if not subscriptions:
+        return []
+
+    reference_date = as_of or datetime.now(UTC).date()
+    latest_payment_rows = await session.execute(
+        select(
+            PaymentHistory.subscription_id,
+            func.max(PaymentHistory.paid_at).label("last_renewed_at"),
+        )
+        .where(
+            PaymentHistory.subscription_id.in_(
+                [subscription.id for subscription in subscriptions]
+            )
+        )
+        .group_by(PaymentHistory.subscription_id)
+    )
+    latest_payment_by_subscription = {
+        subscription_id: _as_utc_datetime(last_renewed_at)
+        for subscription_id, last_renewed_at in latest_payment_rows.all()
+        if subscription_id is not None and last_renewed_at is not None
+    }
+
+    responses: list[SubscriptionResponse] = []
+    for subscription in subscriptions:
+        response = SubscriptionResponse.model_validate(subscription)
+        response.renewal = _build_subscription_renewal_snapshot(
+            subscription,
+            last_renewed_at=latest_payment_by_subscription.get(subscription.id),
+            as_of=reference_date,
+        )
+        responses.append(response)
+    return responses
+
+
+async def serialize_subscription(
+    session: AsyncSession,
+    subscription: Subscription,
+    *,
+    as_of: date | None = None,
+) -> SubscriptionResponse:
+    responses = await serialize_subscriptions(session, [subscription], as_of=as_of)
+    return responses[0]
 
 
 async def get_subscription_or_404(

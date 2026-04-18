@@ -14,6 +14,7 @@ import { useState } from "react";
 
 import { SubscriptionForm } from "@/components/subscriptions/subscription-form";
 import { PaymentTimeline } from "@/components/subscriptions/payment-timeline";
+import { RenewalBadge } from "@/components/subscriptions/renewal-badge";
 import { StatusBadge } from "@/components/subscriptions/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
@@ -35,11 +36,9 @@ function formatDate(value: string | null) {
     return "Not set";
   }
 
-  const parts = value.split("-").map((part) => Number(part));
-  const date =
-    parts.length === 3 && parts.every((part) => Number.isFinite(part))
-      ? new Date(parts[0], parts[1] - 1, parts[2])
-      : new Date(value);
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T12:00:00Z`)
+    : new Date(value);
   if (Number.isNaN(date.getTime())) {
     return value;
   }
@@ -47,6 +46,7 @@ function formatDate(value: string | null) {
   return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "long",
+    timeZone: "UTC",
     year: "numeric",
   }).format(date);
 }
@@ -126,7 +126,7 @@ export default function SubscriptionDetailPage() {
             </Button>
           </div>
         }
-        description="Review billing terms, change lifecycle status, update details, or remove the plan from the Day 5 management surface."
+        description="Review billing terms, monitor renewal health, update details, or remove the plan from the subscriptions workspace."
         eyebrow="Subscription detail"
         title={subscription.name}
       />
@@ -146,6 +146,7 @@ export default function SubscriptionDetailPage() {
 
             <div className="space-y-3">
               <StatusBadge className="w-fit" status={subscription.status} />
+              <RenewalBadge className="w-fit" renewal={subscription.renewal} />
               <CurrencyDisplay
                 className="block text-3xl font-semibold text-ink"
                 currency={subscription.currency}
@@ -168,6 +169,16 @@ export default function SubscriptionDetailPage() {
                   <dd>{formatDate(subscription.next_charge_date)}</dd>
                 </div>
                 <div>
+                  <dt className="font-medium text-ink">Last renewed</dt>
+                  <dd>
+                    {subscription.renewal.last_renewed_at
+                      ? formatDate(subscription.renewal.last_renewed_at)
+                      : subscription.renewal.state === "trialing"
+                        ? "Waiting for the first renewal"
+                        : "Not recorded yet"}
+                  </dd>
+                </div>
+                <div>
                   <dt className="font-medium text-ink">End date</dt>
                   <dd>{formatDate(subscription.end_date)}</dd>
                 </div>
@@ -175,6 +186,23 @@ export default function SubscriptionDetailPage() {
                   <dt className="font-medium text-ink">Auto renew</dt>
                   <dd>{subscription.auto_renew ? "Enabled" : "Disabled"}</dd>
                 </div>
+                {subscription.renewal.state === "overdue" && subscription.renewal.days_overdue !== null ? (
+                  <div>
+                    <dt className="font-medium text-ink">Renewal alert</dt>
+                    <dd>Overdue by {subscription.renewal.days_overdue} days</dd>
+                  </div>
+                ) : null}
+                {subscription.renewal.state === "trialing" &&
+                subscription.renewal.trial_ends_at !== null &&
+                subscription.renewal.trial_days_remaining !== null ? (
+                  <div>
+                    <dt className="font-medium text-ink">Trial window</dt>
+                    <dd>
+                      Ends {formatDate(subscription.renewal.trial_ends_at)} with{" "}
+                      {subscription.renewal.trial_days_remaining} days remaining
+                    </dd>
+                  </div>
+                ) : null}
               </dl>
             </div>
 
