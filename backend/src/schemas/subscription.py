@@ -1,8 +1,9 @@
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Literal
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 def _normalize_money_currency(value: str) -> str:
@@ -205,6 +206,16 @@ class SubscriptionUpdate(BaseModel):
         return value
 
 
+class SubscriptionRenewalSnapshot(BaseModel):
+    state: Literal["inactive", "overdue", "scheduled", "trialing"]
+    last_renewed_at: datetime | None = None
+    next_charge_date: date | None = None
+    days_until_charge: int | None = None
+    days_overdue: int | None = None
+    trial_ends_at: date | None = None
+    trial_days_remaining: int | None = None
+
+
 class SubscriptionResponse(BaseModel):
     id: int
     user_id: int
@@ -226,6 +237,9 @@ class SubscriptionResponse(BaseModel):
     notes: str | None
     created_at: datetime
     updated_at: datetime
+    renewal: SubscriptionRenewalSnapshot = Field(
+        default_factory=lambda: SubscriptionRenewalSnapshot(state="inactive")
+    )
 
     model_config = ConfigDict(from_attributes=True)
 
