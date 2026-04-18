@@ -9,6 +9,7 @@ from src.models.category import Category
 from src.models.payment_history import PaymentHistory
 from src.models.raw_transaction import RawTransaction
 from src.models.subscription import Subscription
+from src.models.subscription_event import SubscriptionEvent
 from src.models.user import User
 from src.services.detection_engine import (
     detect_subscriptions,
@@ -200,5 +201,79 @@ def test_sync_user_subscriptions_creates_detected_subscriptions_and_payment_hist
         assert gym.cadence == "monthly"
         assert gym.status == "active"
         assert gym.category_id is None
+
+    asyncio.run(exercise())
+
+
+def test_sync_user_subscriptions_records_price_change_events(app) -> None:
+    async def exercise() -> None:
+        async with database_module.SessionLocal() as session:
+            user = User(
+                email="price-change@example.com",
+                full_name="Price Change Owner",
+                hashed_password="hashed",
+            )
+            session.add(user)
+            await session.flush()
+
+            session.add_all(
+                [
+                    RawTransaction(
+                        user_id=user.id,
+                        data_source_id=None,
+                        external_id="nf-1",
+                        posted_at=date(2026, 1, 1),
+                        merchant="Netflix",
+                        description="NETFLIX COM LOS GATOS",
+                        amount=Decimal("-15.00"),
+                        currency="USD",
+                        transaction_type="debit",
+                        subscription_candidate=True,
+                        raw_payload={"is_known_service": True, "service_category": "entertainment"},
+                    ),
+                    RawTransaction(
+                        user_id=user.id,
+                        data_source_id=None,
+                        external_id="nf-2",
+                        posted_at=date(2026, 2, 1),
+                        merchant="Netflix",
+                        description="NETFLIX COM LOS GATOS",
+                        amount=Decimal("-15.00"),
+                        currency="USD",
+                        transaction_type="debit",
+                        subscription_candidate=True,
+                        raw_payload={"is_known_service": True, "service_category": "entertainment"},
+                    ),
+                    RawTransaction(
+                        user_id=user.id,
+                        data_source_id=None,
+                        external_id="nf-3",
+                        posted_at=date(2026, 3, 1),
+                        merchant="Netflix",
+                        description="NETFLIX COM LOS GATOS",
+                        amount=Decimal("-18.00"),
+                        currency="USD",
+                        transaction_type="debit",
+                        subscription_candidate=True,
+                        raw_payload={"is_known_service": True, "service_category": "entertainment"},
+                    ),
+                ]
+            )
+            await session.commit()
+
+        await sync_user_subscriptions(user_id=1, as_of=date(2026, 4, 10))
+
+        async with database_module.SessionLocal() as session:
+            subscription = await session.scalar(
+                select(Subscription).where(Subscription.user_id == 1)
+            )
+            assert subscription is not None
+            events = list((await session.scalars(select(SubscriptionEvent))).all())
+
+        assert subscription.amount == Decimal("18.00")
+        assert len(events) == 1
+        assert events[0].event_type == "price_changed"
+        assert events[0].payload["previous_amount"] == "15.00"
+        assert events[0].payload["new_amount"] == "18.00"
 
     asyncio.run(exercise())

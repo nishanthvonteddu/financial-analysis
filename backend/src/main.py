@@ -65,6 +65,13 @@ def create_app() -> FastAPI:
                 "description": "Dashboard summary metrics and persistent widget layout state.",
             },
             {
+                "name": "expense-reports",
+                "description": (
+                    "Generated spend reports from uploaded statements, including "
+                    "stored chart-ready expense summaries."
+                ),
+            },
+            {
                 "name": "uploads",
                 "description": (
                     "Statement file ingestion, upload history, "

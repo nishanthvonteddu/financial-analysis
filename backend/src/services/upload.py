@@ -14,6 +14,7 @@ from src.config import get_settings
 from src.core.logging import get_logger
 from src.core.storage import get_storage
 from src.models.data_source import DataSource
+from src.models.expense_report import ExpenseReport
 from src.models.raw_transaction import RawTransaction
 from src.models.user import User
 from src.schemas.upload import UploadListResponse, UploadResponse
@@ -243,6 +244,7 @@ async def delete_upload(
     user: User,
 ) -> None:
     upload = await get_upload_or_404(session, upload_id=upload_id, user=user)
+    await session.execute(delete(ExpenseReport).where(ExpenseReport.data_source_id == upload.id))
     await session.execute(delete(RawTransaction).where(RawTransaction.data_source_id == upload.id))
     await session.delete(upload)
     await session.commit()

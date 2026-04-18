@@ -7,6 +7,8 @@ import type {
   DashboardLayout,
   DashboardLayoutPayload,
   DashboardSummary,
+  ExpenseReport,
+  ExpenseReportListResponse,
   HealthResponse,
   LoginInput,
   PaymentMethod,
@@ -16,6 +18,7 @@ import type {
   Subscription,
   SubscriptionFilters,
   SubscriptionListResponse,
+  SubscriptionPaymentHistory,
   SubscriptionUpsertInput,
   Upload,
   UploadListResponse,
@@ -233,6 +236,12 @@ export const apiClient = {
       { token },
     );
   },
+  getExpenseReports(token: string) {
+    return request<ExpenseReportListResponse>("/expense-reports", undefined, { token });
+  },
+  getExpenseReport(token: string, reportId: number) {
+    return request<ExpenseReport>(`/expense-reports/${reportId}`, undefined, { token });
+  },
   getUploads(token: string) {
     return request<UploadListResponse>("/uploads", undefined, { token });
   },
@@ -248,6 +257,13 @@ export const apiClient = {
   },
   getSubscription(token: string, subscriptionId: number) {
     return request<Subscription>(`/subscriptions/${subscriptionId}`, undefined, { token });
+  },
+  getSubscriptionPaymentHistory(token: string, subscriptionId: number) {
+    return request<SubscriptionPaymentHistory>(
+      `/subscriptions/${subscriptionId}/payment-history`,
+      undefined,
+      { token },
+    );
   },
   createSubscription(token: string, payload: SubscriptionUpsertInput) {
     return request<Subscription>("/subscriptions", {

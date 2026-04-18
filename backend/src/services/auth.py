@@ -10,10 +10,12 @@ from src.core.security import create_token, decode_token, hash_password, verify_
 from src.models.category import Category
 from src.models.dashboard_layout import DashboardLayout
 from src.models.data_source import DataSource
+from src.models.expense_report import ExpenseReport
 from src.models.payment_history import PaymentHistory
 from src.models.payment_method import PaymentMethod
 from src.models.raw_transaction import RawTransaction
 from src.models.subscription import Subscription
+from src.models.subscription_event import SubscriptionEvent
 from src.models.user import User
 from src.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse
 
@@ -122,11 +124,15 @@ async def delete_user_workspace_data(session: AsyncSession, user: User) -> None:
         await session.execute(
             delete(PaymentHistory).where(PaymentHistory.subscription_id.in_(subscription_ids)),
         )
+        await session.execute(
+            delete(SubscriptionEvent).where(SubscriptionEvent.subscription_id.in_(subscription_ids)),
+        )
 
     category_total = await session.scalar(
         select(func.count()).select_from(Category).where(Category.user_id == user.id)
     )
     await session.execute(delete(DashboardLayout).where(DashboardLayout.user_id == user.id))
+    await session.execute(delete(ExpenseReport).where(ExpenseReport.user_id == user.id))
     await session.execute(delete(RawTransaction).where(RawTransaction.user_id == user.id))
     await session.execute(delete(DataSource).where(DataSource.user_id == user.id))
     await session.execute(delete(Subscription).where(Subscription.user_id == user.id))

@@ -12,15 +12,18 @@ class ExpenseReport(TimestampMixin, Base):
     __table_args__ = (
         UniqueConstraint(
             "user_id",
-            "period_start",
-            "period_end",
+            "data_source_id",
             "currency",
-            name="uq_expense_reports_period",
+            name="uq_expense_reports_upload_currency",
         ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    data_source_id: Mapped[int | None] = mapped_column(
+        ForeignKey("data_sources.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     period_start: Mapped[date] = mapped_column(Date, nullable=False)
     period_end: Mapped[date] = mapped_column(Date, nullable=False)
     currency: Mapped[str] = mapped_column(String(3), nullable=False)

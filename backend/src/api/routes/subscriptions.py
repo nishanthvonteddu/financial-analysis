@@ -10,6 +10,7 @@ from src.models.user import User
 from src.schemas.subscription import (
     SubscriptionCreate,
     SubscriptionListResponse,
+    SubscriptionPaymentHistoryResponse,
     SubscriptionResponse,
     SubscriptionUpdate,
 )
@@ -17,6 +18,7 @@ from src.services.subscription import (
     create_subscription,
     delete_subscription,
     get_subscription_or_404,
+    get_subscription_payment_history,
     list_subscriptions,
     update_subscription,
 )
@@ -91,6 +93,24 @@ async def create_subscription_route(
 ) -> SubscriptionResponse:
     subscription = await create_subscription(session, user=current_user, payload=payload)
     return SubscriptionResponse.model_validate(subscription)
+
+
+@router.get(
+    "/{subscription_id}/payment-history",
+    response_model=SubscriptionPaymentHistoryResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get subscription payment history",
+)
+async def get_subscription_payment_history_route(
+    subscription_id: int,
+    session: DbSession,
+    current_user: CurrentUser,
+) -> SubscriptionPaymentHistoryResponse:
+    return await get_subscription_payment_history(
+        session,
+        subscription_id=subscription_id,
+        user=current_user,
+    )
 
 
 @router.get(
