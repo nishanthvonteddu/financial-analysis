@@ -204,6 +204,69 @@ export type ExpenseReportListResponse = {
   total: number;
 };
 
+export type AnalyticsRangeKey = "90d" | "180d" | "365d";
+
+export type AnalyticsWindow = {
+  key: AnalyticsRangeKey;
+  label: string;
+  start_date: string;
+  end_date: string;
+};
+
+export type AnalyticsSummary = {
+  total_spend: string;
+  average_monthly_spend: string;
+  active_subscriptions: number;
+  projected_monthly_savings: string;
+  projected_range_savings: string;
+};
+
+export type AnalyticsCategoryItem = {
+  category_id: number | null;
+  category_name: string;
+  total_spend: string;
+  active_subscriptions: number;
+  projected_monthly_savings: string;
+  projected_range_savings: string;
+};
+
+export type AnalyticsPaymentMethodItem = {
+  payment_method_id: number | null;
+  payment_method_label: string;
+  provider: string | null;
+  total_spend: string;
+  active_subscriptions: number;
+};
+
+export type AnalyticsFrequencyItem = {
+  cadence: string;
+  label: string;
+  subscription_count: number;
+  monthly_equivalent: string;
+};
+
+export type AnalyticsTrendCategoryItem = {
+  category_name: string;
+  total_spend: string;
+};
+
+export type AnalyticsTrendPoint = {
+  period_start: string;
+  label: string;
+  total_spend: string;
+  category_totals: AnalyticsTrendCategoryItem[];
+};
+
+export type ExpenseAnalytics = {
+  window: AnalyticsWindow;
+  summary: AnalyticsSummary;
+  categories: AnalyticsCategoryItem[];
+  payment_methods: AnalyticsPaymentMethodItem[];
+  frequency_distribution: AnalyticsFrequencyItem[];
+  trends: AnalyticsTrendPoint[];
+  trend_categories: string[];
+};
+
 export type UploadSourceType = "upload_csv" | "upload_pdf";
 export type UploadStatus = "queued" | "processing" | "completed" | "failed";
 
