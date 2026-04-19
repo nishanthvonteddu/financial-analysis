@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "@/lib/constants";
 import type {
+  AnalyticsRangeKey,
   AuthResponse,
   Category,
   CategoryInput,
@@ -7,6 +8,7 @@ import type {
   DashboardLayout,
   DashboardLayoutPayload,
   DashboardSummary,
+  ExpenseAnalytics,
   ExpenseReport,
   ExpenseReportListResponse,
   HealthResponse,
@@ -238,6 +240,12 @@ export const apiClient = {
   },
   getExpenseReports(token: string) {
     return request<ExpenseReportListResponse>("/expense-reports", undefined, { token });
+  },
+  getExpenseAnalytics(token: string, range: AnalyticsRangeKey) {
+    return request<ExpenseAnalytics>("/expense-reports/analytics", undefined, {
+      query: { range },
+      token,
+    });
   },
   getExpenseReport(token: string, reportId: number) {
     return request<ExpenseReport>(`/expense-reports/${reportId}`, undefined, { token });
