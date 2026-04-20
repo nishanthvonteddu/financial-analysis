@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from src.api.routes import (
     auth,
+    calendar,
     categories,
     dashboard,
     expense_reports,
@@ -14,6 +15,7 @@ from src.api.routes import (
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
 api_router.include_router(auth.router)
+api_router.include_router(calendar.router)
 api_router.include_router(categories.router)
 api_router.include_router(dashboard.router)
 api_router.include_router(expense_reports.router)

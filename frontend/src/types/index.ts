@@ -403,3 +403,34 @@ export type SubscriptionUpsertInput = {
   vendor: string;
   website_url?: string;
 };
+
+export type CalendarRenewalItem = {
+  subscription_id: number;
+  name: string;
+  vendor: string;
+  amount: string;
+  currency: string;
+  cadence: string;
+  status: string;
+  renewal_date: string;
+  category_id: number | null;
+  category_name: string;
+  payment_method_id: number | null;
+  payment_method_label: string | null;
+};
+
+export type CalendarDay = {
+  date: string;
+  day: number;
+  total_amount: string;
+  renewals: CalendarRenewalItem[];
+};
+
+export type CalendarRenewalResponse = {
+  year: number;
+  month: number;
+  period_start: string;
+  period_end: string;
+  total_renewals: number;
+  days: CalendarDay[];
+};
