@@ -2,6 +2,7 @@ import { API_BASE_URL } from "@/lib/constants";
 import type {
   AnalyticsRangeKey,
   AuthResponse,
+  CalendarRenewalResponse,
   Category,
   CategoryInput,
   CategoryListResponse,
@@ -294,6 +295,12 @@ export const apiClient = {
     return request<void>(`/uploads/${uploadId}`, {
       method: "DELETE",
     }, { token });
+  },
+  getCalendarRenewals(token: string, year: number, month: number) {
+    return request<CalendarRenewalResponse>("/calendar", undefined, {
+      query: { month, year },
+      token,
+    });
   },
   deleteWorkspaceData(token: string) {
     return request<void>("/auth/me/data", {
