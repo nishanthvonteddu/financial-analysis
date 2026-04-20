@@ -1,37 +1,45 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowRight, CalendarDays } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+import { CalendarWorkspace } from "@/components/calendar/calendar-workspace";
 import { PageHeader } from "@/components/ui/page-header";
+import { useCalendarRenewals } from "@/hooks/use-calendar";
 
 export default function CalendarPage() {
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), 1);
+  });
+  const calendarQuery = useCalendarRenewals(
+    selectedMonth.getFullYear(),
+    selectedMonth.getMonth() + 1,
+  );
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-page-enter">
       <PageHeader
         action={
           <Button asChild className="rounded-full px-5" variant="outline">
-            <Link href="/dashboard">
-              View the renewal queue
+            <Link href="/subscriptions">
+              Manage schedules
               <ArrowRight className="ml-2 size-4" />
             </Link>
           </Button>
         }
-        description="The shell now supports a dedicated scheduling surface so reminder and renewal views can land without navigation churn."
-        eyebrow="Calendar"
-        title="Renewal timing gets its own lane"
+        description="Review projected renewal dates across active plans, move month to month, and open the day detail when a billing cluster needs attention."
+        eyebrow="Day 19 calendar"
+        title="Renewal calendar"
       />
 
-      <EmptyState
-        action={
-          <Button asChild className="rounded-full px-5" variant="outline">
-            <Link href="/subscriptions">Review upcoming renewals in subscriptions</Link>
-          </Button>
-        }
-        description="Calendar grids, reminder windows, and cross-household renewal planning are future work. Day 4 only establishes the operator shell that will contain them."
-        eyebrow="Future reminder work"
-        icon={<CalendarDays className="size-5" />}
-        title="No timeline widgets yet."
+      <CalendarWorkspace
+        calendar={calendarQuery.data}
+        isLoading={calendarQuery.isLoading && !calendarQuery.data}
+        onMonthChange={setSelectedMonth}
+        selectedMonth={selectedMonth}
       />
     </div>
   );
