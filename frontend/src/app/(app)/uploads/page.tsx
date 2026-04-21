@@ -109,7 +109,7 @@ export default function UploadsPage() {
           ) : undefined
         }
         description="Pull statement files into the pipeline, keep the queue visible, and watch ingestion finish without leaving the authenticated workspace."
-        eyebrow="Day 9 live surface"
+        eyebrow="Upload queue"
         title="Uploads and processing status"
       />
 

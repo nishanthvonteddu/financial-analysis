@@ -33,7 +33,7 @@ export function PaymentTimeline({ history, isLoading = false }: PaymentTimelineP
     return (
       <EmptyState
         description="Payment history will appear here after statement uploads link settled charges to this subscription."
-        eyebrow="Day 16 timeline"
+        eyebrow="Payment timeline"
         icon={<History className="size-5" />}
         title="No payment history yet"
       />
@@ -70,7 +70,7 @@ export function PaymentTimeline({ history, isLoading = false }: PaymentTimelineP
     <section className="space-y-6 rounded-[2rem] border border-black/10 bg-white/76 p-6 shadow-line backdrop-blur sm:p-7">
       <div className="flex flex-col gap-4 border-b border-black/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.32em] text-black/45">Day 16 timeline</p>
+          <p className="text-xs uppercase tracking-[0.32em] text-black/45">Payment timeline</p>
           <h2 className="text-2xl font-semibold tracking-tight text-ink">Payment history</h2>
           <p className="max-w-2xl text-sm leading-6 text-black/62">
             Lifetime charges and detected price changes are grouped together so billing shifts read

@@ -67,7 +67,7 @@ export default function SubscriptionsPage() {
           ) : undefined
         }
         description="Track recurring plans, save manual entries, and move straight into lifecycle controls without leaving the workspace."
-        eyebrow="Day 5 live surface"
+        eyebrow="Subscription workspace"
         title="Subscription management"
       />
 

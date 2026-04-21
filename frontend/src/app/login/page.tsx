@@ -76,7 +76,7 @@ function LoginPageContent() {
       alternateLabel="Create account"
       alternateText="Need access?"
       description="Sign in to reach the protected dashboard, keep the session fresh in memory, and continue straight into the working app."
-      eyebrow="Day 2 authentication"
+      eyebrow="Account access"
       title="Return to your subscription workspace."
     >
       <form className="space-y-6" onSubmit={onSubmit}>

@@ -53,6 +53,7 @@ export function UploadProcessingPanel({ upload, visualStep }: UploadProcessingPa
   }
 
   const activeIndex = visualStep === "Failed" ? 2 : stepLabels.indexOf(visualStep);
+  const isComplete = visualStep === "Done";
 
   return (
     <section className="rounded-[2rem] border border-black/10 bg-[#101922] p-6 text-white shadow-[0_24px_80px_rgba(16,25,34,0.22)] sm:p-7">
@@ -85,8 +86,8 @@ export function UploadProcessingPanel({ upload, visualStep }: UploadProcessingPa
           <p className="text-xs uppercase tracking-[0.32em] text-white/45">Pipeline</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {stepLabels.map((label, index) => {
-              const isDone = visualStep !== "Failed" && index < activeIndex;
-              const isCurrent = visualStep !== "Failed" && index === activeIndex;
+              const isDone = visualStep !== "Failed" && (index < activeIndex || (isComplete && index === activeIndex));
+              const isCurrent = visualStep !== "Failed" && !isComplete && index === activeIndex;
               const isPending = visualStep !== "Failed" && index > activeIndex;
 
               return (
@@ -115,7 +116,7 @@ export function UploadProcessingPanel({ upload, visualStep }: UploadProcessingPa
                     {label === "Queued" && "File accepted and waiting to start."}
                     {label === "Parsing" && "Statement rows are being extracted and normalized."}
                     {label === "Detecting" && "Recurring services are being matched from the upload."}
-                    {label === "Done" && "Upload is ready for downstream review."}
+                    {label === "Done" && "Upload completed and is ready for subscription review."}
                   </p>
                   {isPending ? (
                     <p className="mt-3 text-[11px] uppercase tracking-[0.24em] text-white/34">Pending</p>
@@ -146,6 +147,8 @@ export function UploadProcessingPanel({ upload, visualStep }: UploadProcessingPa
                 <TriangleAlert className="mt-0.5 size-4 shrink-0" />
                 <p>{upload.error_message}</p>
               </div>
+            ) : upload.status === "completed" ? (
+              <p>The upload finished successfully. Review the detected subscriptions when you are ready.</p>
             ) : (
               <p>
                 The step rail above is driven by the live status poll and keeps advancing while the

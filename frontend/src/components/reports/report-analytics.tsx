@@ -147,7 +147,7 @@ export function ReportAnalytics({
     <section className="space-y-6 rounded-[2.2rem] border border-black/10 bg-white/80 p-6 shadow-line backdrop-blur sm:p-7">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.32em] text-black/42">Day 18 analytics</p>
+          <p className="text-xs uppercase tracking-[0.32em] text-black/42">Spend analytics</p>
           <div>
             <h2 className="text-3xl font-semibold tracking-tight text-ink">Category analytics</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-black/62">

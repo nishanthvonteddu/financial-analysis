@@ -17,7 +17,7 @@ export default function PaymentsPage() {
             </Link>
           </Button>
         }
-        description="Payment methods and billing fallback flows will expand here once the subscription management milestone lands."
+        description="Payment methods and billing fallback flows will expand here as subscription management deepens."
         eyebrow="Payments"
         title="Billing rails have a home"
       />
@@ -28,7 +28,7 @@ export default function PaymentsPage() {
             <Link href="/settings">Add a payment rail in settings</Link>
           </Button>
         }
-        description="The app shell now reserves a destination for cards, billing instruments, and charge fallback rules, but the underlying product behavior is intentionally deferred to later milestones."
+        description="The app shell now reserves a destination for cards, billing instruments, and charge fallback rules while payment controls continue to build out."
         eyebrow="Upcoming surface"
         icon={<CreditCard className="size-5" />}
         title="Payment controls arrive next."

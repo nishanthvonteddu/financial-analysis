@@ -61,7 +61,7 @@ export default function DashboardPage() {
           )
         }
         description="Operate from a live dashboard where five persistent widgets keep spend, renewals, category mix, and subscription churn in one working surface."
-        eyebrow="Day 11 widget system"
+        eyebrow="Dashboard workspace"
         title="Smart dashboard workspace"
       />
 

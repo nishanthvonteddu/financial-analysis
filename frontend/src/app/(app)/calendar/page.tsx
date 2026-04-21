@@ -31,7 +31,7 @@ export default function CalendarPage() {
           </Button>
         }
         description="Review projected renewal dates across active plans, move month to month, and open the day detail when a billing cluster needs attention."
-        eyebrow="Day 19 calendar"
+        eyebrow="Renewal calendar"
         title="Renewal calendar"
       />
 

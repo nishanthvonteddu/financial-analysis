@@ -250,7 +250,7 @@ export function WorkspaceOnboarding() {
           <p className="text-xs uppercase tracking-[0.32em] text-white/42">Why this first</p>
           <h3 className="mt-4 text-2xl font-semibold tracking-tight">A cleaner first run avoids a blank dashboard</h3>
           <p className="mt-3 text-sm leading-6 text-white/68">
-            Day 14 is about making the workspace readable before it is full. Save one preference, keep the layout stable, then move into the first real action.
+            Save one preference, keep the layout stable, then move into the first real action.
           </p>
 
           <div className="mt-8 space-y-4">

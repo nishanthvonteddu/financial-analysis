@@ -51,9 +51,9 @@ const productEdges = [
     title: "Observable statement ingestion",
   },
   {
-    body: "Dashboard widgets, settings, and session flows keep the MVP usable now while the later milestones layer on analytics and automation.",
+    body: "Dashboard widgets, settings, and session flows keep the workspace usable now while deeper analytics and automation continue to expand.",
     icon: Radar,
-    title: "Built for the next milestone",
+    title: "Built to keep improving",
   },
 ];
 
@@ -69,7 +69,7 @@ export default function Home() {
                 MySubscription Tracker
               </p>
               <p className="mt-2 text-[11px] uppercase tracking-[0.34em] text-black/48 dark:text-white/45">
-                Day 15 MVP wrap
+                MVP workspace
               </p>
             </div>
 
@@ -96,7 +96,7 @@ export default function Home() {
               </h1>
               <p className="animate-page-enter-delayed mt-6 max-w-xl text-lg leading-8 text-black/68 dark:text-white/68">
                 Track subscriptions, ingest statement files, review dashboard signals, and keep the
-                MVP workspace polished enough to operate every week instead of revisiting once a quarter.
+                workspace polished enough to operate every week instead of revisiting once a quarter.
               </p>
 
               <div className="animate-page-enter-delayed mt-8 flex flex-wrap gap-4">
@@ -125,8 +125,8 @@ export default function Home() {
                   <div>
                     <p className="text-xs uppercase tracking-[0.3em] text-white/45">Live surface</p>
                     <p className="mt-3 max-w-xs text-sm leading-6 text-white/68">
-                      Imports, filters, layout persistence, and workspace defaults are already in the
-                      MVP. Day 15 tightens the front door around them.
+                      Imports, filters, layout persistence, and workspace defaults are already in
+                      place, with a front door tuned around the active product flows.
                     </p>
                   </div>
                   <div className="rounded-full border border-white/12 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white/55">
@@ -259,13 +259,13 @@ export default function Home() {
         <div className="overflow-hidden rounded-[2.8rem] border border-black/10 bg-[#101922] px-6 py-8 text-white shadow-[0_30px_120px_rgba(17,20,24,0.18)] sm:px-8 sm:py-10">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_auto] lg:items-end">
             <div>
-              <p className="text-xs uppercase tracking-[0.32em] text-white/45">Start the MVP</p>
+              <p className="text-xs uppercase tracking-[0.32em] text-white/45">Start the workspace</p>
               <h2 className="mt-4 max-w-2xl font-serif text-4xl leading-tight text-white sm:text-5xl">
                 Open the workspace, add the first plan, and make the next renewal impossible to miss.
               </h2>
               <p className="mt-4 max-w-xl text-base leading-7 text-white/68">
-                The core flows are already in place. Day 15 turns the shell into a sharper product surface and
-                closes the MVP with cleaner errors, stronger polish, and safer defaults.
+                The core flows are already in place, with cleaner errors, stronger polish, and safer
+                defaults around the paths you use most.
               </p>
             </div>
 
