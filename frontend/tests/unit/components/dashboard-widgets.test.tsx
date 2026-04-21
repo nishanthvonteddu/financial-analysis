@@ -31,21 +31,23 @@ const fullSummary: DashboardSummary = {
     {
       category_id: 10,
       category_name: "Entertainment",
+      currency: "USD",
       subscriptions: 2,
       total_monthly_spend: "25.98",
     },
     {
       category_id: 11,
       category_name: "Productivity",
+      currency: "USD",
       subscriptions: 1,
       total_monthly_spend: "9.99",
     },
   ],
   monthly_spend: [
-    { label: "Jan", month: "2026-01", total: "0.00" },
-    { label: "Feb", month: "2026-02", total: "0.00" },
-    { label: "Mar", month: "2026-03", total: "59.98" },
-    { label: "Apr", month: "2026-04", total: "86.50" },
+    { currency: "USD", label: "Jan", month: "2026-01", total: "0.00" },
+    { currency: "USD", label: "Feb", month: "2026-02", total: "0.00" },
+    { currency: "USD", label: "Mar", month: "2026-03", total: "59.98" },
+    { currency: "USD", label: "Apr", month: "2026-04", total: "86.50" },
   ],
   recently_ended: [
     {
@@ -60,6 +62,7 @@ const fullSummary: DashboardSummary = {
   summary: {
     active_subscriptions: 2,
     cancelled_subscriptions: 1,
+    currency: "USD",
     total_monthly_spend: "35.97",
     upcoming_renewals: 2,
   },
@@ -89,13 +92,14 @@ const emptySummary: DashboardSummary = {
   active_subscriptions: [],
   category_breakdown: [],
   monthly_spend: [
-    { label: "Jan", month: "2026-01", total: "0.00" },
-    { label: "Feb", month: "2026-02", total: "0.00" },
+    { currency: "USD", label: "Jan", month: "2026-01", total: "0.00" },
+    { currency: "USD", label: "Feb", month: "2026-02", total: "0.00" },
   ],
   recently_ended: [],
   summary: {
     active_subscriptions: 0,
     cancelled_subscriptions: 0,
+    currency: "USD",
     total_monthly_spend: "0.00",
     upcoming_renewals: 0,
   },
