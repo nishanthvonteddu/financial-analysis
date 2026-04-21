@@ -24,6 +24,7 @@ from src.schemas.analytics import (
     AnalyticsTrendPoint,
     AnalyticsWindow,
 )
+from src.services.currency import convert
 
 logger = get_logger(__name__)
 
@@ -46,9 +47,23 @@ def _quantize_money(value: Decimal) -> Decimal:
     return value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
-def _monthly_equivalent(subscription: Subscription) -> Decimal:
+def _get_user_currency(user: User) -> str:
+    return (user.preferred_currency or "USD").strip().upper()
+
+
+async def _monthly_equivalent(
+    session: AsyncSession,
+    subscription: Subscription,
+    *,
+    target_currency: str,
+) -> Decimal:
     cadence = subscription.cadence.lower()
-    amount = Decimal(subscription.amount)
+    amount = await convert(
+        session,
+        Decimal(subscription.amount),
+        from_currency=subscription.currency,
+        to_currency=target_currency,
+    )
 
     if cadence == "weekly":
         return _quantize_money((amount * Decimal(52)) / Decimal(12))
@@ -106,6 +121,7 @@ async def get_expense_analytics(
 ) -> AnalyticsResponse:
     config = WINDOW_CONFIG[range_key]
     today = date.today()
+    target_currency = _get_user_currency(user)
     window_days = int(config["days"])
     projection_months = Decimal(str(config["projection_months"]))
     window_start = today - timedelta(days=window_days - 1)
@@ -193,7 +209,18 @@ async def get_expense_analytics(
     total_spend = Decimal("0.00")
 
     for payment, subscription in payment_rows:
-        amount = _quantize_money(abs(Decimal(payment.amount)))
+        paid_at = payment.paid_at.astimezone(UTC) if payment.paid_at.tzinfo else payment.paid_at
+        amount = _quantize_money(
+            abs(
+                await convert(
+                    session,
+                    Decimal(payment.amount),
+                    from_currency=payment.currency,
+                    to_currency=target_currency,
+                    effective_date=paid_at.date(),
+                )
+            )
+        )
         total_spend += amount
 
         category_name = _category_name(subscription, category_map)
@@ -206,7 +233,6 @@ async def get_expense_analytics(
         )
         method_spend_totals[payment_method_key] += amount
 
-        paid_at = payment.paid_at.astimezone(UTC) if payment.paid_at.tzinfo else payment.paid_at
         month_key = _month_start(paid_at.date())
         trend_totals[month_key] += amount
         trend_category_totals[(month_key, category_name)] += amount
@@ -228,7 +254,11 @@ async def get_expense_analytics(
     )
 
     for subscription in active_subscriptions:
-        monthly_equivalent = _monthly_equivalent(subscription)
+        monthly_equivalent = await _monthly_equivalent(
+            session,
+            subscription,
+            target_currency=target_currency,
+        )
         category_key = (
             subscription.category_id,
             _category_name(subscription, category_map),
@@ -271,6 +301,7 @@ async def get_expense_analytics(
             category_id=category_id,
             category_name=category_name,
             total_spend=_quantize_money(category_spend_totals[(category_id, category_name)]),
+            currency=target_currency,
             active_subscriptions=int(
                 category_projection[(category_id, category_name)]["active_subscriptions"]
             ),
@@ -305,6 +336,7 @@ async def get_expense_analytics(
             total_spend=_quantize_money(
                 method_spend_totals[(payment_method_id, payment_method_label, provider)]
             ),
+            currency=target_currency,
             active_subscriptions=int(
                 payment_method_projection[
                     (payment_method_id, payment_method_label, provider)
@@ -328,6 +360,7 @@ async def get_expense_analytics(
             label=CADENCE_LABELS.get(cadence, cadence.capitalize()),
             subscription_count=int(values["subscription_count"]),
             monthly_equivalent=_quantize_money(Decimal(values["monthly_equivalent"])),
+            currency=target_currency,
         )
         for cadence, values in sorted(
             frequency_totals.items(),
@@ -361,12 +394,14 @@ async def get_expense_analytics(
                 period_start=cursor,
                 label=cursor.strftime("%b %y" if show_year else "%b"),
                 total_spend=_quantize_money(trend_totals[cursor]),
+                currency=target_currency,
                 category_totals=[
                     AnalyticsTrendCategoryItem(
                         category_name=category_name,
                         total_spend=_quantize_money(
                             trend_category_totals[(cursor, category_name)]
                         ),
+                        currency=target_currency,
                     )
                     for category_name in trend_categories
                 ],
@@ -386,6 +421,7 @@ async def get_expense_analytics(
             average_monthly_spend=_quantize_money(
                 total_spend / projection_months if projection_months else Decimal("0.00")
             ),
+            currency=target_currency,
             active_subscriptions=len(active_subscriptions),
             projected_monthly_savings=projected_monthly_savings,
             projected_range_savings=projected_range_savings,
