@@ -4,6 +4,7 @@ from src.api.routes import (
     auth,
     calendar,
     categories,
+    currencies,
     dashboard,
     expense_reports,
     health,
@@ -17,6 +18,7 @@ api_router.include_router(health.router, tags=["health"])
 api_router.include_router(auth.router)
 api_router.include_router(calendar.router)
 api_router.include_router(categories.router)
+api_router.include_router(currencies.router)
 api_router.include_router(dashboard.router)
 api_router.include_router(expense_reports.router)
 api_router.include_router(payment_methods.router)
