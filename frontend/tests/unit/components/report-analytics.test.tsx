@@ -10,6 +10,7 @@ const analytics: ExpenseAnalytics = {
       active_subscriptions: 1,
       category_id: 1,
       category_name: "Utilities",
+      currency: "USD",
       projected_monthly_savings: "30.00",
       projected_range_savings: "180.00",
       total_spend: "90.00",
@@ -18,6 +19,7 @@ const analytics: ExpenseAnalytics = {
       active_subscriptions: 2,
       category_id: 2,
       category_name: "Entertainment",
+      currency: "USD",
       projected_monthly_savings: "25.00",
       projected_range_savings: "150.00",
       total_spend: "40.00",
@@ -26,12 +28,14 @@ const analytics: ExpenseAnalytics = {
   frequency_distribution: [
     {
       cadence: "monthly",
+      currency: "USD",
       label: "Monthly cadence",
       monthly_equivalent: "25.00",
       subscription_count: 2,
     },
     {
       cadence: "quarterly",
+      currency: "USD",
       label: "Quarterly cadence",
       monthly_equivalent: "30.00",
       subscription_count: 1,
@@ -43,6 +47,7 @@ const analytics: ExpenseAnalytics = {
       payment_method_id: 11,
       payment_method_label: "Visa Primary card ending 4242",
       provider: "Visa",
+      currency: "USD",
       total_spend: "150.00",
     },
     {
@@ -50,12 +55,14 @@ const analytics: ExpenseAnalytics = {
       payment_method_id: 12,
       payment_method_label: "Amex Backup card ending 3005",
       provider: "Amex",
+      currency: "USD",
       total_spend: "100.00",
     },
   ],
   summary: {
     active_subscriptions: 4,
     average_monthly_spend: "41.67",
+    currency: "USD",
     projected_monthly_savings: "65.00",
     projected_range_savings: "390.00",
     total_spend: "250.00",
@@ -64,18 +71,20 @@ const analytics: ExpenseAnalytics = {
   trends: [
     {
       category_totals: [
-        { category_name: "Utilities", total_spend: "90.00" },
-        { category_name: "Entertainment", total_spend: "15.00" },
+        { category_name: "Utilities", currency: "USD", total_spend: "90.00" },
+        { category_name: "Entertainment", currency: "USD", total_spend: "15.00" },
       ],
+      currency: "USD",
       label: "Mar",
       period_start: "2026-03-01",
       total_spend: "105.00",
     },
     {
       category_totals: [
-        { category_name: "Utilities", total_spend: "0.00" },
-        { category_name: "Entertainment", total_spend: "25.00" },
+        { category_name: "Utilities", currency: "USD", total_spend: "0.00" },
+        { category_name: "Entertainment", currency: "USD", total_spend: "25.00" },
       ],
+      currency: "USD",
       label: "Apr",
       period_start: "2026-04-01",
       total_spend: "25.00",
