@@ -72,26 +72,46 @@ export function UploadHistoryList({
           const isSelected = selectedUploadId === upload.id;
 
           return (
-            <button
+            <div
               className={cn(
-                "group grid w-full gap-4 px-5 py-4 text-left transition sm:px-6",
+                "grid gap-4 px-5 py-4 transition sm:px-6",
                 isSelected ? "bg-[#f7f0e7]" : "hover:bg-black/[0.025]",
               )}
-              data-upload-file-name={upload.file_name}
               key={upload.id}
-              onClick={() => onSelect(upload.id)}
-              type="button"
             >
               <div className="flex items-start justify-between gap-4">
-                <div className="flex min-w-0 items-center gap-4">
-                  <ServiceLogo provider={upload.provider} size="sm" />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-ink">{upload.file_name}</p>
-                    <p className="mt-1 text-sm text-black/55">{formatProvider(upload.provider)}</p>
+                <button
+                  className="group grid min-w-0 flex-1 gap-4 text-left outline-none focus-visible:ring-2 focus-visible:ring-ember/35"
+                  data-upload-file-name={upload.file_name}
+                  onClick={() => onSelect(upload.id)}
+                  type="button"
+                >
+                  <div className="flex min-w-0 items-center gap-4">
+                    <ServiceLogo provider={upload.provider} size="sm" />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-ink">{upload.file_name}</p>
+                      <p className="mt-1 text-sm text-black/55">{formatProvider(upload.provider)}</p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.24em] text-black/42">
+                    <span className="inline-flex items-center gap-2">
+                      {upload.source_type === "upload_pdf" ? (
+                        <FileText className="size-3.5" />
+                      ) : (
+                        <FileSpreadsheet className="size-3.5" />
+                      )}
+                      {upload.source_type === "upload_pdf" ? "PDF" : "CSV"}
+                    </span>
+                    <span className="inline-flex items-center gap-2">
+                      <Clock3 className="size-3.5" />
+                      {formatTimestamp(upload.created_at)}
+                    </span>
+                    <span>{upload.transaction_count} transactions</span>
+                  </div>
+                </button>
+
+                <div className="flex shrink-0 items-center gap-2">
                   <span
                     className={cn(
                       "inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em]",
@@ -116,23 +136,7 @@ export function UploadHistoryList({
                   </Button>
                 </div>
               </div>
-
-              <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.24em] text-black/42">
-                <span className="inline-flex items-center gap-2">
-                  {upload.source_type === "upload_pdf" ? (
-                    <FileText className="size-3.5" />
-                  ) : (
-                    <FileSpreadsheet className="size-3.5" />
-                  )}
-                  {upload.source_type === "upload_pdf" ? "PDF" : "CSV"}
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <Clock3 className="size-3.5" />
-                  {formatTimestamp(upload.created_at)}
-                </span>
-                <span>{upload.transaction_count} transactions</span>
-              </div>
-            </button>
+            </div>
           );
         })}
       </div>

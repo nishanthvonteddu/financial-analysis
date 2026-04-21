@@ -77,7 +77,7 @@ export default function RegisterPage() {
       alternateLabel="Sign in"
       alternateText="Already have an account?"
       description="Create a clean in-memory session, move through protected routes immediately, and keep renewals visible from the first authenticated screen."
-      eyebrow="Day 2 authentication"
+      eyebrow="Account setup"
       title="Open a secure workspace in under a minute."
     >
       <form className="space-y-6" onSubmit={onSubmit}>

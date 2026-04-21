@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { FileUp, LoaderCircle, TriangleAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,7 @@ type UploadDropzoneProps = {
 
 export function UploadDropzone({ disabled = false, onUpload, sectionId }: UploadDropzoneProps) {
   const inputId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -97,6 +98,14 @@ export function UploadDropzone({ disabled = false, onUpload, sectionId }: Upload
     }
   }
 
+  function openFileDialog() {
+    if (disabled || isUploading) {
+      return;
+    }
+
+    inputRef.current?.click();
+  }
+
   return (
     <section
       className="overflow-hidden rounded-[2rem] border border-black/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(245,239,231,0.92))] shadow-line backdrop-blur"
@@ -113,10 +122,14 @@ export function UploadDropzone({ disabled = false, onUpload, sectionId }: Upload
             </p>
           </div>
 
-          <Button asChild className="rounded-full px-5" variant="outline">
-            <label className={cn(disabled ? "cursor-not-allowed" : "cursor-pointer")} htmlFor={inputId}>
-              Choose file
-            </label>
+          <Button
+            className="rounded-full px-5"
+            disabled={disabled || isUploading}
+            onClick={openFileDialog}
+            type="button"
+            variant="outline"
+          >
+            Choose file
           </Button>
         </div>
       </div>
@@ -132,6 +145,7 @@ export function UploadDropzone({ disabled = false, onUpload, sectionId }: Upload
             void handleFile(event.target.files?.[0] ?? null);
             event.currentTarget.value = "";
           }}
+          ref={inputRef}
           type="file"
         />
 
@@ -166,20 +180,25 @@ export function UploadDropzone({ disabled = false, onUpload, sectionId }: Upload
           }}
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-xl">
-              <div className="inline-flex size-14 items-center justify-center rounded-[1.35rem] border border-black/10 bg-stone text-ink">
+            <button
+              className="group flex w-full max-w-xl flex-col items-start rounded-[1.6rem] p-1 text-left outline-none transition hover:bg-black/[0.025] focus-visible:ring-2 focus-visible:ring-ember/35 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={disabled || isUploading}
+              onClick={openFileDialog}
+              type="button"
+            >
+              <span className="inline-flex size-14 items-center justify-center rounded-[1.35rem] border border-black/10 bg-stone text-ink transition group-hover:border-black/20 group-hover:bg-white">
                 {isUploading ? (
                   <LoaderCircle className="size-6 animate-spin" />
                 ) : (
                   <FileUp className="size-6" />
                 )}
-              </div>
-              <p className="mt-4 text-xl font-semibold text-ink">Drop a statement or browse locally</p>
-              <p className="mt-2 text-sm leading-6 text-black/62">
+              </span>
+              <span className="mt-4 block text-xl font-semibold text-ink">Drop a statement or browse locally</span>
+              <span className="mt-2 block text-sm leading-6 text-black/62">
                 CSV exports move fastest. PDFs work too and stay visible in the queue while parsing
                 and detection finish in the background.
-              </p>
-            </div>
+              </span>
+            </button>
 
             <div className="min-w-0 max-w-sm space-y-3 rounded-[1.5rem] border border-black/10 bg-[#101922] p-5 text-white shadow-[0_24px_70px_rgba(16,25,34,0.18)]">
               <p className="text-xs uppercase tracking-[0.3em] text-white/45">Validation</p>

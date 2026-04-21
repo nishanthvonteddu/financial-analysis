@@ -97,7 +97,7 @@ export default function ReportsPage() {
           </Button>
         }
         description="Run category analytics across the active subscription graph, compare payment-method concentration and savings potential, then drop into statement-derived report detail when you need the raw source view."
-        eyebrow="Day 18 analysis"
+        eyebrow="Spend analysis"
         title="Reports and analytics"
       />
 

@@ -323,7 +323,7 @@ export default function SubscriptionDetailPage() {
 
       <ConfirmDialog
         confirmLabel={deleteSubscription.isPending ? "Deleting..." : "Delete subscription"}
-        description="This removes the subscription from the Day 5 management workspace and returns you to the list."
+        description="This removes the subscription from the management workspace and returns you to the list."
         onConfirm={() => {
           void deleteSubscription.mutateAsync().then(() => {
             router.replace("/subscriptions");
