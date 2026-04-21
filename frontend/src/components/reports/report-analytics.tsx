@@ -32,6 +32,7 @@ const METHOD_COLORS = ["#111418", "#dc5d30", "#d9895d", "#95a6ba", "#cdb28f"];
 
 type ValueTooltipProps = {
   active?: boolean;
+  currency?: string;
   label?: string;
   payload?: Array<{
     color?: string;
@@ -47,7 +48,7 @@ type ReportAnalyticsProps = {
   onRangeChange: (range: AnalyticsRangeKey) => void;
 };
 
-function ValueTooltip({ active, label, payload }: ValueTooltipProps) {
+function ValueTooltip({ active, currency = "USD", label, payload }: ValueTooltipProps) {
   if (!active || !payload?.length) {
     return null;
   }
@@ -66,7 +67,7 @@ function ValueTooltip({ active, label, payload }: ValueTooltipProps) {
               {item.name}
             </span>
             <span className="font-semibold text-ink">
-              {formatCurrency({ value: Number(item.value ?? 0) })}
+              {formatCurrency({ currency, value: Number(item.value ?? 0) })}
             </span>
           </div>
         ))}
@@ -137,6 +138,7 @@ export function ReportAnalytics({
   );
 
   const summary = analytics?.summary;
+  const displayCurrency = summary?.currency ?? "USD";
   const hasObservedSpend = Number(summary?.total_spend ?? 0) > 0;
   const hasProjectedSavings = savingsChartData.length > 0;
   const hasPaymentMix = paymentMethodData.length > 0;
@@ -175,17 +177,19 @@ export function ReportAnalytics({
           <p className="text-xs uppercase tracking-[0.28em] text-white/42">Observed spend</p>
           <CurrencyDisplay
             className="mt-3 block text-3xl font-semibold tracking-tight"
-            currency="USD"
+            currency={displayCurrency}
             value={Number(summary?.total_spend ?? 0)}
           />
-          <p className="mt-3 text-sm text-white/62">{analytics ? analytics.window.label : "Selected window"}</p>
+          <p className="mt-3 text-sm text-white/62">
+            {analytics ? analytics.window.label : "Selected window"} · approx. {displayCurrency}
+          </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-black/10 bg-stone/70 p-5">
           <p className="text-xs uppercase tracking-[0.28em] text-black/42">Average month</p>
           <CurrencyDisplay
             className="mt-3 block text-3xl font-semibold tracking-tight text-ink"
-            currency="USD"
+            currency={displayCurrency}
             value={Number(summary?.average_monthly_spend ?? 0)}
           />
           <p className="mt-3 text-sm text-black/58">Actual spend normalized to the selected window.</p>
@@ -205,7 +209,7 @@ export function ReportAnalytics({
           <p className="text-xs uppercase tracking-[0.28em] text-black/42">Potential savings</p>
           <CurrencyDisplay
             className="mt-3 block text-3xl font-semibold tracking-tight text-ink"
-            currency="USD"
+            currency={displayCurrency}
             value={Number(summary?.projected_range_savings ?? 0)}
           />
           <p className="mt-3 text-sm text-black/58">
@@ -241,7 +245,10 @@ export function ReportAnalytics({
                     tick={{ fill: "rgba(17,20,24,0.45)", fontSize: 12 }}
                     tickLine={false}
                   />
-                  <Tooltip content={<ValueTooltip />} cursor={{ fill: "rgba(220, 93, 48, 0.08)" }} />
+                  <Tooltip
+                    content={<ValueTooltip currency={displayCurrency} />}
+                    cursor={{ fill: "rgba(220, 93, 48, 0.08)" }}
+                  />
                   {analytics?.trend_categories.map((categoryName, index) => (
                     <Bar
                       dataKey={categoryName}
@@ -291,11 +298,11 @@ export function ReportAnalytics({
                   <YAxis
                     axisLine={false}
                     tick={{ fill: "rgba(17,20,24,0.45)", fontSize: 12 }}
-                    tickFormatter={(value) => `$${value}`}
+                    tickFormatter={(value) => `${displayCurrency} ${value}`}
                     tickLine={false}
                     width={48}
                   />
-                  <Tooltip content={<ValueTooltip />} />
+                  <Tooltip content={<ValueTooltip currency={displayCurrency} />} />
                   <Line
                     dataKey="total_spend"
                     dot={{ fill: "#dc5d30", r: 4 }}
@@ -341,7 +348,7 @@ export function ReportAnalytics({
                         <Cell fill={entry.color} key={entry.label} />
                       ))}
                     </Pie>
-                    <Tooltip content={<ValueTooltip />} />
+                    <Tooltip content={<ValueTooltip currency={displayCurrency} />} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
@@ -365,7 +372,7 @@ export function ReportAnalytics({
                   </div>
                   <CurrencyDisplay
                     className="mt-4 block text-2xl font-semibold tracking-tight text-ink"
-                    currency="USD"
+                    currency={displayCurrency}
                     value={method.total_spend}
                   />
                 </div>
@@ -397,7 +404,7 @@ export function ReportAnalytics({
                   <XAxis
                     axisLine={false}
                     tick={{ fill: "rgba(17,20,24,0.45)", fontSize: 12 }}
-                    tickFormatter={(value) => `$${value}`}
+                    tickFormatter={(value) => `${displayCurrency} ${value}`}
                     tickLine={false}
                     type="number"
                   />
@@ -409,7 +416,10 @@ export function ReportAnalytics({
                     type="category"
                     width={110}
                   />
-                  <Tooltip content={<ValueTooltip />} cursor={{ fill: "rgba(220, 93, 48, 0.08)" }} />
+                  <Tooltip
+                    content={<ValueTooltip currency={displayCurrency} />}
+                    cursor={{ fill: "rgba(220, 93, 48, 0.08)" }}
+                  />
                   <Bar
                     dataKey="projected_range_savings"
                     fill="#111418"
@@ -438,11 +448,14 @@ export function ReportAnalytics({
                   <div className="text-right">
                     <CurrencyDisplay
                       className="block text-xl font-semibold tracking-tight text-ink"
-                      currency="USD"
+                      currency={displayCurrency}
                       value={category.projected_range_savings}
                     />
                     <p className="mt-1 text-xs text-black/52">
-                      {formatCurrency({ value: category.projected_monthly_savings })} per month
+                      {formatCurrency({
+                        currency: displayCurrency,
+                        value: category.projected_monthly_savings,
+                      })} per month
                     </p>
                   </div>
                 </div>
@@ -475,7 +488,10 @@ export function ReportAnalytics({
               <p className="text-xs uppercase tracking-[0.24em] text-white/42">{item.label}</p>
               <p className="mt-3 text-3xl font-semibold tracking-tight">{item.subscription_count}</p>
               <p className="mt-2 text-sm text-white/64">
-                {formatCurrency({ value: Number(item.monthly_equivalent) })} in monthly-equivalent spend
+                {formatCurrency({
+                  currency: displayCurrency,
+                  value: Number(item.monthly_equivalent),
+                })} in monthly-equivalent spend
               </p>
             </div>
           ))}
