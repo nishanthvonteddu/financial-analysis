@@ -24,7 +24,7 @@ test("adds, edits, and deletes a subscription", async ({ page, request }) => {
   await createForm.getByLabel("Subscription name").fill(subscriptionName);
   await createForm.getByLabel("Vendor").fill("Netflix");
   await createForm.getByLabel("Amount", { exact: true }).fill("15.49");
-  await createForm.getByLabel("Currency").fill("USD");
+  await createForm.getByLabel("Currency").selectOption("USD");
   await createForm.getByLabel("Billing day").fill("1");
   await createForm.getByLabel("Start date").fill("2026-01-01");
   await createForm.getByLabel("Next charge date").fill("2026-02-01");
