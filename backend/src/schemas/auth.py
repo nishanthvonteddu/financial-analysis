@@ -50,11 +50,37 @@ class UserResponse(BaseModel):
     id: int
     email: str
     full_name: str
+    preferred_currency: str
     is_active: bool
     created_at: datetime
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserUpdateRequest(BaseModel):
+    full_name: str | None = None
+    preferred_currency: str | None = None
+
+    @field_validator("full_name")
+    @classmethod
+    def validate_full_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if len(normalized) < 2:
+            raise ValueError("Full name must be at least 2 characters.")
+        return normalized
+
+    @field_validator("preferred_currency")
+    @classmethod
+    def validate_preferred_currency(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip().upper()
+        if len(normalized) != 3 or not normalized.isalpha():
+            raise ValueError("Use a 3-letter currency code.")
+        return normalized
 
 
 class TokenResponse(BaseModel):

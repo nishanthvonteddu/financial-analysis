@@ -7,9 +7,15 @@ export type User = {
   id: number;
   email: string;
   full_name: string;
+  preferred_currency: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type UserUpdateInput = {
+  full_name?: string;
+  preferred_currency?: string;
 };
 
 export type LoginInput = {
@@ -74,6 +80,7 @@ export type PaymentMethodInput = {
 
 export type DashboardSummaryStats = {
   total_monthly_spend: string;
+  currency: string;
   active_subscriptions: number;
   upcoming_renewals: number;
   cancelled_subscriptions: number;
@@ -83,6 +90,7 @@ export type DashboardMonthlySpendPoint = {
   month: string;
   label: string;
   total: string;
+  currency: string;
 };
 
 export type DashboardActiveSubscriptionItem = {
@@ -101,6 +109,7 @@ export type DashboardCategoryBreakdownItem = {
   category_name: string;
   subscriptions: number;
   total_monthly_spend: string;
+  currency: string;
 };
 
 export type DashboardUpcomingRenewalItem = {
@@ -216,6 +225,7 @@ export type AnalyticsWindow = {
 export type AnalyticsSummary = {
   total_spend: string;
   average_monthly_spend: string;
+  currency: string;
   active_subscriptions: number;
   projected_monthly_savings: string;
   projected_range_savings: string;
@@ -225,6 +235,7 @@ export type AnalyticsCategoryItem = {
   category_id: number | null;
   category_name: string;
   total_spend: string;
+  currency: string;
   active_subscriptions: number;
   projected_monthly_savings: string;
   projected_range_savings: string;
@@ -235,6 +246,7 @@ export type AnalyticsPaymentMethodItem = {
   payment_method_label: string;
   provider: string | null;
   total_spend: string;
+  currency: string;
   active_subscriptions: number;
 };
 
@@ -243,18 +255,30 @@ export type AnalyticsFrequencyItem = {
   label: string;
   subscription_count: number;
   monthly_equivalent: string;
+  currency: string;
 };
 
 export type AnalyticsTrendCategoryItem = {
   category_name: string;
   total_spend: string;
+  currency: string;
 };
 
 export type AnalyticsTrendPoint = {
   period_start: string;
   label: string;
   total_spend: string;
+  currency: string;
   category_totals: AnalyticsTrendCategoryItem[];
+};
+
+export type SupportedCurrency = {
+  code: string;
+  name: string;
+};
+
+export type SupportedCurrencyListResponse = {
+  items: SupportedCurrency[];
 };
 
 export type ExpenseAnalytics = {

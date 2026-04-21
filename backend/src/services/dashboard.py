@@ -22,6 +22,7 @@ from src.schemas.dashboard import (
     DashboardSummaryStats,
     DashboardUpcomingRenewalItem,
 )
+from src.services.currency import convert
 
 logger = get_logger(__name__)
 
@@ -44,9 +45,23 @@ def _quantize_money(value: Decimal) -> Decimal:
     return value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
-def _monthly_equivalent(subscription: Subscription) -> Decimal:
+def _get_user_currency(user: User) -> str:
+    return (user.preferred_currency or "USD").strip().upper()
+
+
+async def _monthly_equivalent(
+    session: AsyncSession,
+    subscription: Subscription,
+    *,
+    target_currency: str,
+) -> Decimal:
     cadence = subscription.cadence.lower()
-    amount = Decimal(subscription.amount)
+    amount = await convert(
+        session,
+        Decimal(subscription.amount),
+        from_currency=subscription.currency,
+        to_currency=target_currency,
+    )
 
     if cadence == "weekly":
         return _quantize_money((amount * Decimal(52)) / Decimal(12))
@@ -74,6 +89,7 @@ async def get_dashboard_summary(
     user: User,
 ) -> DashboardSummaryResponse:
     today = date.today()
+    target_currency = _get_user_currency(user)
     upcoming_cutoff = today + timedelta(days=UPCOMING_WINDOW_DAYS)
     recent_cutoff = today - timedelta(days=RECENTLY_ENDED_WINDOW_DAYS)
 
@@ -125,11 +141,16 @@ async def get_dashboard_summary(
         reverse=True,
     )
 
-    total_monthly_spend = _quantize_money(
-        sum(
-            (_monthly_equivalent(subscription) for subscription in active_subscriptions),
-            Decimal("0.00"),
+    monthly_equivalents: dict[int, Decimal] = {}
+    for subscription in active_subscriptions:
+        monthly_equivalents[subscription.id] = await _monthly_equivalent(
+            session,
+            subscription,
+            target_currency=target_currency,
         )
+
+    total_monthly_spend = _quantize_money(
+        sum(monthly_equivalents.values(), Decimal("0.00"))
     )
 
     category_totals: dict[tuple[int | None, str], dict[str, Decimal | int]] = {}
@@ -148,8 +169,8 @@ async def get_dashboard_summary(
             {"subscriptions": 0, "total_monthly_spend": Decimal("0.00")},
         )
         entry["subscriptions"] = int(entry["subscriptions"]) + 1
-        entry["total_monthly_spend"] = Decimal(entry["total_monthly_spend"]) + _monthly_equivalent(
-            subscription
+        entry["total_monthly_spend"] = (
+            Decimal(entry["total_monthly_spend"]) + monthly_equivalents[subscription.id]
         )
 
     month_totals: dict[str, Decimal] = {}
@@ -166,6 +187,7 @@ async def get_dashboard_summary(
                 month=key,
                 label=cursor.strftime("%b"),
                 total=Decimal("0.00"),
+                currency=target_currency,
             )
         )
         cursor = _shift_months(cursor, 1)
@@ -199,13 +221,20 @@ async def get_dashboard_summary(
         paid_at = payment.paid_at.astimezone(UTC) if payment.paid_at.tzinfo else payment.paid_at
         key = paid_at.strftime("%Y-%m")
         if key in month_totals:
-            month_totals[key] += Decimal(payment.amount)
+            month_totals[key] += await convert(
+                session,
+                Decimal(payment.amount),
+                from_currency=payment.currency,
+                to_currency=target_currency,
+                effective_date=paid_at.date(),
+            )
 
     monthly_spend = [
         DashboardMonthlySpendPoint(
             month=point.month,
             label=point.label,
             total=_quantize_money(month_totals[point.month]),
+            currency=target_currency,
         )
         for point in month_points
     ]
@@ -213,6 +242,7 @@ async def get_dashboard_summary(
     response = DashboardSummaryResponse(
         summary=DashboardSummaryStats(
             total_monthly_spend=total_monthly_spend,
+            currency=target_currency,
             active_subscriptions=len(active_subscriptions),
             upcoming_renewals=len(upcoming_renewals),
             cancelled_subscriptions=len(cancelled_subscriptions),
@@ -250,6 +280,7 @@ async def get_dashboard_summary(
                 category_name=category_name,
                 subscriptions=int(values["subscriptions"]),
                 total_monthly_spend=_quantize_money(Decimal(values["total_monthly_spend"])),
+                currency=target_currency,
             )
             for (category_id, category_name), values in sorted(
                 category_totals.items(),

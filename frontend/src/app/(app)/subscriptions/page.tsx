@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/use-auth";
 import { useFilters } from "@/hooks/use-filters";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { useCreateSubscription, useSubscriptionCatalog, useSubscriptionList } from "@/hooks/use-subscriptions";
@@ -39,7 +40,9 @@ export default function SubscriptionsPage() {
     limit: 100,
     ...queryFilters,
   });
+  const { user } = useAuth();
   const { preferredCurrency } = useOnboarding();
+  const workspaceCurrency = user?.preferred_currency ?? preferredCurrency;
 
   const categories = categoriesQuery.data?.items ?? [];
   const paymentMethods = paymentMethodsQuery.data?.items ?? [];
@@ -258,7 +261,7 @@ export default function SubscriptionsPage() {
               description={
                 hasActiveFilters
                   ? "No plans match the current search or filter. Clear the active constraints to widen the view again."
-                  : `No subscriptions are saved yet. Use the form on the right to add the first plan with ${preferredCurrency} as the default billing code.`
+                  : `No subscriptions are saved yet. Use the form on the right to add the first plan with ${workspaceCurrency} as the default billing code.`
               }
               eyebrow={hasActiveFilters ? "Filtered view" : "First subscription"}
               icon={<Sparkles className="size-5" />}
@@ -296,7 +299,7 @@ export default function SubscriptionsPage() {
             await createSubscription.mutateAsync(payload);
           }}
           paymentMethods={paymentMethods}
-          preferredCurrency={preferredCurrency}
+          preferredCurrency={workspaceCurrency}
           submitLabel="Save subscription"
           testId="subscription-create-form"
           title="Add a subscription"

@@ -13,12 +13,14 @@ from src.schemas.auth import (
     RegisterRequest,
     TokenResponse,
     UserResponse,
+    UserUpdateRequest,
 )
 from src.services.auth import (
     delete_user_workspace_data,
     login_user,
     refresh_user_tokens,
     register_user,
+    update_user_profile,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -79,6 +81,21 @@ async def refresh(
 )
 async def me(current_user: CurrentUser) -> UserResponse:
     return UserResponse.model_validate(current_user)
+
+
+@router.patch(
+    "/me",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update the current user profile",
+)
+async def update_me(
+    payload: UserUpdateRequest,
+    session: DbSession,
+    current_user: CurrentUser,
+) -> UserResponse:
+    user = await update_user_profile(session, user=current_user, payload=payload)
+    return UserResponse.model_validate(user)
 
 
 @router.delete(

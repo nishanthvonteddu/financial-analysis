@@ -43,6 +43,7 @@ describe("apiClient", () => {
             id: 1,
             email: "owner@example.com",
             full_name: "Owner One",
+            preferred_currency: "USD",
             is_active: true,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),

@@ -3,6 +3,7 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
 from src.core import database as database_module
+from src.models.exchange_rate import ExchangeRate
 from src.models.payment_history import PaymentHistory
 from src.models.subscription import Subscription
 
@@ -54,6 +55,7 @@ def _create_subscription(
     next_charge_date: str | None = None,
     end_date: str | None = None,
     payment_method_id: int | None = None,
+    currency: str = "USD",
 ) -> int:
     response = client.post(
         "/api/v1/subscriptions",
@@ -62,7 +64,7 @@ def _create_subscription(
             "name": name,
             "vendor": name,
             "amount": amount,
-            "currency": "USD",
+            "currency": currency,
             "cadence": cadence,
             "status": status,
             "start_date": start_date,
@@ -76,7 +78,13 @@ def _create_subscription(
     return response.json()["id"]
 
 
-def _seed_payment_history(subscription_id: int, paid_at: datetime, amount: Decimal) -> None:
+def _seed_payment_history(
+    subscription_id: int,
+    paid_at: datetime,
+    amount: Decimal,
+    *,
+    currency: str = "USD",
+) -> None:
     async def _write() -> None:
         async with database_module.SessionLocal() as session:
             subscription = await session.get(Subscription, subscription_id)
@@ -87,9 +95,26 @@ def _seed_payment_history(subscription_id: int, paid_at: datetime, amount: Decim
                     payment_method_id=subscription.payment_method_id,
                     paid_at=paid_at,
                     amount=amount,
-                    currency="USD",
+                    currency=currency,
                     payment_status="settled",
                     reference=f"{subscription_id}-{paid_at.date().isoformat()}",
+                )
+            )
+            await session.commit()
+
+    asyncio.run(_write())
+
+
+def _seed_exchange_rate(base: str, quote: str, rate: str, effective_date: date) -> None:
+    async def _write() -> None:
+        async with database_module.SessionLocal() as session:
+            session.add(
+                ExchangeRate(
+                    base_currency=base,
+                    quote_currency=quote,
+                    rate=Decimal(rate),
+                    effective_date=effective_date,
+                    source="test",
                 )
             )
             await session.commit()
@@ -187,6 +212,7 @@ def test_dashboard_summary_and_layout_persistence(client) -> None:
     payload = summary_response.json()
     assert payload["summary"] == {
         "total_monthly_spend": "25.00",
+        "currency": "USD",
         "active_subscriptions": 2,
         "upcoming_renewals": 2,
         "cancelled_subscriptions": 1,
@@ -196,6 +222,7 @@ def test_dashboard_summary_and_layout_persistence(client) -> None:
     assert payload["active_subscriptions"][1]["name"] == "Dropbox"
     assert payload["category_breakdown"][0]["category_name"] == "Entertainment"
     assert payload["category_breakdown"][0]["total_monthly_spend"] == "15.00"
+    assert payload["category_breakdown"][0]["currency"] == "USD"
     assert payload["category_breakdown"][1]["category_name"] == "Productivity"
     assert payload["upcoming_renewals"][0]["name"] == "Netflix"
     assert payload["upcoming_renewals"][0]["days_until_charge"] == 4
@@ -263,3 +290,45 @@ def test_dashboard_layout_requires_each_widget_exactly_once(client) -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_dashboard_summary_converts_workspace_totals_to_preferred_currency(client) -> None:
+    today = date.today()
+    current_month_start = today.replace(day=1)
+    headers = _auth_headers(client, "currency-dashboard@example.com")
+    _seed_exchange_rate("USD", "EUR", "0.900000", current_month_start)
+    update_response = client.patch(
+        "/api/v1/auth/me",
+        headers=headers,
+        json={"preferred_currency": "EUR"},
+    )
+    assert update_response.status_code == 200
+
+    subscription_id = _create_subscription(
+        client,
+        headers,
+        name="Cloud Storage",
+        amount="10.00",
+        cadence="monthly",
+        status="active",
+        start_date=str(today - timedelta(days=30)),
+    )
+    _seed_payment_history(
+        subscription_id,
+        datetime.combine(current_month_start + timedelta(days=3), datetime.min.time(), tzinfo=UTC),
+        Decimal("20.00"),
+    )
+
+    response = client.get("/api/v1/dashboard/summary", headers=headers)
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["summary"]["currency"] == "EUR"
+    assert payload["summary"]["total_monthly_spend"] == "9.00"
+    month_map = {item["month"]: item for item in payload["monthly_spend"]}
+    assert month_map[current_month_start.strftime("%Y-%m")] == {
+        "month": current_month_start.strftime("%Y-%m"),
+        "label": current_month_start.strftime("%b"),
+        "total": "18.00",
+        "currency": "EUR",
+    }

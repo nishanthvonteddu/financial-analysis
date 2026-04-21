@@ -5,7 +5,7 @@ import { createContext, useEffect, useState } from "react";
 
 import { AUTH_STORAGE_KEY } from "@/lib/constants";
 import { apiClient } from "@/lib/api-client";
-import type { AuthResponse, LoginInput, RegisterInput, User } from "@/types";
+import type { AuthResponse, LoginInput, RegisterInput, User, UserUpdateInput } from "@/types";
 
 type AuthContextValue = {
   accessToken: string | null;
@@ -16,6 +16,7 @@ type AuthContextValue = {
   logout: () => void;
   refreshSession: () => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
+  updateProfile: (input: UserUpdateInput) => Promise<User>;
   user: User | null;
 };
 
@@ -158,6 +159,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register: async (input: RegisterInput) => {
       const nextSession = await apiClient.register(input);
       applySession(nextSession);
+    },
+    updateProfile: async (input: UserUpdateInput) => {
+      if (!session?.access_token) {
+        throw new Error("You must be signed in to update your profile.");
+      }
+      const user = await apiClient.updateMe(session.access_token, input);
+      setSession((current) => (current ? { ...current, user } : current));
+      return user;
     },
     user: session?.user ?? null,
   };

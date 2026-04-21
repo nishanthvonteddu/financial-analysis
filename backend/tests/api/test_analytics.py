@@ -3,6 +3,7 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
 from src.core import database as database_module
+from src.models.exchange_rate import ExchangeRate
 from src.models.payment_history import PaymentHistory
 from src.models.subscription import Subscription
 
@@ -62,6 +63,7 @@ def _create_subscription(
     category_id: int,
     payment_method_id: int,
     start_date: str,
+    currency: str = "USD",
 ) -> int:
     response = client.post(
         "/api/v1/subscriptions",
@@ -70,7 +72,7 @@ def _create_subscription(
             "name": name,
             "vendor": name,
             "amount": amount,
-            "currency": "USD",
+            "currency": currency,
             "cadence": cadence,
             "status": "active",
             "start_date": start_date,
@@ -82,7 +84,13 @@ def _create_subscription(
     return response.json()["id"]
 
 
-def _seed_payment_history(subscription_id: int, paid_at: datetime, amount: Decimal) -> None:
+def _seed_payment_history(
+    subscription_id: int,
+    paid_at: datetime,
+    amount: Decimal,
+    *,
+    currency: str = "USD",
+) -> None:
     async def _write() -> None:
         async with database_module.SessionLocal() as session:
             subscription = await session.get(Subscription, subscription_id)
@@ -93,9 +101,26 @@ def _seed_payment_history(subscription_id: int, paid_at: datetime, amount: Decim
                     payment_method_id=subscription.payment_method_id,
                     paid_at=paid_at,
                     amount=amount,
-                    currency="USD",
+                    currency=currency,
                     payment_status="settled",
                     reference=f"{subscription_id}-{paid_at.date().isoformat()}",
+                )
+            )
+            await session.commit()
+
+    asyncio.run(_write())
+
+
+def _seed_exchange_rate(base: str, quote: str, rate: str, effective_date: date) -> None:
+    async def _write() -> None:
+        async with database_module.SessionLocal() as session:
+            session.add(
+                ExchangeRate(
+                    base_currency=base,
+                    quote_currency=quote,
+                    rate=Decimal(rate),
+                    effective_date=effective_date,
+                    source="test",
                 )
             )
             await session.commit()
@@ -210,6 +235,7 @@ def test_expense_analytics_returns_category_method_frequency_and_trend_data(clie
     assert payload["summary"] == {
         "total_spend": "250.00",
         "average_monthly_spend": "41.67",
+        "currency": "USD",
         "active_subscriptions": 4,
         "projected_monthly_savings": "65.00",
         "projected_range_savings": "390.00",
@@ -218,6 +244,7 @@ def test_expense_analytics_returns_category_method_frequency_and_trend_data(clie
         "category_id": utilities_id,
         "category_name": "Utilities",
         "total_spend": "90.00",
+        "currency": "USD",
         "active_subscriptions": 1,
         "projected_monthly_savings": "30.00",
         "projected_range_savings": "180.00",
@@ -237,18 +264,21 @@ def test_expense_analytics_returns_category_method_frequency_and_trend_data(clie
             "label": "Monthly cadence",
             "subscription_count": 2,
             "monthly_equivalent": "25.00",
+            "currency": "USD",
         },
         {
             "cadence": "quarterly",
             "label": "Quarterly cadence",
             "subscription_count": 1,
             "monthly_equivalent": "30.00",
+            "currency": "USD",
         },
         {
             "cadence": "yearly",
             "label": "Yearly cadence",
             "subscription_count": 1,
             "monthly_equivalent": "10.00",
+            "currency": "USD",
         },
     ]
 
@@ -266,3 +296,51 @@ def test_expense_analytics_returns_category_method_frequency_and_trend_data(clie
     assert other_response.status_code == 200
     assert other_response.json()["summary"]["total_spend"] == "0.00"
     assert other_response.json()["categories"] == []
+
+
+def test_expense_analytics_converts_observed_and_projected_totals(client) -> None:
+    today = date.today()
+    current_month_start = today.replace(day=1)
+    headers = _auth_headers(client, "analytics-currency@example.com")
+    category_id = _create_category(client, headers, "Infrastructure")
+    method_id = _create_payment_method(
+        client,
+        headers,
+        label="Primary card",
+        provider="Visa",
+        last4="4242",
+    )
+    _seed_exchange_rate("USD", "EUR", "0.900000", current_month_start)
+
+    update_response = client.patch(
+        "/api/v1/auth/me",
+        headers=headers,
+        json={"preferred_currency": "EUR"},
+    )
+    assert update_response.status_code == 200
+
+    subscription_id = _create_subscription(
+        client,
+        headers,
+        name="Cloud Storage",
+        amount="10.00",
+        cadence="monthly",
+        category_id=category_id,
+        payment_method_id=method_id,
+        start_date=str(today - timedelta(days=120)),
+    )
+    _seed_payment_history(
+        subscription_id,
+        datetime.combine(current_month_start + timedelta(days=2), datetime.min.time(), tzinfo=UTC),
+        Decimal("20.00"),
+    )
+
+    response = client.get("/api/v1/expense-reports/analytics?range=90d", headers=headers)
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["summary"]["currency"] == "EUR"
+    assert payload["summary"]["total_spend"] == "18.00"
+    assert payload["summary"]["projected_monthly_savings"] == "9.00"
+    assert payload["categories"][0]["currency"] == "EUR"
+    assert payload["categories"][0]["total_spend"] == "18.00"

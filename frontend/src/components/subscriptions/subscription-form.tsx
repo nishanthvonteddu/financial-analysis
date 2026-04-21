@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { supportedCurrencies } from "@/lib/currency";
 import {
   buildSubscriptionFormValues,
   subscriptionCadenceOptions,
@@ -133,13 +134,17 @@ export function SubscriptionForm({
               <label className="text-sm font-medium text-ink" htmlFor="subscription-currency">
                 Currency
               </label>
-              <input
+              <select
                 id="subscription-currency"
                 className="h-12 w-full rounded-[1rem] border border-black/10 bg-white/82 px-4 text-sm uppercase text-ink outline-none transition focus:border-black/20 focus:ring-2 focus:ring-ember/15"
-                maxLength={3}
-                placeholder="USD"
                 {...register("currency")}
-              />
+              >
+                {supportedCurrencies.map((option) => (
+                  <option key={option.code} value={option.code}>
+                    {option.code}
+                  </option>
+                ))}
+              </select>
               {!initialSubscription ? (
                 <p className="text-xs uppercase tracking-[0.24em] text-black/42">
                   Workspace default: {preferredCurrency}

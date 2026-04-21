@@ -18,6 +18,7 @@ import type {
   PaymentMethodInput,
   PaymentMethodListResponse,
   RegisterInput,
+  SupportedCurrencyListResponse,
   Subscription,
   SubscriptionFilters,
   SubscriptionListResponse,
@@ -26,6 +27,7 @@ import type {
   Upload,
   UploadListResponse,
   User,
+  UserUpdateInput,
 } from "@/types";
 
 type RequestOptions = {
@@ -164,6 +166,15 @@ export const apiClient = {
   },
   getMe(token: string) {
     return request<User>("/auth/me", undefined, { token });
+  },
+  updateMe(token: string, payload: UserUpdateInput) {
+    return request<User>("/auth/me", {
+      body: JSON.stringify(payload),
+      method: "PATCH",
+    }, { token });
+  },
+  getCurrencies(token: string) {
+    return request<SupportedCurrencyListResponse>("/currencies", undefined, { token });
   },
   login(payload: LoginInput) {
     return request<AuthResponse>("/auth/login", {

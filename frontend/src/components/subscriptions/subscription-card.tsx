@@ -89,7 +89,12 @@ export function SubscriptionCard({
               currency={subscription.currency}
               value={Number.isFinite(amount) ? amount : 0}
             />
-            <p className="mt-1 text-sm capitalize text-black/48">{subscription.cadence} billing</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2 md:justify-end">
+              <span className="inline-flex h-7 items-center rounded-full border border-black/10 bg-stone/70 px-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-black/52">
+                {subscription.currency}
+              </span>
+              <span className="text-sm capitalize text-black/48">{subscription.cadence} billing</span>
+            </div>
           </div>
         </div>
 

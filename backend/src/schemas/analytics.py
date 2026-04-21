@@ -17,6 +17,7 @@ class AnalyticsWindow(BaseModel):
 class AnalyticsSummary(BaseModel):
     total_spend: Decimal
     average_monthly_spend: Decimal
+    currency: str
     active_subscriptions: int
     projected_monthly_savings: Decimal
     projected_range_savings: Decimal
@@ -26,6 +27,7 @@ class AnalyticsCategoryItem(BaseModel):
     category_id: int | None
     category_name: str
     total_spend: Decimal
+    currency: str
     active_subscriptions: int
     projected_monthly_savings: Decimal
     projected_range_savings: Decimal
@@ -36,6 +38,7 @@ class AnalyticsPaymentMethodItem(BaseModel):
     payment_method_label: str
     provider: str | None = None
     total_spend: Decimal
+    currency: str
     active_subscriptions: int
 
 
@@ -44,17 +47,20 @@ class AnalyticsFrequencyItem(BaseModel):
     label: str
     subscription_count: int
     monthly_equivalent: Decimal
+    currency: str
 
 
 class AnalyticsTrendCategoryItem(BaseModel):
     category_name: str
     total_spend: Decimal
+    currency: str
 
 
 class AnalyticsTrendPoint(BaseModel):
     period_start: date
     label: str
     total_spend: Decimal
+    currency: str
     category_totals: list[AnalyticsTrendCategoryItem]
 
 

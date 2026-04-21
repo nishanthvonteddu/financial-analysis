@@ -40,6 +40,15 @@ def test_register_login_refresh_and_me(client) -> None:
     )
     assert me_response.status_code == 200
     assert me_response.json()["full_name"] == "Owner One"
+    assert me_response.json()["preferred_currency"] == "USD"
+
+    update_response = client.patch(
+        "/api/v1/auth/me",
+        headers={"Authorization": f"Bearer {login_payload['access_token']}"},
+        json={"preferred_currency": "eur"},
+    )
+    assert update_response.status_code == 200
+    assert update_response.json()["preferred_currency"] == "EUR"
 
     refresh_response = client.post(
         "/api/v1/auth/refresh",

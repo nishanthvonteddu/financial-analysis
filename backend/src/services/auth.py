@@ -17,7 +17,13 @@ from src.models.raw_transaction import RawTransaction
 from src.models.subscription import Subscription
 from src.models.subscription_event import SubscriptionEvent
 from src.models.user import User
-from src.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse
+from src.schemas.auth import (
+    LoginRequest,
+    RegisterRequest,
+    TokenResponse,
+    UserResponse,
+    UserUpdateRequest,
+)
 
 logger = get_logger(__name__)
 
@@ -109,6 +115,27 @@ async def refresh_user_tokens(session: AsyncSession, refresh_token: str) -> Toke
 
     logger.info("auth.refreshed", user_id=user.id, email=user.email)
     return _build_token_response(user)
+
+
+async def update_user_profile(
+    session: AsyncSession,
+    *,
+    user: User,
+    payload: UserUpdateRequest,
+) -> User:
+    if payload.full_name is not None:
+        user.full_name = payload.full_name
+    if payload.preferred_currency is not None:
+        user.preferred_currency = payload.preferred_currency
+
+    await session.commit()
+    await session.refresh(user)
+    logger.info(
+        "auth.profile_updated",
+        user_id=user.id,
+        preferred_currency=user.preferred_currency,
+    )
+    return user
 
 
 async def delete_user_workspace_data(session: AsyncSession, user: User) -> None:

@@ -125,7 +125,7 @@ function ChartTooltip({
 }: {
   active?: boolean;
   label?: string;
-  payload?: Array<{ payload?: { total?: number } }>;
+  payload?: Array<{ payload?: { currency?: string; total?: number } }>;
 }) {
   if (!active || !payload?.length) {
     return null;
@@ -135,7 +135,10 @@ function ChartTooltip({
     <div className="rounded-[1.2rem] border border-black/10 bg-white/94 px-4 py-3 shadow-line">
       <p className="text-xs uppercase tracking-[0.28em] text-black/42">{label}</p>
       <p className="mt-2 text-sm font-semibold text-ink">
-        {formatCurrency({ value: payload[0]?.payload?.total ?? 0 })}
+        {formatCurrency({
+          currency: payload[0]?.payload?.currency ?? "USD",
+          value: payload[0]?.payload?.total ?? 0,
+        })}
       </p>
     </div>
   );
@@ -162,9 +165,10 @@ function ActiveSubscriptionsWidget({ summary }: { summary: DashboardSummary }) {
         <p className="mt-4 text-5xl font-semibold tracking-tight">{summary.summary.active_subscriptions}</p>
         <p className="mt-3 text-sm leading-6 text-white/65">
           {formatCurrency({
+            currency: summary.summary.currency,
             value: Number.parseFloat(summary.summary.total_monthly_spend),
           })}{" "}
-          in monthly-equivalent spend is currently active.
+          in monthly-equivalent spend is currently active after conversion.
         </p>
       </div>
 
@@ -202,6 +206,7 @@ function MonthlySpendWidget({ summary }: { summary: DashboardSummary }) {
   const chartData = summary.monthly_spend.map((point) => ({
     label: point.label,
     month: point.month,
+    currency: point.currency,
     total: Number.parseFloat(point.total),
   }));
   const hasData = chartData.some((point) => point.total > 0);
@@ -223,7 +228,13 @@ function MonthlySpendWidget({ summary }: { summary: DashboardSummary }) {
         <div>
           <p className="text-xs uppercase tracking-[0.28em] text-black/45">Latest recorded month</p>
           <p className="mt-2 text-3xl font-semibold tracking-tight text-ink">
-            {formatCurrency({ value: chartData.at(-1)?.total ?? 0 })}
+            {formatCurrency({
+              currency: summary.summary.currency,
+              value: chartData.at(-1)?.total ?? 0,
+            })}
+          </p>
+          <p className="mt-1 text-xs uppercase tracking-[0.24em] text-black/42">
+            Approx. converted to {summary.summary.currency}
           </p>
         </div>
         <p className="max-w-xs text-sm leading-6 text-black/58">
@@ -252,6 +263,7 @@ function MonthlySpendWidget({ summary }: { summary: DashboardSummary }) {
 
 function CategoryBreakdownWidget({ summary }: { summary: DashboardSummary }) {
   const chartData = summary.category_breakdown.slice(0, 5).map((item) => ({
+    currency: item.currency,
     label: item.category_name,
     subscriptions: item.subscriptions,
     total: Number.parseFloat(item.total_monthly_spend),
@@ -309,7 +321,9 @@ function CategoryBreakdownWidget({ summary }: { summary: DashboardSummary }) {
               </div>
             </div>
 
-            <p className="text-sm font-semibold text-ink">{formatCompactCurrency(String(item.total))}</p>
+            <p className="text-sm font-semibold text-ink">
+              {formatCompactCurrency(String(item.total), item.currency)}
+            </p>
           </div>
         ))}
       </div>
@@ -459,7 +473,10 @@ export function DashboardBoardFootnote({ summary }: { summary: DashboardSummary 
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-white/45">Live spend signal</p>
             <p className="mt-2 text-2xl font-semibold tracking-tight">
-              {formatCurrency({ value: Number.parseFloat(summary.summary.total_monthly_spend) })}
+              {formatCurrency({
+                currency: summary.summary.currency,
+                value: Number.parseFloat(summary.summary.total_monthly_spend),
+              })}
             </p>
           </div>
           <ArrowUpRight className="size-5 text-white/55" />

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CreditCard, FolderTree, PencilLine, ShieldAlert, Trash2, UserRound } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
@@ -25,6 +25,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { getCurrencyName, supportedCurrencies } from "@/lib/currency";
 
 type CategoryDraft = {
   description: string;
@@ -107,9 +108,12 @@ function SectionShell({
 }
 
 export default function SettingsPage() {
-  const { user } = useAuth();
-  const { preferredCurrency } = useOnboarding();
+  const { updateProfile, user } = useAuth();
+  const { preferredCurrency, setPreferredCurrency } = useOnboarding();
   const [categoryDraft, setCategoryDraft] = useState<CategoryDraft>(emptyCategoryDraft);
+  const [currencyDraft, setCurrencyDraft] = useState(user?.preferred_currency ?? preferredCurrency);
+  const [currencyError, setCurrencyError] = useState<string | null>(null);
+  const [isSavingCurrency, setIsSavingCurrency] = useState(false);
   const [paymentMethodDraft, setPaymentMethodDraft] = useState<PaymentMethodDraft>(emptyPaymentMethodDraft);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editingCategoryDraft, setEditingCategoryDraft] = useState<CategoryDraft>(emptyCategoryDraft);
@@ -130,16 +134,34 @@ export default function SettingsPage() {
 
   const categories = categoriesQuery.data?.items ?? [];
   const paymentMethods = paymentMethodsQuery.data?.items ?? [];
+  const effectivePreferredCurrency = user?.preferred_currency ?? preferredCurrency;
   const currencySummary = useMemo(
     () =>
       getCurrencySummary(
         (subscriptionsQuery.data?.items ?? []).map((subscription) => subscription.currency),
-        preferredCurrency,
+        effectivePreferredCurrency,
       ),
-    [preferredCurrency, subscriptionsQuery.data?.items],
+    [effectivePreferredCurrency, subscriptionsQuery.data?.items],
   );
 
   const isCatalogLoading = categoriesQuery.isLoading || paymentMethodsQuery.isLoading;
+
+  useEffect(() => {
+    setCurrencyDraft(effectivePreferredCurrency);
+  }, [effectivePreferredCurrency]);
+
+  async function handleCurrencySave() {
+    setCurrencyError(null);
+    setIsSavingCurrency(true);
+    try {
+      const nextUser = await updateProfile({ preferred_currency: currencyDraft });
+      setPreferredCurrency(nextUser.preferred_currency);
+    } catch (error) {
+      setCurrencyError(getErrorMessage(error));
+    } finally {
+      setIsSavingCurrency(false);
+    }
+  }
 
   const openCategoryEditor = (category: Category) => {
     setEditingCategory(category);
@@ -605,6 +627,37 @@ export default function SettingsPage() {
               <p className="text-xs uppercase tracking-[0.28em] text-black/42">Workspace currency</p>
               <p className="mt-2 text-2xl font-semibold text-ink">{currencySummary.label}</p>
               <p className="mt-2 text-sm leading-6 text-black/58">{currencySummary.detail}</p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <label className="sr-only" htmlFor="preferred-currency">
+                  Preferred currency
+                </label>
+                <select
+                  className="h-11 w-full rounded-full border border-black/10 bg-stone/70 px-4 text-sm font-semibold text-ink outline-none transition focus:border-black/20 focus:ring-2 focus:ring-ember/15"
+                  id="preferred-currency"
+                  onChange={(event) => setCurrencyDraft(event.target.value)}
+                  value={currencyDraft}
+                >
+                  {supportedCurrencies.map((option) => (
+                    <option key={option.code} value={option.code}>
+                      {option.code} - {option.name}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  className="rounded-full px-5"
+                  disabled={isSavingCurrency || currencyDraft === effectivePreferredCurrency}
+                  onClick={() => {
+                    void handleCurrencySave();
+                  }}
+                  type="button"
+                >
+                  {isSavingCurrency ? "Saving..." : "Save"}
+                </Button>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-black/50">
+                Dashboard and report aggregates convert into {getCurrencyName(effectivePreferredCurrency)}.
+              </p>
+              {currencyError ? <p className="mt-2 text-sm text-ember">{currencyError}</p> : null}
             </div>
 
             {categories.length === 0 && paymentMethods.length === 0 ? (
