@@ -51,6 +51,7 @@ function renderMetricValue(metricKey: (typeof metricMeta)[number]["key"], summar
     return (
       <CurrencyDisplay
         className="text-3xl font-semibold tracking-tight sm:text-4xl"
+        currency={summary.currency}
         value={Number.parseFloat(summary.total_monthly_spend)}
       />
     );
@@ -103,6 +104,11 @@ export function SnapshotBar({ isLoading = false, summary }: SnapshotBarProps) {
               ) : (
                 <div className="space-y-3">
                   {renderMetricValue(key, summary)}
+                  {key === "total_monthly_spend" ? (
+                    <p className={cn("text-xs uppercase tracking-[0.24em]", index === 0 ? "text-white/45" : "text-black/42")}>
+                      Approx. converted to {summary.currency}
+                    </p>
+                  ) : null}
                   <p className={cn("text-sm leading-6", index === 0 ? "text-white/68" : "text-black/62")}>
                     {detail(summary)}
                   </p>
