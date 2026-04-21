@@ -52,6 +52,12 @@ PDF_LINE_PATTERN = re.compile(
     r"(?P<description>.+?)\s+"
     r"(?P<amount>\(?-?\$?[\d,]+\.\d{2}\)?(?:\s?CR)?)$"
 )
+PDF_CAPITAL_ONE_LINE_PATTERN = re.compile(
+    r"^(?P<trans_date>[A-Z][a-z]{2,8}\s+\d{1,2})\s+"
+    r"(?P<post_date>[A-Z][a-z]{2,8}\s+\d{1,2})\s+"
+    r"(?P<description>.+?)\s+"
+    r"(?P<amount>-?\s?\$?[\d,]+\.\d{2})$"
+)
 
 
 def _normalize_header(value: Any) -> str:
@@ -92,6 +98,9 @@ def _extract_date(record: dict[str, Any], *, year_hint: int | None = None) -> da
     if re.fullmatch(r"\d{1,2}/\d{1,2}$", text):
         year = year_hint or datetime.now(UTC).year
         text = f"{text}/{year}"
+    elif re.fullmatch(r"[A-Za-z]{3,9}\s+\d{1,2}", text):
+        year = year_hint or datetime.now(UTC).year
+        text = f"{text} {year}"
 
     parsed = pd.to_datetime(text, errors="coerce")
     if pd.isna(parsed):
@@ -251,6 +260,34 @@ def _infer_year_hint(text: str) -> int:
     return datetime.now(UTC).year
 
 
+def _capital_one_pdf_amount_type(raw_amount: str, amount: Decimal) -> tuple[Decimal, str]:
+    if raw_amount.strip().startswith("-"):
+        return abs(amount).quantize(Decimal("0.01")), "credit"
+    return amount, "debit"
+
+
+def _record_from_pdf_line(line: str, *, bank_format: str) -> dict[str, str] | None:
+    if bank_format == "capital_one":
+        capital_one_match = PDF_CAPITAL_ONE_LINE_PATTERN.match(line)
+        if capital_one_match is not None:
+            return {
+                "date": capital_one_match.group("post_date"),
+                "transaction_date": capital_one_match.group("trans_date"),
+                "description": capital_one_match.group("description"),
+                "amount": capital_one_match.group("amount"),
+            }
+
+    match = PDF_LINE_PATTERN.match(line)
+    if match is None:
+        return None
+
+    return {
+        "date": match.group("date"),
+        "description": match.group("description"),
+        "amount": match.group("amount"),
+    }
+
+
 def parse_pdf_text(text: str) -> ExtractionResult:
     bank_format = detect_bank_format(pdf_text=text)
     year_hint = _infer_year_hint(text)
@@ -260,22 +297,20 @@ def parse_pdf_text(text: str) -> ExtractionResult:
         line = " ".join(raw_line.strip().split())
         if not line:
             continue
-        match = PDF_LINE_PATTERN.match(line)
-        if match is None:
+        record = _record_from_pdf_line(line, bank_format=bank_format)
+        if record is None:
             continue
 
-        record = {
-            "date": match.group("date"),
-            "description": match.group("description"),
-            "amount": match.group("amount"),
-        }
         posted_at = _extract_date(record, year_hint=year_hint)
         amount_data = _extract_amount(record, bank_format=bank_format)
         if posted_at is None or amount_data is None:
             continue
 
         amount, transaction_type = amount_data
-        description = match.group("description").strip()
+        if bank_format == "capital_one":
+            amount, transaction_type = _capital_one_pdf_amount_type(record["amount"], amount)
+
+        description = record["description"].strip()
         transactions.append(
             ParsedTransaction(
                 posted_at=posted_at,
@@ -284,7 +319,7 @@ def parse_pdf_text(text: str) -> ExtractionResult:
                 amount=amount,
                 transaction_type=transaction_type,
                 external_id=_build_external_id(posted_at, description, amount, "pdf"),
-                raw_payload={"line": line},
+                raw_payload={"line": line, **record},
             )
         )
 
