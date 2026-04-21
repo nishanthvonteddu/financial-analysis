@@ -24,6 +24,7 @@ DashboardColumn = Literal["primary", "secondary"]
 
 class DashboardSummaryStats(BaseModel):
     total_monthly_spend: Decimal
+    currency: str
     active_subscriptions: int
     upcoming_renewals: int
     cancelled_subscriptions: int
@@ -33,6 +34,7 @@ class DashboardMonthlySpendPoint(BaseModel):
     month: str
     label: str
     total: Decimal
+    currency: str
 
 
 class DashboardActiveSubscriptionItem(BaseModel):
@@ -51,6 +53,7 @@ class DashboardCategoryBreakdownItem(BaseModel):
     category_name: str
     subscriptions: int
     total_monthly_spend: Decimal
+    currency: str
 
 
 class DashboardUpcomingRenewalItem(BaseModel):
