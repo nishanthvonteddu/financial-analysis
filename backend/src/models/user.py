@@ -12,3 +12,4 @@ class User(TimestampMixin, Base):
     full_name: Mapped[str] = mapped_column(String(255))
     hashed_password: Mapped[str] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    preferred_currency: Mapped[str] = mapped_column(String(3), default="USD", nullable=False)
