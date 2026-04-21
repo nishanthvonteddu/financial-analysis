@@ -10,6 +10,7 @@ describe("SnapshotBar", () => {
         summary={{
           active_subscriptions: 12,
           cancelled_subscriptions: 3,
+          currency: "USD",
           total_monthly_spend: "245.99",
           upcoming_renewals: 7,
         }}
