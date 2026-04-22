@@ -8,6 +8,7 @@ from src.api.routes import (
     dashboard,
     expense_reports,
     health,
+    notifications,
     payment_methods,
     subscriptions,
     uploads,
@@ -21,6 +22,7 @@ api_router.include_router(categories.router)
 api_router.include_router(currencies.router)
 api_router.include_router(dashboard.router)
 api_router.include_router(expense_reports.router)
+api_router.include_router(notifications.router)
 api_router.include_router(payment_methods.router)
 api_router.include_router(subscriptions.router)
 api_router.include_router(uploads.router)
