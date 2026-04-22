@@ -1,4 +1,6 @@
-from sqlalchemy import Boolean, String
+from datetime import datetime
+
+from sqlalchemy import Boolean, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base, TimestampMixin
@@ -13,3 +15,9 @@ class User(TimestampMixin, Base):
     hashed_password: Mapped[str] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     preferred_currency: Mapped[str] = mapped_column(String(3), default="USD", nullable=False)
+    telegram_chat_id: Mapped[str | None] = mapped_column(String(100), unique=True, nullable=True)
+    telegram_link_token: Mapped[str | None] = mapped_column(String(100), unique=True, nullable=True)
+    telegram_linked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
