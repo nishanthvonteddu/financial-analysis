@@ -6,7 +6,6 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import {
   BarChart3,
-  Bell,
   CalendarDays,
   ChevronDown,
   CreditCard,
@@ -21,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { NotificationBell } from "@/components/notifications/notification-panel";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -294,14 +294,7 @@ export function AppShell({ children }: AppShellProps) {
               <div className="flex items-center gap-2 sm:gap-3">
                 <ThemeToggle compact />
 
-                <button
-                  aria-label="Notifications"
-                  className="relative inline-flex size-11 items-center justify-center rounded-full border border-black/10 bg-white/78 text-ink transition hover:border-black/20 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember/30"
-                  type="button"
-                >
-                  <Bell className="size-4" />
-                  <span className="absolute right-3 top-3 size-2 rounded-full bg-ember" />
-                </button>
+                <NotificationBell />
 
                 <div className="relative">
                   <button
