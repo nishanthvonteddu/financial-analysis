@@ -11,11 +11,13 @@ from src.schemas.dashboard import (
     DashboardLayoutUpdate,
     DashboardSummaryResponse,
 )
+from src.schemas.score import SubscriptionScoreResponse
 from src.services.dashboard import (
     get_dashboard_layout,
     get_dashboard_summary,
     update_dashboard_layout,
 )
+from src.services.score import get_subscription_score
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 DbSession = Annotated[AsyncSession, Depends(get_db)]
@@ -33,6 +35,19 @@ async def get_dashboard_summary_route(
     current_user: CurrentUser,
 ) -> DashboardSummaryResponse:
     return await get_dashboard_summary(session, user=current_user)
+
+
+@router.get(
+    "/score",
+    response_model=SubscriptionScoreResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get the subscription score and duplicate candidates",
+)
+async def get_dashboard_score_route(
+    session: DbSession,
+    current_user: CurrentUser,
+) -> SubscriptionScoreResponse:
+    return await get_subscription_score(session, user=current_user)
 
 
 @router.get(
