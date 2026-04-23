@@ -1,5 +1,6 @@
 from datetime import UTC, date, datetime, timedelta
 from decimal import ROUND_HALF_UP, Decimal
+from typing import Literal, cast
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,16 +14,23 @@ from src.models.user import User
 from src.schemas.dashboard import (
     DashboardActiveSubscriptionItem,
     DashboardCategoryBreakdownItem,
+    DashboardDuplicateAlertItem,
     DashboardLayoutResponse,
     DashboardLayoutUpdate,
     DashboardLayoutWidget,
     DashboardMonthlySpendPoint,
     DashboardRecentlyEndedItem,
+    DashboardScoreOverview,
     DashboardSummaryResponse,
     DashboardSummaryStats,
     DashboardUpcomingRenewalItem,
 )
 from src.services.currency import convert
+from src.services.score import (
+    build_score_overview,
+    get_subscription_score,
+    summarize_duplicate_alerts,
+)
 
 logger = get_logger(__name__)
 
@@ -32,13 +40,17 @@ MONTHLY_SPEND_MONTHS = 6
 
 DEFAULT_DASHBOARD_LAYOUT = DashboardLayoutUpdate(
     widgets=[
+        DashboardLayoutWidget(id="subscription-score", column="primary"),
         DashboardLayoutWidget(id="active-subscriptions", column="primary"),
         DashboardLayoutWidget(id="monthly-spend", column="primary"),
-        DashboardLayoutWidget(id="recently-ended", column="primary"),
+        DashboardLayoutWidget(id="duplicate-alerts", column="secondary"),
         DashboardLayoutWidget(id="category-breakdown", column="secondary"),
         DashboardLayoutWidget(id="upcoming-renewals", column="secondary"),
+        DashboardLayoutWidget(id="recently-ended", column="primary"),
     ]
 )
+
+DEFAULT_WIDGET_BY_ID = {widget.id: widget for widget in DEFAULT_DASHBOARD_LAYOUT.widgets}
 
 
 def _quantize_money(value: Decimal) -> Decimal:
@@ -81,6 +93,41 @@ def _shift_months(value: date, offset: int) -> date:
     year = month_index // 12
     month = month_index % 12 + 1
     return date(year, month, 1)
+
+
+def _normalize_layout_widgets(raw_layout: object) -> list[DashboardLayoutWidget]:
+    widgets_payload = raw_layout.get("widgets", []) if isinstance(raw_layout, dict) else []
+    normalized: list[DashboardLayoutWidget] = []
+    seen_ids: set[str] = set()
+
+    for widget in widgets_payload:
+        if not isinstance(widget, dict):
+            continue
+
+        widget_id = widget.get("id")
+        column = widget.get("column")
+        if (
+            not isinstance(widget_id, str)
+            or not isinstance(column, str)
+            or widget_id in seen_ids
+            or widget_id not in DEFAULT_WIDGET_BY_ID
+            or column not in {"primary", "secondary"}
+        ):
+            continue
+
+        normalized.append(
+            DashboardLayoutWidget(
+                id=widget_id,
+                column=cast(Literal["primary", "secondary"], column),
+            )
+        )
+        seen_ids.add(widget_id)
+
+    for default_widget in DEFAULT_DASHBOARD_LAYOUT.widgets:
+        if default_widget.id not in seen_ids:
+            normalized.append(default_widget)
+
+    return normalized
 
 
 async def get_dashboard_summary(
@@ -149,9 +196,7 @@ async def get_dashboard_summary(
             target_currency=target_currency,
         )
 
-    total_monthly_spend = _quantize_money(
-        sum(monthly_equivalents.values(), Decimal("0.00"))
-    )
+    total_monthly_spend = _quantize_money(sum(monthly_equivalents.values(), Decimal("0.00")))
 
     category_totals: dict[tuple[int | None, str], dict[str, Decimal | int]] = {}
     for subscription in active_subscriptions:
@@ -238,6 +283,12 @@ async def get_dashboard_summary(
         )
         for point in month_points
     ]
+    score_payload = await get_subscription_score(session, user=user)
+    score_overview = DashboardScoreOverview.model_validate(build_score_overview(score_payload))
+    duplicate_alerts = [
+        DashboardDuplicateAlertItem.model_validate(candidate.model_dump())
+        for candidate in summarize_duplicate_alerts(score_payload.duplicate_candidates, limit=3)
+    ]
 
     response = DashboardSummaryResponse(
         summary=DashboardSummaryStats(
@@ -316,6 +367,8 @@ async def get_dashboard_summary(
             for subscription in recently_ended[:6]
             if subscription.end_date is not None
         ],
+        score_overview=score_overview,
+        duplicate_alerts=duplicate_alerts,
     )
     logger.info(
         "dashboard.summary.loaded",
@@ -339,8 +392,9 @@ async def get_dashboard_layout(
             updated_at=None,
         )
 
+    widgets = _normalize_layout_widgets(layout.layout)
     return DashboardLayoutResponse(
-        widgets=DashboardLayoutUpdate.model_validate(layout.layout).widgets,
+        widgets=widgets,
         version=layout.version,
         updated_at=layout.updated_at,
     )
