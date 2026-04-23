@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { startTransition, useMemo } from "react";
-import { ArrowRight, Activity, LayoutTemplate } from "lucide-react";
+import { ArrowRight, Activity, Gauge, LayoutTemplate } from "lucide-react";
 
 import { WorkspaceOnboarding } from "@/components/onboarding/workspace-onboarding";
 import { SnapshotBar } from "@/components/dashboard/snapshot-bar";
@@ -53,14 +53,14 @@ export default function DashboardPage() {
         action={
           showOnboarding ? undefined : (
             <Button asChild className="rounded-full px-5" variant="outline">
-              <Link href="/subscriptions">
-                Open subscriptions
+              <Link href="/score">
+                Open score
                 <ArrowRight className="ml-2 size-4" />
               </Link>
             </Button>
           )
         }
-        description="Operate from a live dashboard where five persistent widgets keep spend, renewals, category mix, and subscription churn in one working surface."
+        description="Operate from a live dashboard where score, duplicate risk, renewals, category mix, and spend all stay visible in one working surface."
         eyebrow="Dashboard workspace"
         title="Smart dashboard workspace"
       />
@@ -97,7 +97,7 @@ export default function DashboardPage() {
               <div className="rounded-[1.35rem] border border-white/10 bg-white/6 p-4">
                 <p className="text-xs uppercase tracking-[0.24em] text-white/42">Data freshness</p>
                 <p className="mt-2 text-sm leading-6 text-white/68">
-                  Upload history feeds the spend curve, while subscription records keep category, renewal, and churn widgets grounded.
+                  Upload history feeds the spend curve, while subscription records keep score, duplicate alerts, renewal, and churn widgets grounded.
                 </p>
               </div>
             </div>
@@ -113,6 +113,12 @@ export default function DashboardPage() {
             </p>
 
             <div className="mt-5 space-y-3">
+              <Button asChild className="w-full rounded-full" variant="outline">
+                <Link href="/score">
+                  Open subscription score
+                  <Gauge className="ml-2 size-4" />
+                </Link>
+              </Button>
               <Button asChild className="w-full rounded-full" variant="outline">
                 <Link href="/uploads">
                   Open uploads
