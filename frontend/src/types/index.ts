@@ -314,6 +314,48 @@ export type UploadListResponse = {
   total: number;
 };
 
+export type NotificationItem = {
+  id: number;
+  title: string;
+  message: string;
+  notification_type: string;
+  status: "read" | "unread";
+  read_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type NotificationListResponse = {
+  items: NotificationItem[];
+  unread_count: number;
+  total: number;
+};
+
+export type NotificationChannel = "email" | "telegram";
+export type NotificationEventType = "renewal_due";
+
+export type NotificationPreference = {
+  channel: NotificationChannel;
+  event_type: NotificationEventType;
+  is_enabled: boolean;
+  quiet_hours_start: number | null;
+  quiet_hours_end: number | null;
+};
+
+export type NotificationPreferencesResponse = {
+  items: NotificationPreference[];
+  telegram_linked: boolean;
+};
+
+export type NotificationPreferencesUpdate = {
+  items: NotificationPreference[];
+};
+
+export type TelegramLinkTokenResponse = {
+  token: string;
+  deep_link_hint: string;
+};
+
 export type SubscriptionStatus = "active" | "paused" | "cancelled";
 export type SubscriptionCadence = "weekly" | "monthly" | "quarterly" | "yearly";
 export type SubscriptionRenewalState = "inactive" | "overdue" | "scheduled" | "trialing";

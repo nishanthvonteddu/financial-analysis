@@ -14,6 +14,9 @@ import type {
   ExpenseReportListResponse,
   HealthResponse,
   LoginInput,
+  NotificationListResponse,
+  NotificationPreferencesResponse,
+  NotificationPreferencesUpdate,
   PaymentMethod,
   PaymentMethodInput,
   PaymentMethodListResponse,
@@ -24,6 +27,7 @@ import type {
   SubscriptionListResponse,
   SubscriptionPaymentHistory,
   SubscriptionUpsertInput,
+  TelegramLinkTokenResponse,
   Upload,
   UploadListResponse,
   User,
@@ -261,6 +265,42 @@ export const apiClient = {
   },
   getExpenseReport(token: string, reportId: number) {
     return request<ExpenseReport>(`/expense-reports/${reportId}`, undefined, { token });
+  },
+  getNotifications(token: string) {
+    return request<NotificationListResponse>("/notifications", undefined, { token });
+  },
+  markNotificationRead(token: string, notificationId: number) {
+    return request<NotificationListResponse["items"][number]>(
+      `/notifications/${notificationId}/read`,
+      { method: "POST" },
+      { token },
+    );
+  },
+  markAllNotificationsRead(token: string) {
+    return request<{ updated: number }>("/notifications/read-all", {
+      method: "POST",
+    }, { token });
+  },
+  getNotificationPreferences(token: string) {
+    return request<NotificationPreferencesResponse>("/notifications/preferences", undefined, {
+      token,
+    });
+  },
+  updateNotificationPreferences(token: string, payload: NotificationPreferencesUpdate) {
+    return request<NotificationPreferencesResponse>("/notifications/preferences", {
+      body: JSON.stringify(payload),
+      method: "PUT",
+    }, { token });
+  },
+  createTelegramLinkToken(token: string) {
+    return request<TelegramLinkTokenResponse>("/notifications/telegram/link-token", {
+      method: "POST",
+    }, { token });
+  },
+  unlinkTelegram(token: string) {
+    return request<{ telegram_linked: boolean }>("/notifications/telegram/link", {
+      method: "DELETE",
+    }, { token });
   },
   getUploads(token: string) {
     return request<UploadListResponse>("/uploads", undefined, { token });
