@@ -5,21 +5,27 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 DASHBOARD_WIDGET_IDS = (
+    "subscription-score",
     "active-subscriptions",
     "monthly-spend",
     "category-breakdown",
     "upcoming-renewals",
     "recently-ended",
+    "duplicate-alerts",
 )
 
 DashboardWidgetId = Literal[
+    "subscription-score",
     "active-subscriptions",
     "monthly-spend",
     "category-breakdown",
     "upcoming-renewals",
     "recently-ended",
+    "duplicate-alerts",
 ]
 DashboardColumn = Literal["primary", "secondary"]
+DashboardScoreBand = Literal["excellent", "steady", "attention", "at-risk"]
+DuplicateConfidence = Literal["high", "medium"]
 
 
 class DashboardSummaryStats(BaseModel):
@@ -75,6 +81,29 @@ class DashboardRecentlyEndedItem(BaseModel):
     end_date: date
 
 
+class DashboardScoreOverview(BaseModel):
+    score: int
+    grade: str
+    band: DashboardScoreBand
+    recommendation_count: int
+    duplicate_candidates: int
+    potential_monthly_savings: Decimal
+    currency: str
+
+
+class DashboardDuplicateAlertItem(BaseModel):
+    left_subscription_id: int
+    left_name: str
+    left_vendor: str
+    right_subscription_id: int
+    right_name: str
+    right_vendor: str
+    shared_signal: str
+    confidence: DuplicateConfidence
+    potential_monthly_savings: Decimal
+    currency: str
+
+
 class DashboardSummaryResponse(BaseModel):
     summary: DashboardSummaryStats
     active_subscriptions: list[DashboardActiveSubscriptionItem]
@@ -82,6 +111,8 @@ class DashboardSummaryResponse(BaseModel):
     category_breakdown: list[DashboardCategoryBreakdownItem]
     upcoming_renewals: list[DashboardUpcomingRenewalItem]
     recently_ended: list[DashboardRecentlyEndedItem]
+    score_overview: DashboardScoreOverview | None = None
+    duplicate_alerts: list[DashboardDuplicateAlertItem] = []
 
 
 class DashboardLayoutWidget(BaseModel):
