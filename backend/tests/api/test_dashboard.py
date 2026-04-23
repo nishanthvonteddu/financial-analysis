@@ -56,13 +56,17 @@ def _create_subscription(
     end_date: str | None = None,
     payment_method_id: int | None = None,
     currency: str = "USD",
+    vendor: str | None = None,
+    website_url: str | None = None,
+    description: str | None = None,
+    notes: str | None = None,
 ) -> int:
     response = client.post(
         "/api/v1/subscriptions",
         headers=headers,
         json={
             "name": name,
-            "vendor": name,
+            "vendor": vendor or name,
             "amount": amount,
             "currency": currency,
             "cadence": cadence,
@@ -72,6 +76,9 @@ def _create_subscription(
             "next_charge_date": next_charge_date,
             "end_date": end_date,
             "payment_method_id": payment_method_id,
+            "website_url": website_url,
+            "description": description,
+            "notes": notes,
         },
     )
     assert response.status_code == 201
@@ -232,15 +239,27 @@ def test_dashboard_summary_and_layout_persistence(client) -> None:
     month_map = {item["month"]: item["total"] for item in payload["monthly_spend"]}
     assert month_map[current_month_start.strftime("%Y-%m")] == "135.00"
     assert month_map[previous_month.strftime("%Y-%m")] == "15.00"
+    assert payload["score_overview"] == {
+        "score": 75,
+        "grade": "C",
+        "band": "attention",
+        "recommendation_count": 1,
+        "duplicate_candidates": 0,
+        "potential_monthly_savings": "0.00",
+        "currency": "USD",
+    }
+    assert payload["duplicate_alerts"] == []
 
     layout_response = client.get("/api/v1/dashboard/layout", headers=owner_headers)
     assert layout_response.status_code == 200
     assert layout_response.json()["widgets"] == [
+        {"id": "subscription-score", "column": "primary"},
         {"id": "active-subscriptions", "column": "primary"},
         {"id": "monthly-spend", "column": "primary"},
-        {"id": "recently-ended", "column": "primary"},
+        {"id": "duplicate-alerts", "column": "secondary"},
         {"id": "category-breakdown", "column": "secondary"},
         {"id": "upcoming-renewals", "column": "secondary"},
+        {"id": "recently-ended", "column": "primary"},
     ]
 
     update_response = client.put(
@@ -248,9 +267,11 @@ def test_dashboard_summary_and_layout_persistence(client) -> None:
         headers=owner_headers,
         json={
             "widgets": [
+                {"id": "subscription-score", "column": "primary"},
                 {"id": "active-subscriptions", "column": "primary"},
                 {"id": "upcoming-renewals", "column": "primary"},
                 {"id": "monthly-spend", "column": "primary"},
+                {"id": "duplicate-alerts", "column": "secondary"},
                 {"id": "category-breakdown", "column": "secondary"},
                 {"id": "recently-ended", "column": "secondary"},
             ]
@@ -258,18 +279,18 @@ def test_dashboard_summary_and_layout_persistence(client) -> None:
     )
     assert update_response.status_code == 200
     assert update_response.json()["version"] == 1
-    assert update_response.json()["widgets"][1]["id"] == "upcoming-renewals"
+    assert update_response.json()["widgets"][2]["id"] == "upcoming-renewals"
 
     persisted_layout_response = client.get("/api/v1/dashboard/layout", headers=owner_headers)
     assert persisted_layout_response.status_code == 200
-    assert persisted_layout_response.json()["widgets"][1] == {
+    assert persisted_layout_response.json()["widgets"][2] == {
         "id": "upcoming-renewals",
         "column": "primary",
     }
 
     other_layout_response = client.get("/api/v1/dashboard/layout", headers=other_headers)
     assert other_layout_response.status_code == 200
-    assert other_layout_response.json()["widgets"][0]["id"] == "active-subscriptions"
+    assert other_layout_response.json()["widgets"][0]["id"] == "subscription-score"
 
 
 def test_dashboard_layout_requires_each_widget_exactly_once(client) -> None:
@@ -280,9 +301,11 @@ def test_dashboard_layout_requires_each_widget_exactly_once(client) -> None:
         headers=headers,
         json={
             "widgets": [
+                {"id": "subscription-score", "column": "primary"},
                 {"id": "active-subscriptions", "column": "primary"},
                 {"id": "monthly-spend", "column": "primary"},
                 {"id": "monthly-spend", "column": "secondary"},
+                {"id": "duplicate-alerts", "column": "secondary"},
                 {"id": "upcoming-renewals", "column": "secondary"},
                 {"id": "recently-ended", "column": "primary"},
             ]
@@ -332,3 +355,76 @@ def test_dashboard_summary_converts_workspace_totals_to_preferred_currency(clien
         "total": "18.00",
         "currency": "EUR",
     }
+
+
+def test_dashboard_score_route_surfaces_duplicates_and_recommendations(client) -> None:
+    today = date.today()
+    headers = _auth_headers(client, "score-dashboard@example.com")
+    entertainment_id = _create_category(client, headers, "Entertainment")
+    payment_method_id = _create_payment_method(client, headers)
+
+    _create_subscription(
+        client,
+        headers,
+        name="Netflix Standard",
+        vendor="Netflix",
+        amount="15.00",
+        cadence="monthly",
+        status="active",
+        start_date=str(today - timedelta(days=120)),
+        category_id=entertainment_id,
+        next_charge_date=str(today + timedelta(days=5)),
+        payment_method_id=payment_method_id,
+        website_url="https://www.netflix.com",
+        description="Primary streaming plan",
+    )
+    _create_subscription(
+        client,
+        headers,
+        name="Netflix Mobile",
+        vendor="Netflix",
+        amount="8.00",
+        cadence="monthly",
+        status="active",
+        start_date=str(today - timedelta(days=60)),
+        website_url="https://www.netflix.com/mobile",
+    )
+    _create_subscription(
+        client,
+        headers,
+        name="Notion",
+        vendor="Notion",
+        amount="12.00",
+        cadence="monthly",
+        status="active",
+        start_date=str(today - timedelta(days=40)),
+        next_charge_date=str(today + timedelta(days=12)),
+        notes="Used for docs",
+    )
+
+    response = client.get("/api/v1/dashboard/score", headers=headers)
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["score"] == 58
+    assert payload["grade"] == "D"
+    assert payload["band"] == "attention"
+    assert payload["active_subscription_count"] == 3
+    assert payload["potential_monthly_savings"] == "8.00"
+    assert payload["currency"] == "USD"
+    assert [item["id"] for item in payload["breakdown"]] == [
+        "coverage",
+        "renewal",
+        "context",
+        "waste",
+    ]
+    assert payload["duplicate_candidates"][0]["left_vendor"] == "Netflix"
+    assert payload["duplicate_candidates"][0]["right_vendor"] == "Netflix"
+    assert payload["duplicate_candidates"][0]["shared_signal"] == "matching vendor"
+    assert payload["duplicate_candidates"][0]["potential_monthly_savings"] == "8.00"
+    assert [item["title"] for item in payload["recommendations"]] == [
+        "Resolve duplicate candidates",
+        "Attach payment rails",
+        "Fill in renewal dates",
+        "Categorize uncoded plans",
+    ]
