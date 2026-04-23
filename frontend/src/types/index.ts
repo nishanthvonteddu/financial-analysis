@@ -131,6 +131,32 @@ export type DashboardRecentlyEndedItem = {
   end_date: string;
 };
 
+export type DashboardScoreBand = "excellent" | "steady" | "attention" | "at-risk";
+export type DuplicateConfidence = "high" | "medium";
+
+export type DashboardScoreOverview = {
+  score: number;
+  grade: string;
+  band: DashboardScoreBand;
+  recommendation_count: number;
+  duplicate_candidates: number;
+  potential_monthly_savings: string;
+  currency: string;
+};
+
+export type DashboardDuplicateAlertItem = {
+  left_subscription_id: number;
+  left_name: string;
+  left_vendor: string;
+  right_subscription_id: number;
+  right_name: string;
+  right_vendor: string;
+  shared_signal: string;
+  confidence: DuplicateConfidence;
+  potential_monthly_savings: string;
+  currency: string;
+};
+
 export type DashboardSummary = {
   summary: DashboardSummaryStats;
   active_subscriptions: DashboardActiveSubscriptionItem[];
@@ -138,14 +164,18 @@ export type DashboardSummary = {
   category_breakdown: DashboardCategoryBreakdownItem[];
   upcoming_renewals: DashboardUpcomingRenewalItem[];
   recently_ended: DashboardRecentlyEndedItem[];
+  score_overview: DashboardScoreOverview | null;
+  duplicate_alerts: DashboardDuplicateAlertItem[];
 };
 
 export type DashboardWidgetId =
+  | "subscription-score"
   | "active-subscriptions"
   | "monthly-spend"
   | "category-breakdown"
   | "upcoming-renewals"
-  | "recently-ended";
+  | "recently-ended"
+  | "duplicate-alerts";
 export type DashboardLayoutColumn = "primary" | "secondary";
 
 export type DashboardLayoutWidget = {
@@ -160,6 +190,50 @@ export type DashboardLayoutPayload = {
 export type DashboardLayout = DashboardLayoutPayload & {
   version: number;
   updated_at: string | null;
+};
+
+export type SubscriptionScoreBreakdownItem = {
+  id: "coverage" | "renewal" | "context" | "waste";
+  label: string;
+  detail: string;
+  score: number;
+  max_score: number;
+};
+
+export type SubscriptionScoreRecommendation = {
+  title: string;
+  description: string;
+  priority: "high" | "medium" | "low";
+  action_label: string | null;
+  action_href: string | null;
+  subscriptions_affected: number | null;
+  potential_monthly_savings: string | null;
+  currency: string | null;
+};
+
+export type SubscriptionDuplicateCandidate = {
+  left_subscription_id: number;
+  left_name: string;
+  left_vendor: string;
+  right_subscription_id: number;
+  right_name: string;
+  right_vendor: string;
+  shared_signal: string;
+  confidence: DuplicateConfidence;
+  potential_monthly_savings: string;
+  currency: string;
+};
+
+export type SubscriptionScore = {
+  score: number;
+  grade: string;
+  band: DashboardScoreBand;
+  active_subscription_count: number;
+  potential_monthly_savings: string;
+  currency: string;
+  breakdown: SubscriptionScoreBreakdownItem[];
+  recommendations: SubscriptionScoreRecommendation[];
+  duplicate_candidates: SubscriptionDuplicateCandidate[];
 };
 
 export type ExpenseReportCategoryBreakdownItem = {

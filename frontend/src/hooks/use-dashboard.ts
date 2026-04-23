@@ -9,6 +9,7 @@ import type { DashboardLayoutPayload, DashboardLayoutWidget } from "@/types";
 
 const dashboardKeys = {
   layout: ["dashboard", "layout"] as const,
+  score: ["dashboard", "score"] as const,
   summary: ["dashboard", "summary"] as const,
 };
 
@@ -36,6 +37,18 @@ export function useDashboardSummary() {
     queryFn: () => apiClient.getDashboardSummary(accessToken!),
     placeholderData: (previousData) => previousData,
     queryKey: dashboardKeys.summary,
+    staleTime: 30_000,
+  });
+}
+
+export function useDashboardScore() {
+  const { accessToken } = useAuth();
+
+  return useQuery({
+    enabled: Boolean(accessToken),
+    queryFn: () => apiClient.getDashboardScore(accessToken!),
+    placeholderData: (previousData) => previousData,
+    queryKey: dashboardKeys.score,
     staleTime: 30_000,
   });
 }

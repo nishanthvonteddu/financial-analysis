@@ -153,7 +153,7 @@ export function DashboardWidgetBoard({
           <p className="text-xs uppercase tracking-[0.32em] text-black/45">Widget workspace</p>
           <h2 className="text-2xl font-semibold tracking-tight text-ink">Drag the dashboard into focus</h2>
           <p className="max-w-2xl text-sm leading-6 text-black/62">
-            The board holds five live widgets, each tuned for a specific operating question instead of a generic dashboard card.
+            The board holds seven live widgets, each tuned for a specific operating question instead of a generic dashboard card.
           </p>
         </div>
 

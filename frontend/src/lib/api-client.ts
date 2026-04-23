@@ -26,6 +26,7 @@ import type {
   SubscriptionFilters,
   SubscriptionListResponse,
   SubscriptionPaymentHistory,
+  SubscriptionScore,
   SubscriptionUpsertInput,
   TelegramLinkTokenResponse,
   Upload,
@@ -240,6 +241,9 @@ export const apiClient = {
   },
   getDashboardSummary(token: string) {
     return request<DashboardSummary>("/dashboard/summary", undefined, { token });
+  },
+  getDashboardScore(token: string) {
+    return request<SubscriptionScore>("/dashboard/score", undefined, { token });
   },
   getDashboardLayout(token: string) {
     return request<DashboardLayout>("/dashboard/layout", undefined, { token });

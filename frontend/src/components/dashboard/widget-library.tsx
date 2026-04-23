@@ -8,14 +8,16 @@ import {
   CalendarClock,
   Donut,
   FolderClock,
+  Gauge,
   Layers3,
+  ShieldAlert,
 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 import { Button } from "@/components/ui/button";
 import { CurrencyDisplay, formatCurrency } from "@/components/ui/currency-display";
 import { cn } from "@/lib/utils";
-import type { DashboardSummary, DashboardWidgetId } from "@/types";
+import type { DashboardScoreBand, DashboardSummary, DashboardWidgetId } from "@/types";
 
 import { WidgetContainer } from "./widget-container";
 
@@ -30,6 +32,13 @@ type WidgetMeta = {
 const CATEGORY_COLORS = ["#111418", "#dc5d30", "#d9895d", "#95a6ba", "#cdb28f"];
 
 export const dashboardWidgetMeta: Record<DashboardWidgetId, WidgetMeta> = {
+  "subscription-score": {
+    description: "A portfolio score that blends coverage, renewal readiness, context, and duplicate risk.",
+    desktopHeight: 4,
+    emptyText: "Add active subscriptions to start tracking the score and cleanup queue.",
+    eyebrow: "Score pulse",
+    title: "Subscription score",
+  },
   "active-subscriptions": {
     description: "Live roster of the subscriptions currently shaping monthly spend.",
     desktopHeight: 4,
@@ -57,6 +66,13 @@ export const dashboardWidgetMeta: Record<DashboardWidgetId, WidgetMeta> = {
     emptyText: "Cancelled subscriptions with end dates will show up here.",
     eyebrow: "Closed recently",
     title: "Recently ended",
+  },
+  "duplicate-alerts": {
+    description: "Possible overlap pairs ranked by confidence so duplicate spend can be cleaned up fast.",
+    desktopHeight: 4,
+    emptyText: "Duplicate alerts appear when two active plans look like overlapping services.",
+    eyebrow: "Overlap watch",
+    title: "Duplicate alerts",
   },
   "upcoming-renewals": {
     description: "Charges due soon, ordered by urgency so the next move is obvious.",
@@ -140,6 +156,190 @@ function ChartTooltip({
           value: payload[0]?.payload?.total ?? 0,
         })}
       </p>
+    </div>
+  );
+}
+
+function formatBandLabel(value: DashboardScoreBand) {
+  if (value === "excellent") {
+    return "Excellent";
+  }
+  if (value === "steady") {
+    return "Steady";
+  }
+  if (value === "attention") {
+    return "Needs attention";
+  }
+  return "At risk";
+}
+
+function ScoreWidget({ summary }: { summary: DashboardSummary }) {
+  const score = summary.score_overview;
+
+  if (!score || summary.summary.active_subscriptions === 0) {
+    return (
+      <WidgetEmptyState
+        ctaHref="/subscriptions"
+        ctaLabel="Add subscriptions"
+        icon={<Gauge className="size-5" />}
+        text={dashboardWidgetMeta["subscription-score"].emptyText}
+      />
+    );
+  }
+
+  const circumference = 2 * Math.PI * 52;
+  const progress = Math.max(0, Math.min(100, score.score));
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-[minmax(210px,0.78fr)_minmax(0,1.22fr)]">
+      <div className="rounded-[1.5rem] bg-[#101922] p-5 text-white shadow-[0_18px_60px_rgba(17,20,24,0.22)]">
+        <p className="text-xs uppercase tracking-[0.28em] text-white/45">Current score</p>
+        <div className="mt-5 flex items-center justify-center">
+          <div className="relative flex size-36 items-center justify-center">
+            <svg className="-rotate-90" height="136" viewBox="0 0 136 136" width="136">
+              <circle
+                cx="68"
+                cy="68"
+                fill="none"
+                r="52"
+                stroke="rgba(255,255,255,0.12)"
+                strokeWidth="12"
+              />
+              <circle
+                cx="68"
+                cy="68"
+                fill="none"
+                r="52"
+                stroke="#dc5d30"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                strokeWidth="12"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <p className="text-4xl font-semibold tracking-tight">{score.score}</p>
+              <p className="mt-1 text-sm uppercase tracking-[0.28em] text-white/48">{score.grade} grade</p>
+            </div>
+          </div>
+        </div>
+        <p className="mt-4 text-sm leading-6 text-white/68">
+          {formatBandLabel(score.band)} with {score.recommendation_count} recommended cleanup move
+          {score.recommendation_count === 1 ? "" : "s"} queued.
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-[1.35rem] border border-black/10 bg-white/68 px-4 py-4">
+            <p className="text-xs uppercase tracking-[0.24em] text-black/42">Duplicate savings</p>
+            <CurrencyDisplay
+              className="mt-3 block text-2xl font-semibold tracking-tight text-ink"
+              currency={score.currency}
+              value={Number.parseFloat(score.potential_monthly_savings)}
+            />
+            <p className="mt-1 text-sm text-black/58">
+              {score.duplicate_candidates} overlap candidate{score.duplicate_candidates === 1 ? "" : "s"}
+            </p>
+          </div>
+          <div className="rounded-[1.35rem] border border-black/10 bg-white/68 px-4 py-4">
+            <p className="text-xs uppercase tracking-[0.24em] text-black/42">Action queue</p>
+            <p className="mt-3 text-2xl font-semibold tracking-tight text-ink">{score.recommendation_count}</p>
+            <p className="mt-1 text-sm text-black/58">Recommendations are ready on the full score page.</p>
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {summary.summary.active_subscriptions > 0 ? (
+            <>
+              <div className="rounded-[1.35rem] border border-black/10 bg-stone/70 px-4 py-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-black/42">Score band</p>
+                <p className="mt-3 text-lg font-semibold text-ink">{formatBandLabel(score.band)}</p>
+                <p className="mt-1 text-sm text-black/58">Coverage, context, renewals, and waste control.</p>
+              </div>
+              <div className="rounded-[1.35rem] border border-black/10 bg-stone/70 px-4 py-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-black/42">Next move</p>
+                <p className="mt-3 text-lg font-semibold text-ink">
+                  {score.recommendation_count > 0 ? "Open score page" : "Score is stable"}
+                </p>
+                <p className="mt-1 text-sm text-black/58">Review the full breakdown and recommendation stack.</p>
+              </div>
+            </>
+          ) : null}
+        </div>
+
+        <Button asChild className="rounded-full px-4" size="sm" variant="outline">
+          <Link href="/score">Open score page</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function DuplicateAlertsWidget({ summary }: { summary: DashboardSummary }) {
+  const items = summary.duplicate_alerts.slice(0, 3);
+  const score = summary.score_overview;
+
+  if (items.length === 0) {
+    return (
+      <WidgetEmptyState
+        ctaHref="/score"
+        ctaLabel="Review score"
+        icon={<ShieldAlert className="size-5" />}
+        text={dashboardWidgetMeta["duplicate-alerts"].emptyText}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-[1.5rem] bg-[#101922] p-5 text-white shadow-[0_18px_60px_rgba(17,20,24,0.22)]">
+        <p className="text-xs uppercase tracking-[0.28em] text-white/45">Potential monthly savings</p>
+        <CurrencyDisplay
+          className="mt-3 block text-3xl font-semibold tracking-tight"
+          currency={score?.currency ?? items[0].currency}
+          value={Number.parseFloat(score?.potential_monthly_savings ?? items[0].potential_monthly_savings)}
+        />
+        <p className="mt-2 text-sm leading-6 text-white/68">
+          {score?.duplicate_candidates ?? items.length} duplicate candidate
+          {(score?.duplicate_candidates ?? items.length) === 1 ? "" : "s"} are active right now.
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        {items.map((item) => (
+          <div
+            className="rounded-[1.35rem] border border-black/10 bg-white/68 px-4 py-4"
+            key={`${item.left_subscription_id}-${item.right_subscription_id}`}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="truncate text-base font-semibold text-ink">
+                  {item.left_name} + {item.right_name}
+                </p>
+                <p className="mt-1 text-sm text-black/58">
+                  {item.left_vendor} · {item.shared_signal}
+                </p>
+              </div>
+              <div className="text-right">
+                <CurrencyDisplay
+                  className="text-base font-semibold text-ink"
+                  currency={item.currency}
+                  value={Number.parseFloat(item.potential_monthly_savings)}
+                />
+                <p className="mt-1 text-xs uppercase tracking-[0.24em] text-black/42">
+                  {item.confidence} confidence
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Button asChild className="rounded-full px-4" size="sm" variant="outline">
+        <Link href="/score">Review duplicates</Link>
+      </Button>
     </div>
   );
 }
@@ -429,6 +629,8 @@ function RecentlyEndedWidget({ summary }: { summary: DashboardSummary }) {
 
 function renderWidgetBody(widgetId: DashboardWidgetId, summary: DashboardSummary) {
   switch (widgetId) {
+    case "subscription-score":
+      return <ScoreWidget summary={summary} />;
     case "active-subscriptions":
       return <ActiveSubscriptionsWidget summary={summary} />;
     case "monthly-spend":
@@ -439,6 +641,8 @@ function renderWidgetBody(widgetId: DashboardWidgetId, summary: DashboardSummary
       return <UpcomingRenewalsWidget summary={summary} />;
     case "recently-ended":
       return <RecentlyEndedWidget summary={summary} />;
+    case "duplicate-alerts":
+      return <DuplicateAlertsWidget summary={summary} />;
     default:
       return null;
   }

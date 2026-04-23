@@ -106,6 +106,11 @@ const routeMeta: Record<string, { description: string; searchPlaceholder: string
     searchPlaceholder: "Search reports, upload names, merchants, categories",
     title: "Reports",
   },
+  "/score": {
+    description: "Subscription score, duplicate overlap candidates, and the next cleanup actions.",
+    searchPlaceholder: "Search score recommendations, duplicate candidates, renewal gaps",
+    title: "Subscription score",
+  },
   "/payments": {
     description: "Billing rails, cards, and fallback payment methods live here.",
     searchPlaceholder: "Search cards, billing fallback, payment health",
@@ -154,7 +159,7 @@ export function AppShell({ children }: AppShellProps) {
   const meta =
     Object.entries(routeMeta).find(([href]) => isActivePath(pathname, href))?.[1] ??
     routeMeta["/dashboard"];
-  const currentNavItem = navItems.find((item) => isActivePath(pathname, item.href)) ?? navItems[0];
+  const currentNavItem = navItems.find((item) => isActivePath(pathname, item.href));
   const displayName = user?.full_name || user?.email?.split("@")[0] || "Workspace operator";
 
   const handleSignOut = () => {
@@ -272,7 +277,7 @@ export function AppShell({ children }: AppShellProps) {
             <div className="flex h-20 items-center gap-4 px-4 sm:px-6 lg:px-8">
               <div className="min-w-0 flex-1">
                 <p className="text-xs uppercase tracking-[0.32em] text-black/45">
-                  {currentNavItem.label}
+                  {currentNavItem?.label ?? meta.title}
                 </p>
                 <h1
                   className="mt-1 truncate text-2xl font-semibold text-ink sm:text-3xl"
