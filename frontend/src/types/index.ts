@@ -236,6 +236,77 @@ export type SubscriptionScore = {
   duplicate_candidates: SubscriptionDuplicateCandidate[];
 };
 
+export type FamilyMember = {
+  id: number;
+  user_id: number;
+  full_name: string;
+  email: string;
+  role: string;
+  share_subscriptions: boolean;
+  joined_at: string;
+  is_current_user: boolean;
+};
+
+export type Family = {
+  id: number;
+  name: string;
+  owner_user_id: number;
+  invite_code: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type FamilyStatus = {
+  family: Family | null;
+  members: FamilyMember[];
+  current_member: FamilyMember | null;
+};
+
+export type FamilyCreateInput = {
+  name: string;
+};
+
+export type FamilyJoinInput = {
+  invite_code: string;
+};
+
+export type FamilyPrivacyInput = {
+  share_subscriptions: boolean;
+};
+
+export type FamilyDashboardSummary = {
+  family_name: string;
+  member_count: number;
+  sharing_member_count: number;
+  visible_active_subscriptions: number;
+  visible_monthly_spend: string;
+  currency: string;
+};
+
+export type FamilyDashboardMemberSpend = {
+  user_id: number;
+  full_name: string;
+  visible: boolean;
+  active_subscriptions: number;
+  monthly_spend: string;
+  currency: string;
+};
+
+export type FamilySharedPlanRecommendation = {
+  vendor: string;
+  subscription_count: number;
+  member_names: string[];
+  estimated_monthly_savings: string;
+  currency: string;
+  reason: string;
+};
+
+export type FamilyDashboard = {
+  summary: FamilyDashboardSummary;
+  member_spend: FamilyDashboardMemberSpend[];
+  recommendations: FamilySharedPlanRecommendation[];
+};
+
 export type ExpenseReportCategoryBreakdownItem = {
   category_name: string;
   total_amount: string;
