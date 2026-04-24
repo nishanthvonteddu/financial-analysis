@@ -10,6 +10,11 @@ import type {
   DashboardLayoutPayload,
   DashboardSummary,
   ExpenseAnalytics,
+  FamilyCreateInput,
+  FamilyDashboard,
+  FamilyJoinInput,
+  FamilyPrivacyInput,
+  FamilyStatus,
   ExpenseReport,
   ExpenseReportListResponse,
   HealthResponse,
@@ -244,6 +249,35 @@ export const apiClient = {
   },
   getDashboardScore(token: string) {
     return request<SubscriptionScore>("/dashboard/score", undefined, { token });
+  },
+  getFamilyStatus(token: string) {
+    return request<FamilyStatus>("/family", undefined, { token });
+  },
+  createFamily(token: string, payload: FamilyCreateInput) {
+    return request<FamilyStatus>("/family", {
+      body: JSON.stringify(payload),
+      method: "POST",
+    }, { token });
+  },
+  joinFamily(token: string, payload: FamilyJoinInput) {
+    return request<FamilyStatus>("/family/join", {
+      body: JSON.stringify(payload),
+      method: "POST",
+    }, { token });
+  },
+  updateFamilyPrivacy(token: string, payload: FamilyPrivacyInput) {
+    return request<FamilyStatus>("/family/privacy", {
+      body: JSON.stringify(payload),
+      method: "PATCH",
+    }, { token });
+  },
+  leaveFamily(token: string) {
+    return request<void>("/family", {
+      method: "DELETE",
+    }, { token });
+  },
+  getFamilyDashboard(token: string) {
+    return request<FamilyDashboard>("/family/dashboard", undefined, { token });
   },
   getDashboardLayout(token: string) {
     return request<DashboardLayout>("/dashboard/layout", undefined, { token });
