@@ -17,6 +17,7 @@ import {
   Search,
   Settings2,
   Sparkles,
+  UsersRound,
 } from "lucide-react";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
@@ -75,6 +76,13 @@ const navItems: NavItem[] = [
     mobileLabel: "Pay",
   },
   {
+    caption: "Household sharing",
+    href: "/family",
+    icon: UsersRound,
+    label: "Family",
+    mobileLabel: "Family",
+  },
+  {
     caption: "Renewal timing",
     href: "/calendar",
     icon: CalendarDays,
@@ -100,6 +108,11 @@ const routeMeta: Record<string, { description: string; searchPlaceholder: string
     description: "Live overview of recurring spend, next charges, and the queues that need attention.",
     searchPlaceholder: "Search subscriptions, merchants, reminders",
     title: "Overview",
+  },
+  "/family": {
+    description: "Household membership, sharing privacy, and shared plan recommendations.",
+    searchPlaceholder: "Search family members, shared plans, invite codes",
+    title: "Family",
   },
   "/reports": {
     description: "Chart-backed expense reports generated from uploaded statements and payment history.",
@@ -367,7 +380,7 @@ export function AppShell({ children }: AppShellProps) {
           </main>
 
           <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-[rgba(250,248,244,0.96)] px-3 py-2 backdrop-blur md:hidden">
-            <div className="grid grid-cols-6 gap-1">
+            <div className="grid grid-cols-4 gap-1">
               {navItems.map(({ href, icon: Icon, mobileLabel }) => {
                 const active = isActivePath(pathname, href);
 
