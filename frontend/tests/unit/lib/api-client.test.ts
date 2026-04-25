@@ -131,6 +131,36 @@ describe("apiClient", () => {
     );
   });
 
+  it("downloads exports with bearer auth and parsed attachment filename", async () => {
+    const fetchMock = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response("subscription_id,name\n1,Netflix\n", {
+        status: 200,
+        headers: {
+          "Content-Disposition": 'attachment; filename="mysubscription-export.csv"',
+          "Content-Type": "text/csv",
+        },
+      }),
+    );
+
+    const download = await apiClient.downloadExport("access-token", {
+      active_only: true,
+      calendar_months: 12,
+      format: "csv",
+      include_payment_history: true,
+    });
+
+    expect(download.filename).toBe("mysubscription-export.csv");
+    await expect(download.blob.text()).resolves.toContain("Netflix");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:8000/api/v1/exports?active_only=true&calendar_months=12&format=csv&include_payment_history=true",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Bearer access-token",
+        }),
+      }),
+    );
+  });
+
   it("surfaces API error details instead of a generic status", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ detail: "Category not found." }), {
