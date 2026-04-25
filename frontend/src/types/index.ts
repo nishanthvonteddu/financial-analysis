@@ -436,6 +436,20 @@ export type ExpenseAnalytics = {
   trend_categories: string[];
 };
 
+export type ExportFormat = "csv" | "json" | "ics";
+
+export type ExportOptions = {
+  active_only: boolean;
+  calendar_months: number;
+  format: ExportFormat;
+  include_payment_history: boolean;
+};
+
+export type ExportDownload = {
+  blob: Blob;
+  filename: string;
+};
+
 export type UploadSourceType = "upload_csv" | "upload_pdf";
 export type UploadStatus = "queued" | "processing" | "completed" | "failed";
 
