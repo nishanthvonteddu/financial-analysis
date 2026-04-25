@@ -72,6 +72,10 @@ def create_app() -> FastAPI:
                 ),
             },
             {
+                "name": "exports",
+                "description": "Downloadable CSV, JSON, and iCalendar subscription exports.",
+            },
+            {
                 "name": "uploads",
                 "description": (
                     "Statement file ingestion, upload history, "
