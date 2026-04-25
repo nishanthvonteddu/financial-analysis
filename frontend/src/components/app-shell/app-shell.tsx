@@ -9,6 +9,7 @@ import {
   CalendarDays,
   ChevronDown,
   CreditCard,
+  FileDown,
   FileUp,
   LayoutDashboard,
   LogOut,
@@ -69,6 +70,13 @@ const navItems: NavItem[] = [
     mobileLabel: "Files",
   },
   {
+    caption: "Portable files",
+    href: "/exports",
+    icon: FileDown,
+    label: "Exports",
+    mobileLabel: "Export",
+  },
+  {
     caption: "Cards and billing",
     href: "/payments",
     icon: CreditCard,
@@ -108,6 +116,11 @@ const routeMeta: Record<string, { description: string; searchPlaceholder: string
     description: "Live overview of recurring spend, next charges, and the queues that need attention.",
     searchPlaceholder: "Search subscriptions, merchants, reminders",
     title: "Overview",
+  },
+  "/exports": {
+    description: "CSV, JSON, and iCalendar files for subscription data portability.",
+    searchPlaceholder: "Search export formats, payment history, calendar files",
+    title: "Exports",
   },
   "/family": {
     description: "Household membership, sharing privacy, and shared plan recommendations.",
@@ -278,8 +291,8 @@ export function AppShell({ children }: AppShellProps) {
             >
               <p className="text-xs uppercase tracking-[0.3em] text-white/40">Milestone status</p>
               <p className="mt-3 text-sm leading-6 text-white/75">
-                Subscription management, parsing, and detection are live. Upload operations now
-                extend that workflow with statement intake and queue visibility.
+                Subscription management, parsing, and detection are live. Export operations now
+                package that workflow into portable files for downstream review.
               </p>
             </div>
           </div>
