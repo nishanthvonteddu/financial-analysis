@@ -5,9 +5,12 @@ import type { APIRequestContext, Page } from "@playwright/test";
 
 import { AUTH_STORAGE_KEY } from "../../../src/lib/constants";
 
+const backendPort = process.env.BACKEND_PORT ?? "8000";
+const frontendPort = process.env.FRONTEND_PORT ?? "3000";
+
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
-export const FRONTEND_BASE_URL = "http://127.0.0.1:3000";
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? `http://127.0.0.1:${backendPort}/api/v1`;
+export const FRONTEND_BASE_URL = `http://127.0.0.1:${frontendPort}`;
 export const AUTH_ARTIFACT_DIR = path.resolve(process.cwd(), "test-results/.auth");
 export const AUTH_STATE_PATH = path.join(AUTH_ARTIFACT_DIR, "storage-state.json");
 export const AUTH_SESSION_PATH = path.join(AUTH_ARTIFACT_DIR, "session.json");
