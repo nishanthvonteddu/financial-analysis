@@ -25,7 +25,7 @@ test("renders report analytics charts with uploaded payment data", async ({ page
   await expect(page.getByRole("heading", { name: "Spend by category over time" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Overall spend trend" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Payment method mix" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Savings opportunities" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Cadence distribution" })).toBeVisible();
-  await expect(page.locator(".recharts-responsive-container svg")).toHaveCount(5);
+  await expect(page.getByRole("heading", { name: "Potential savings" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Recurring cadence pressure" })).toBeVisible();
+  await expect(page.locator(".recharts-responsive-container svg")).toHaveCount(4);
 });
