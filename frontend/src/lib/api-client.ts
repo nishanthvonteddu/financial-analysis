@@ -10,6 +10,8 @@ import type {
   DashboardLayoutPayload,
   DashboardSummary,
   ExpenseAnalytics,
+  ExportDownload,
+  ExportOptions,
   FamilyCreateInput,
   FamilyDashboard,
   FamilyJoinInput,
@@ -107,6 +109,42 @@ async function request<T>(
   }
 
   return body as T;
+}
+
+function getFilenameFromDisposition(disposition: string | null, fallback: string) {
+  if (!disposition) {
+    return fallback;
+  }
+
+  const match = /filename="?([^";]+)"?/i.exec(disposition);
+  return match?.[1] ?? fallback;
+}
+
+async function requestBlob(
+  path: string,
+  init?: RequestInit,
+  options?: RequestOptions & { fallbackFilename: string },
+): Promise<ExportDownload> {
+  const response = await fetch(buildUrl(path, options?.query), {
+    ...init,
+    headers: {
+      ...(options?.token ? { Authorization: `Bearer ${options.token}` } : {}),
+      ...init?.headers,
+    },
+  });
+
+  if (!response.ok) {
+    const body = await parseResponseBody(response);
+    throw new Error(getErrorMessage(response.status, body));
+  }
+
+  return {
+    blob: await response.blob(),
+    filename: getFilenameFromDisposition(
+      response.headers.get("Content-Disposition"),
+      options?.fallbackFilename ?? "mysubscription-export.csv",
+    ),
+  };
 }
 
 function getErrorMessage(status: number, response: unknown) {
@@ -303,6 +341,13 @@ export const apiClient = {
   },
   getExpenseReport(token: string, reportId: number) {
     return request<ExpenseReport>(`/expense-reports/${reportId}`, undefined, { token });
+  },
+  downloadExport(token: string, options: ExportOptions) {
+    return requestBlob("/exports", undefined, {
+      fallbackFilename: `mysubscription-export.${options.format}`,
+      query: options,
+      token,
+    });
   },
   getNotifications(token: string) {
     return request<NotificationListResponse>("/notifications", undefined, { token });

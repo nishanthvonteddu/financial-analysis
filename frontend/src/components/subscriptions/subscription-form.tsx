@@ -79,7 +79,7 @@ export function SubscriptionForm({
       </div>
 
       <form
-        className="space-y-6 pt-6"
+        className="space-y-6 pb-36 pt-6 md:pb-0"
         data-testid={testId}
         onSubmit={handleSubmit(async (values) => {
           await onSubmit(toSubscriptionPayload(values));
@@ -326,7 +326,7 @@ export function SubscriptionForm({
 
         {errors.root ? <FieldError message={errors.root.message} /> : null}
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="fixed inset-x-4 bottom-24 z-40 flex flex-col gap-3 rounded-[1.25rem] border border-black/10 bg-white/92 p-3 shadow-line backdrop-blur md:static md:inset-auto md:flex-row md:items-center md:justify-between md:border-0 md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-0">
           <p className="text-sm text-black/52">
             {categories.length === 0 && paymentMethods.length === 0
               ? "Categories and payment methods are optional until those catalogs are populated."
@@ -339,7 +339,11 @@ export function SubscriptionForm({
                 Cancel
               </Button>
             ) : null}
-            <Button className="rounded-full px-6" disabled={isWorking} type="submit">
+            <Button
+              className="scroll-mb-32 rounded-full px-6 md:scroll-mb-0"
+              disabled={isWorking}
+              type="submit"
+            >
               {isWorking ? (
                 <>
                   <LoaderCircle className="mr-2 size-4 animate-spin" />
