@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base, TimestampMixin
@@ -10,6 +10,7 @@ class DataSource(TimestampMixin, Base):
     __tablename__ = "data_sources"
     __table_args__ = (
         UniqueConstraint("user_id", "source_type", "name", name="uq_data_sources_user_source"),
+        Index("ix_data_sources_user_source_created", "user_id", "source_type", "created_at", "id"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
