@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import Boolean, Date, ForeignKey, Numeric, String, Text
+from sqlalchemy import Boolean, Date, ForeignKey, Index, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base, TimestampMixin
@@ -9,6 +9,17 @@ from src.models.base import Base, TimestampMixin
 
 class Subscription(TimestampMixin, Base):
     __tablename__ = "subscriptions"
+    __table_args__ = (
+        Index(
+            "ix_subscriptions_user_status_next_charge",
+            "user_id",
+            "status",
+            "next_charge_date",
+            "id",
+        ),
+        Index("ix_subscriptions_user_status_name", "user_id", "status", "name", "id"),
+        Index("ix_subscriptions_user_cadence_amount", "user_id", "cadence", "amount", "id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
