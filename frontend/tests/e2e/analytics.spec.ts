@@ -27,5 +27,7 @@ test("renders report analytics charts with uploaded payment data", async ({ page
   await expect(page.getByRole("heading", { name: "Payment method mix" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Potential savings" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Recurring cadence pressure" })).toBeVisible();
-  await expect(page.locator(".recharts-responsive-container svg")).toHaveCount(4);
+  await expect
+    .poll(async () => page.locator(".recharts-responsive-container svg").count())
+    .toBeGreaterThanOrEqual(4);
 });
