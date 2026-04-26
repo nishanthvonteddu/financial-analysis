@@ -42,7 +42,7 @@ test("shows projected renewals in the calendar grid and detail panel", async ({ 
   await page.getByRole("button", { name: "Next month" }).click();
 
   await expect(page.getByRole("heading", { name: monthLabel(nextMonth) })).toBeVisible();
-  await expect(page.getByRole("button", { name: /1 renewal/ }).first()).toBeVisible();
-  await expect(page.getByText(renewalName).first()).toBeVisible();
-  await expect(page.getByText("$24.00").first()).toBeVisible();
+  await page.getByRole("button", { name: /1 renewal/ }).first().click();
+  await expect(page.locator("aside").getByText(renewalName)).toBeVisible();
+  await expect(page.locator("aside").getByText("$24.00")).toBeVisible();
 });
