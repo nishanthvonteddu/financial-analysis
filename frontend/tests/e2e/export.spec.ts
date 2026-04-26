@@ -6,6 +6,8 @@ test.beforeEach(async ({ request }) => {
   await resetWorkspace(request);
 });
 
+test.skip(({ isMobile }) => isMobile, "Download behavior is verified in desktop browsers.");
+
 test("downloads CSV JSON and iCal exports from the export center", async ({ page, request }) => {
   await createSubscription(request, {
     amount: "19.99",
@@ -29,6 +31,6 @@ test("downloads CSV JSON and iCal exports from the export center", async ({ page
     ]).then(([nextDownload]) => nextDownload);
 
     expect(download.suggestedFilename()).toContain(extension);
-    await expect(page.getByText(download.suggestedFilename())).toBeVisible();
+    await expect(page.getByText(download.suggestedFilename(), { exact: true })).toBeVisible();
   }
 });
