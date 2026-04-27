@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,10 +26,14 @@ export function ConfirmDialog({
   title,
   tone = "default",
 }: ConfirmDialogProps) {
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     if (!open) {
       return undefined;
     }
+
+    cancelButtonRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -58,22 +62,35 @@ export function ConfirmDialog({
         aria-describedby="confirm-dialog-description"
         aria-labelledby="confirm-dialog-title"
         aria-modal="true"
-        className="w-full max-w-md rounded-[2rem] border border-black/10 bg-white p-6 shadow-[0_24px_80px_rgba(17,20,24,0.24)] sm:p-8"
+        className="w-full max-w-md animate-page-enter rounded-2xl border border-black/10 bg-white p-6 shadow-[0_24px_80px_rgba(17,20,24,0.24)] dark:border-white/10 dark:bg-[#101922] sm:p-8"
         onClick={(event) => event.stopPropagation()}
         role="alertdialog"
       >
         <div className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.32em] text-black/45">Confirm action</p>
-          <h3 className="text-2xl font-semibold text-ink" id="confirm-dialog-title">
+          <p className="text-xs uppercase tracking-[0.22em] text-black/45 dark:text-white/45">
+            Confirm action
+          </p>
+          <h3
+            className="text-2xl font-semibold text-ink dark:text-white"
+            id="confirm-dialog-title"
+          >
             {title}
           </h3>
-          <p className="text-base leading-7 text-black/65" id="confirm-dialog-description">
+          <p
+            className="text-base leading-7 text-black/65 dark:text-white/62"
+            id="confirm-dialog-description"
+          >
             {description}
           </p>
         </div>
 
         <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <Button onClick={() => onOpenChange(false)} type="button" variant="outline">
+          <Button
+            onClick={() => onOpenChange(false)}
+            ref={cancelButtonRef}
+            type="button"
+            variant="outline"
+          >
             {cancelLabel}
           </Button>
           <Button

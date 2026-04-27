@@ -197,10 +197,17 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(244,202,174,0.22),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.7),rgba(231,237,242,0.76)),hsl(var(--background))] md:grid md:grid-cols-[auto_minmax(0,1fr)]">
+      <a
+        className="sr-only z-50 rounded-xl bg-ink px-4 py-3 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        href="#workspace-content"
+      >
+        Skip to workspace content
+      </a>
+      <div className="min-h-screen bg-[linear-gradient(180deg,rgba(255,255,255,0.76),rgba(231,237,242,0.72)),hsl(var(--background))] dark:bg-[linear-gradient(180deg,rgba(10,16,24,0.96),rgba(17,24,33,0.98))] md:grid md:grid-cols-[auto_minmax(0,1fr)]">
         <aside
+          aria-label="Primary sidebar"
           className={cn(
-            "hidden min-h-screen flex-col border-r border-white/10 bg-[#101922] text-white md:flex",
+            "hidden min-h-screen flex-col border-r border-white/10 bg-[#101922] text-white transition-[width] duration-200 md:flex",
             isSidebarExpanded ? "md:w-72" : "md:w-24 xl:w-72",
           )}
         >
@@ -211,7 +218,7 @@ export function AppShell({ children }: AppShellProps) {
               </p>
               <p
                 className={cn(
-                  "mt-1 text-[11px] uppercase tracking-[0.32em] text-white/42",
+                  "mt-1 text-[11px] uppercase tracking-[0.22em] text-white/42",
                   isSidebarExpanded ? "block" : "hidden xl:block",
                 )}
               >
@@ -220,7 +227,7 @@ export function AppShell({ children }: AppShellProps) {
             </div>
             <button
               aria-label={isSidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}
-              className="inline-flex size-10 items-center justify-center rounded-full border border-white/10 text-white/72 transition hover:border-white/18 hover:bg-white/8 hover:text-white"
+              className="inline-flex size-10 items-center justify-center rounded-xl border border-white/10 text-white/72 transition hover:border-white/18 hover:bg-white/8 hover:text-white"
               onClick={() => setIsSidebarExpanded((current) => !current)}
               type="button"
             >
@@ -232,7 +239,7 @@ export function AppShell({ children }: AppShellProps) {
             </button>
           </div>
 
-          <nav className="flex-1 px-3 py-6 xl:px-4">
+          <nav aria-label="Primary sidebar" className="flex-1 px-3 py-6 xl:px-4">
             <div className="space-y-2">
               {navItems.map(({ caption, href, icon: Icon, label }) => {
                 const active = isActivePath(pathname, href);
@@ -241,7 +248,7 @@ export function AppShell({ children }: AppShellProps) {
                   <Link
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "group flex items-center gap-4 rounded-[1.4rem] px-3 py-3 transition",
+                      "group flex items-center gap-4 rounded-xl px-3 py-3 transition duration-200",
                       active
                         ? "bg-white text-ink shadow-line"
                         : "text-white/68 hover:bg-white/8 hover:text-white",
@@ -251,7 +258,7 @@ export function AppShell({ children }: AppShellProps) {
                   >
                     <span
                       className={cn(
-                        "inline-flex size-11 shrink-0 items-center justify-center rounded-2xl border transition",
+                        "inline-flex size-11 shrink-0 items-center justify-center rounded-xl border transition",
                         active
                           ? "border-black/10 bg-stone text-ink"
                           : "border-white/10 bg-white/5 text-white/75 group-hover:border-white/18 group-hover:bg-white/10",
@@ -285,28 +292,28 @@ export function AppShell({ children }: AppShellProps) {
           <div className="border-t border-white/10 px-4 py-5">
             <div
               className={cn(
-                "rounded-[1.5rem] border border-white/10 bg-white/6 p-4",
+                "rounded-2xl border border-white/10 bg-white/6 p-4",
                 isSidebarExpanded ? "block" : "hidden xl:block",
               )}
             >
-              <p className="text-xs uppercase tracking-[0.3em] text-white/40">Milestone status</p>
+              <p className="text-xs uppercase tracking-[0.22em] text-white/40">Milestone status</p>
               <p className="mt-3 text-sm leading-6 text-white/75">
-                Subscription management, parsing, and detection are live. Export operations now
-                package that workflow into portable files for downstream review.
+                Core workflows are live. This pass tightens navigation, interaction states, and
+                workspace accessibility before final hardening begins.
               </p>
             </div>
           </div>
         </aside>
 
         <div className="relative flex min-h-screen flex-col">
-          <header className="sticky top-0 z-20 border-b border-black/10 bg-[rgba(250,248,244,0.9)] backdrop-blur">
+          <header className="sticky top-0 z-20 border-b border-black/10 bg-[rgba(250,250,248,0.9)] backdrop-blur dark:border-white/10 dark:bg-[rgba(16,25,34,0.9)]">
             <div className="flex h-20 items-center gap-4 px-4 sm:px-6 lg:px-8">
               <div className="min-w-0 flex-1">
-                <p className="text-xs uppercase tracking-[0.32em] text-black/45">
+                <p className="text-xs uppercase tracking-[0.22em] text-black/45 dark:text-white/45">
                   {currentNavItem?.label ?? meta.title}
                 </p>
                 <h1
-                  className="mt-1 truncate text-2xl font-semibold text-ink sm:text-3xl"
+                  className="mt-1 truncate text-2xl font-semibold text-ink dark:text-white sm:text-3xl"
                   data-testid="app-shell-route-title"
                 >
                   {meta.title}
@@ -316,7 +323,8 @@ export function AppShell({ children }: AppShellProps) {
               <label className="relative hidden max-w-md flex-1 items-center md:flex">
                 <Search className="pointer-events-none absolute left-4 size-4 text-black/38" />
                 <input
-                  className="h-11 w-full rounded-full border border-black/10 bg-white/78 pl-11 pr-4 text-sm text-ink placeholder:text-black/38 focus:border-black/20 focus:outline-none focus:ring-2 focus:ring-ember/20"
+                  aria-label="Search workspace"
+                  className="h-11 w-full rounded-xl border border-black/10 bg-white/78 pl-11 pr-4 text-sm text-ink placeholder:text-black/38 transition focus:border-black/20 focus:outline-none focus:ring-2 focus:ring-ember/20 dark:border-white/10 dark:bg-white/8 dark:text-white dark:placeholder:text-white/38"
                   placeholder={meta.searchPlaceholder}
                   type="search"
                 />
@@ -331,35 +339,43 @@ export function AppShell({ children }: AppShellProps) {
                   <button
                     aria-expanded={isUserMenuOpen}
                     aria-haspopup="menu"
-                    className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/82 px-3 py-2 text-left transition hover:border-black/20 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember/30"
+                    className="inline-flex items-center gap-3 rounded-xl border border-black/10 bg-white/82 px-3 py-2 text-left transition hover:border-black/20 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember/30 dark:border-white/10 dark:bg-white/8 dark:hover:bg-white/12"
                     onClick={() => setIsUserMenuOpen((open) => !open)}
                     type="button"
                   >
-                    <span className="inline-flex size-10 items-center justify-center rounded-full bg-[#101922] text-sm font-semibold text-white">
+                    <span className="inline-flex size-10 items-center justify-center rounded-xl bg-[#101922] text-sm font-semibold text-white dark:bg-white dark:text-ink">
                       {getInitials(user?.full_name, user?.email)}
                     </span>
                     <span className="hidden min-w-0 sm:block">
-                      <span className="block truncate text-sm font-semibold text-ink">
+                      <span className="block truncate text-sm font-semibold text-ink dark:text-white">
                         {displayName}
                       </span>
-                      <span className="block truncate text-xs text-black/48">{user?.email}</span>
+                      <span className="block truncate text-xs text-black/48 dark:text-white/48">
+                        {user?.email}
+                      </span>
                     </span>
-                    <ChevronDown className="hidden size-4 text-black/45 sm:block" />
+                    <ChevronDown className="hidden size-4 text-black/45 dark:text-white/45 sm:block" />
                   </button>
 
                   {isUserMenuOpen ? (
                     <div
-                      className="absolute right-0 top-[calc(100%+12px)] w-72 rounded-[1.5rem] border border-black/10 bg-white p-3 shadow-[0_24px_80px_rgba(17,20,24,0.18)]"
+                      className="absolute right-0 top-[calc(100%+12px)] w-72 animate-page-enter rounded-2xl border border-black/10 bg-white p-3 shadow-[0_24px_80px_rgba(17,20,24,0.18)] dark:border-white/10 dark:bg-[#101922]"
                       role="menu"
                     >
-                      <div className="rounded-[1.2rem] bg-stone/70 px-4 py-3">
-                        <p className="text-xs uppercase tracking-[0.3em] text-black/42">Signed in as</p>
-                        <p className="mt-2 text-sm font-semibold text-ink">{displayName}</p>
-                        <p className="mt-1 text-sm text-black/55">{user?.email}</p>
+                      <div className="rounded-xl bg-stone/70 px-4 py-3 dark:bg-white/8">
+                        <p className="text-xs uppercase tracking-[0.22em] text-black/42 dark:text-white/42">
+                          Signed in as
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-ink dark:text-white">
+                          {displayName}
+                        </p>
+                        <p className="mt-1 text-sm text-black/55 dark:text-white/55">
+                          {user?.email}
+                        </p>
                       </div>
 
                       <button
-                        className="mt-3 flex w-full items-center gap-3 rounded-[1rem] px-4 py-3 text-left text-sm font-medium text-ink transition hover:bg-stone"
+                        className="mt-3 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-ink transition hover:bg-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember/35 dark:text-white dark:hover:bg-white/10"
                         onClick={() => {
                           setIsSignOutDialogOpen(true);
                           setIsUserMenuOpen(false);
@@ -380,7 +396,8 @@ export function AppShell({ children }: AppShellProps) {
               <label className="relative flex items-center">
                 <Search className="pointer-events-none absolute left-4 size-4 text-black/38" />
                 <input
-                  className="h-11 w-full rounded-full border border-black/10 bg-white/78 pl-11 pr-4 text-sm text-ink placeholder:text-black/38 focus:border-black/20 focus:outline-none focus:ring-2 focus:ring-ember/20"
+                  aria-label="Search workspace"
+                  className="h-11 w-full rounded-xl border border-black/10 bg-white/78 pl-11 pr-4 text-sm text-ink placeholder:text-black/38 transition focus:border-black/20 focus:outline-none focus:ring-2 focus:ring-ember/20 dark:border-white/10 dark:bg-white/8 dark:text-white dark:placeholder:text-white/38"
                   placeholder={meta.searchPlaceholder}
                   type="search"
                 />
@@ -388,12 +405,15 @@ export function AppShell({ children }: AppShellProps) {
             </div>
           </header>
 
-          <main className="flex-1 px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-8">
+          <main className="flex-1 px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-8" id="workspace-content">
             <div className="mx-auto w-full max-w-7xl">{children}</div>
           </main>
 
-          <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-[rgba(250,248,244,0.96)] px-3 py-2 backdrop-blur md:hidden">
-            <div className="grid grid-cols-4 gap-1">
+          <nav
+            aria-label="Primary mobile"
+            className="fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-[rgba(250,250,248,0.96)] px-3 py-2 backdrop-blur dark:border-white/10 dark:bg-[rgba(16,25,34,0.96)] md:hidden"
+          >
+            <div className="grid auto-cols-[4.75rem] grid-flow-col gap-1 overflow-x-auto pb-1">
               {navItems.map(({ href, icon: Icon, mobileLabel }) => {
                 const active = isActivePath(pathname, href);
 
@@ -401,8 +421,10 @@ export function AppShell({ children }: AppShellProps) {
                   <Link
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex flex-col items-center gap-1 rounded-2xl px-2 py-3 text-[11px] font-medium transition",
-                      active ? "bg-[#101922] text-white" : "text-black/58 hover:bg-white hover:text-ink",
+                      "flex min-w-0 flex-col items-center gap-1 rounded-xl px-2 py-3 text-[11px] font-medium transition",
+                      active
+                        ? "bg-[#101922] text-white dark:bg-white dark:text-ink"
+                        : "text-black/58 hover:bg-white hover:text-ink dark:text-white/58 dark:hover:bg-white/10 dark:hover:text-white",
                     )}
                     href={href}
                     key={href}
