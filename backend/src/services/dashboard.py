@@ -1,4 +1,4 @@
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Literal, cast
 
@@ -9,7 +9,7 @@ from sqlalchemy.orm import load_only
 from src.core.logging import get_logger
 from src.models.category import Category
 from src.models.dashboard_layout import DashboardLayout
-from src.models.payment_history import PaymentHistory
+from src.models.raw_transaction import RawTransaction
 from src.models.subscription import Subscription
 from src.models.user import User
 from src.schemas.dashboard import (
@@ -266,50 +266,31 @@ async def get_dashboard_summary(
         )
         cursor = _shift_months(cursor, 1)
 
-    payment_history_rows = list(
+    raw_transaction_rows = list(
         (
             await session.scalars(
-                select(PaymentHistory)
-                .options(
-                    load_only(
-                        PaymentHistory.id,
-                        PaymentHistory.subscription_id,
-                        PaymentHistory.paid_at,
-                        PaymentHistory.amount,
-                        PaymentHistory.currency,
-                    )
-                )
-                .join(Subscription, Subscription.id == PaymentHistory.subscription_id)
+                select(RawTransaction)
                 .where(
-                    Subscription.user_id == user.id,
-                    PaymentHistory.paid_at
-                    >= datetime.combine(
-                        start_month,
-                        datetime.min.time(),
-                        tzinfo=UTC,
-                    ),
-                    PaymentHistory.paid_at
-                    < datetime.combine(
-                        end_month,
-                        datetime.min.time(),
-                        tzinfo=UTC,
-                    ),
+                    RawTransaction.user_id == user.id,
+                    RawTransaction.transaction_type == "debit",
+                    RawTransaction.amount < 0,
+                    RawTransaction.posted_at >= start_month,
+                    RawTransaction.posted_at < end_month,
                 )
-                .order_by(PaymentHistory.paid_at.asc())
+                .order_by(RawTransaction.posted_at.asc(), RawTransaction.id.asc())
             )
         ).all()
     )
 
-    for payment in payment_history_rows:
-        paid_at = payment.paid_at.astimezone(UTC) if payment.paid_at.tzinfo else payment.paid_at
-        key = paid_at.strftime("%Y-%m")
+    for transaction in raw_transaction_rows:
+        key = transaction.posted_at.strftime("%Y-%m")
         if key in month_totals:
             month_totals[key] += await convert(
                 session,
-                Decimal(payment.amount),
-                from_currency=payment.currency,
+                abs(Decimal(transaction.amount)),
+                from_currency=transaction.currency,
                 to_currency=target_currency,
-                effective_date=paid_at.date(),
+                effective_date=transaction.posted_at,
             )
 
     monthly_spend = [
