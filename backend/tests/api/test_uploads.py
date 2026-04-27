@@ -81,6 +81,41 @@ def test_upload_processing_triggers_subscription_detection(client) -> None:
     assert detected["status"] == "active"
 
 
+def test_upload_processing_creates_report_and_known_service_subscription_from_single_charge(
+    client,
+) -> None:
+    headers = _auth_headers(client, "single-known-service@example.com")
+    charge_date = date.today() - timedelta(days=20)
+    csv_content = (
+        "Posting Date,Details,Amount\n"
+        f"{charge_date.strftime('%m/%d/%Y')},CLAUDE.AI SUBSCRIPTIONSAN FRANCISCOCA,-20.00\n"
+        f"{charge_date.strftime('%m/%d/%Y')},LOCAL COFFEE HOUSE,-8.25\n"
+    )
+
+    create_response = client.post(
+        "/api/v1/uploads",
+        headers=headers,
+        files={"file": ("statement.csv", csv_content, "text/csv")},
+    )
+
+    assert create_response.status_code == 201
+
+    reports_response = client.get("/api/v1/expense-reports", headers=headers)
+    assert reports_response.status_code == 200
+    reports = reports_response.json()
+    assert reports["total"] == 1
+    assert reports["items"][0]["summary"]["transaction_count"] == 2
+
+    subscriptions_response = client.get("/api/v1/subscriptions", headers=headers)
+    assert subscriptions_response.status_code == 200
+    subscriptions = subscriptions_response.json()
+    assert subscriptions["total"] == 1
+    detected = subscriptions["items"][0]
+    assert detected["vendor"] == "Claude"
+    assert detected["cadence"] == "monthly"
+    assert detected["status"] == "active"
+
+
 def test_upload_rejects_unsupported_files(client) -> None:
     headers = _auth_headers(client, "rejector@example.com")
 

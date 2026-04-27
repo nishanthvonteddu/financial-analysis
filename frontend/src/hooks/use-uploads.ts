@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -24,8 +25,10 @@ function useRequiredToken() {
 
 export function useUploadHistory() {
   const { accessToken } = useAuth();
+  const queryClient = useQueryClient();
+  const completedUploadIds = useRef(new Set<number>());
 
-  return useQuery({
+  const query = useQuery({
     enabled: Boolean(accessToken),
     queryFn: () => apiClient.getUploads(accessToken!),
     placeholderData: (previousData) => previousData,
@@ -40,12 +43,33 @@ export function useUploadHistory() {
         : false;
     },
   });
+
+  useEffect(() => {
+    const completedItems = query.data?.items.filter((item) => item.status === "completed") ?? [];
+    const hasNewCompletedUpload = completedItems.some((item) => {
+      if (completedUploadIds.current.has(item.id)) {
+        return false;
+      }
+      completedUploadIds.current.add(item.id);
+      return true;
+    });
+
+    if (hasNewCompletedUpload) {
+      void queryClient.invalidateQueries({ queryKey: ["expense-reports"] });
+      void queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    }
+  }, [query.data?.items, queryClient]);
+
+  return query;
 }
 
 export function useUploadStatus(uploadId: number | null) {
   const { accessToken } = useAuth();
+  const queryClient = useQueryClient();
+  const invalidatedUploadIds = useRef(new Set<number>());
 
-  return useQuery({
+  const query = useQuery({
     enabled: Boolean(accessToken) && uploadId !== null,
     queryFn: () => apiClient.getUploadStatus(accessToken!, uploadId!),
     placeholderData: (previousData) => previousData,
@@ -58,6 +82,20 @@ export function useUploadStatus(uploadId: number | null) {
       return upload?.status === "queued" || upload?.status === "processing" ? 1_250 : false;
     },
   });
+
+  useEffect(() => {
+    const upload = query.data;
+    if (!upload || upload.status !== "completed" || invalidatedUploadIds.current.has(upload.id)) {
+      return;
+    }
+
+    invalidatedUploadIds.current.add(upload.id);
+    void queryClient.invalidateQueries({ queryKey: ["expense-reports"] });
+    void queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+    void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+  }, [query.data, queryClient]);
+
+  return query;
 }
 
 export function useCreateUpload() {

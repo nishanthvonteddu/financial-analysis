@@ -166,8 +166,12 @@ async def generate_expense_reports_for_upload(*, upload_id: int) -> list[Expense
             return []
 
         reports = await _generate_expense_reports_for_upload(session, upload=upload)
+        await session.flush()
+        for report in reports:
+            await session.refresh(report)
+        serialized_reports = [_serialize_report(report) for report in reports]
         await session.commit()
-        return [_serialize_report(report) for report in reports]
+        return serialized_reports
 
 
 async def _generate_expense_reports_for_upload(

@@ -116,39 +116,51 @@ def detect_subscriptions(
             merchant_transactions,
             key=lambda transaction: (transaction.posted_at, transaction.id or 0),
         )
-        if len(ordered_transactions) < 2:
-            continue
-
-        frequency = analyze_frequency(
-            [transaction.posted_at for transaction in ordered_transactions]
-        )
-        if frequency is None:
-            continue
-
-        amount_consistency = calculate_amount_consistency(
-            [transaction.amount for transaction in ordered_transactions]
-        )
         known_service = _is_known_service_group(ordered_transactions)
-        confidence = score_subscription_confidence(
-            transaction_count=len(ordered_transactions),
-            amount_consistency=amount_consistency,
-            interval_consistency=frequency.interval_consistency,
-            is_known_service=known_service,
+        if len(ordered_transactions) < 2 and not known_service:
+            continue
+
+        frequency = (
+            analyze_frequency([transaction.posted_at for transaction in ordered_transactions])
+            if len(ordered_transactions) >= 2
+            else None
+        )
+        if frequency is None and not known_service:
+            continue
+
+        amount_consistency = (
+            calculate_amount_consistency(
+                [transaction.amount for transaction in ordered_transactions]
+            )
+            if len(ordered_transactions) >= 2
+            else 100
+        )
+        interval_consistency = frequency.interval_consistency if frequency is not None else 70
+        confidence = max(
+            72 if known_service and len(ordered_transactions) == 1 else 0,
+            score_subscription_confidence(
+                transaction_count=len(ordered_transactions),
+                amount_consistency=amount_consistency,
+                interval_consistency=interval_consistency,
+                is_known_service=known_service,
+            ),
         )
         if confidence < MIN_DETECTION_CONFIDENCE:
             continue
 
         last_charge_date = ordered_transactions[-1].posted_at
+        interval_days = frequency.interval_days if frequency is not None else 30
+        cadence = frequency.cadence if frequency is not None else "monthly"
         status, next_charge_date = determine_subscription_status(
             last_charge_date=last_charge_date,
-            interval_days=frequency.interval_days,
+            interval_days=interval_days,
             as_of=as_of,
         )
         display_name = _display_merchant(ordered_transactions)
         absolute_amounts = [abs(transaction.amount) for transaction in ordered_transactions]
         representative_amount = _quantize_money(absolute_amounts[-1])
         monthly_like = {"monthly", "quarterly", "semiannual", "annual"}
-        day_of_month = last_charge_date.day if frequency.cadence in monthly_like else None
+        day_of_month = last_charge_date.day if cadence in monthly_like else None
 
         detections.append(
             DetectedSubscription(
@@ -156,7 +168,7 @@ def detect_subscriptions(
                 vendor=display_name,
                 amount=representative_amount,
                 currency=ordered_transactions[-1].currency,
-                cadence=frequency.cadence,
+                cadence=cadence,
                 status=status,
                 confidence=confidence,
                 category=_category_for_group(ordered_transactions),
