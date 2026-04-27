@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import JSON, Boolean, Date, ForeignKey, Numeric, String, UniqueConstraint
+from sqlalchemy import JSON, Boolean, Date, ForeignKey, Index, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base, TimestampMixin
@@ -11,6 +11,14 @@ class RawTransaction(TimestampMixin, Base):
     __tablename__ = "raw_transactions"
     __table_args__ = (
         UniqueConstraint("data_source_id", "external_id", name="uq_raw_transactions_external"),
+        Index("ix_raw_transactions_data_source_id", "data_source_id"),
+        Index("ix_raw_transactions_user_posted_id", "user_id", "posted_at", "id"),
+        Index(
+            "ix_raw_transactions_user_candidate_merchant",
+            "user_id",
+            "subscription_candidate",
+            "merchant",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

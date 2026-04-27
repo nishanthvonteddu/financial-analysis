@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String
+from sqlalchemy import DateTime, ForeignKey, Index, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base, TimestampMixin
@@ -9,6 +9,20 @@ from src.models.base import Base, TimestampMixin
 
 class PaymentHistory(TimestampMixin, Base):
     __tablename__ = "payment_history"
+    __table_args__ = (
+        Index(
+            "ix_payment_history_paid_at_subscription",
+            "paid_at",
+            "subscription_id",
+            "id",
+        ),
+        Index(
+            "ix_payment_history_subscription_paid_at",
+            "subscription_id",
+            "paid_at",
+            "id",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     subscription_id: Mapped[int] = mapped_column(ForeignKey("subscriptions.id"), nullable=False)

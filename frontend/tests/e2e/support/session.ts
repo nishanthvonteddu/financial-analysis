@@ -213,6 +213,77 @@ export function buildCsvStatement(vendor: string, amount: string) {
   ].join("\n");
 }
 
+export function buildRollingCsvStatement(vendor: string, amount: string) {
+  const rows = ["Posting Date,Details,Amount"];
+  const today = new Date();
+
+  for (const monthOffset of [2, 1, 0]) {
+    const postedAt = new Date(today.getFullYear(), today.getMonth() - monthOffset, 1);
+    const month = `${postedAt.getMonth() + 1}`.padStart(2, "0");
+    const day = `${postedAt.getDate()}`.padStart(2, "0");
+    rows.push(`${month}/${day}/${postedAt.getFullYear()},${vendor},-${amount}`);
+  }
+
+  return rows.join("\n");
+}
+
+export async function uploadCsvStatement(
+  request: APIRequestContext,
+  {
+    amount,
+    fileName = "statement.csv",
+    vendor,
+  }: {
+    amount: string;
+    fileName?: string;
+    vendor: string;
+  },
+  session = readSavedSession(),
+) {
+  const response = await request.post(`${API_BASE_URL}/uploads`, {
+    headers: buildAuthHeaders(session),
+    multipart: {
+      file: {
+        buffer: Buffer.from(buildRollingCsvStatement(vendor, amount)),
+        mimeType: "text/csv",
+        name: fileName,
+      },
+    },
+  });
+
+  if (!response.ok()) {
+    throw new Error(
+      `Failed to upload CSV statement ${fileName}: ${response.status()} ${await response.text()}`,
+    );
+  }
+
+  const upload = (await response.json()) as { id: number; status: string };
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const statusResponse = await request.get(`${API_BASE_URL}/uploads/${upload.id}/status`, {
+      headers: buildAuthHeaders(session),
+    });
+
+    if (!statusResponse.ok()) {
+      throw new Error(
+        `Failed to read upload status ${upload.id}: ${statusResponse.status()} ${await statusResponse.text()}`,
+      );
+    }
+
+    const statusPayload = (await statusResponse.json()) as { status: string };
+    if (statusPayload.status === "completed") {
+      return statusPayload;
+    }
+    if (statusPayload.status === "failed") {
+      throw new Error(`Upload ${upload.id} failed during processing`);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+
+  throw new Error(`Upload ${upload.id} did not complete before timeout`);
+}
+
 function escapePdfText(value: string) {
   return value.replaceAll("\\", "\\\\").replaceAll("(", "\\(").replaceAll(")", "\\)");
 }
