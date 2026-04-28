@@ -47,6 +47,25 @@ type RequestOptions = {
   token?: string;
 };
 
+let csrfToken: string | null = null;
+
+export function setApiCsrfToken(token: string | null) {
+  csrfToken = token;
+}
+
+function isStateChangingMethod(method: string | undefined) {
+  return !["GET", "HEAD", "OPTIONS"].includes((method ?? "GET").toUpperCase());
+}
+
+function buildSecurityHeaders(init: RequestInit | undefined, token: string | undefined) {
+  return {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(token && csrfToken && isStateChangingMethod(init?.method)
+      ? { "X-CSRF-Token": csrfToken }
+      : {}),
+  };
+}
+
 async function parseResponseBody(response: Response) {
   const contentType = response.headers.get("Content-Type") ?? "";
   if (!contentType.includes("application/json")) {
@@ -89,7 +108,7 @@ async function request<T>(
     ...init,
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
-      ...(options?.token ? { Authorization: `Bearer ${options.token}` } : {}),
+      ...buildSecurityHeaders(init, options?.token),
       ...init?.headers,
     },
   });
@@ -128,7 +147,7 @@ async function requestBlob(
   const response = await fetch(buildUrl(path, options?.query), {
     ...init,
     headers: {
-      ...(options?.token ? { Authorization: `Bearer ${options.token}` } : {}),
+      ...buildSecurityHeaders(init, options?.token),
       ...init?.headers,
     },
   });
@@ -171,6 +190,9 @@ function uploadFile(
     xhr.open("POST", buildUrl("/uploads"));
     xhr.responseType = "json";
     xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    if (csrfToken) {
+      xhr.setRequestHeader("X-CSRF-Token", csrfToken);
+    }
 
     xhr.upload.addEventListener("progress", (event) => {
       if (!event.lengthComputable || !onProgress) {
