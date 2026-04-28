@@ -3,8 +3,6 @@ import path from "node:path";
 
 import type { APIRequestContext, Page } from "@playwright/test";
 
-import { AUTH_STORAGE_KEY } from "../../../src/lib/constants";
-
 const backendPort = process.env.BACKEND_PORT ?? "8000";
 const frontendPort = process.env.FRONTEND_PORT ?? "3000";
 
@@ -14,6 +12,7 @@ export const FRONTEND_BASE_URL = `http://127.0.0.1:${frontendPort}`;
 export const AUTH_ARTIFACT_DIR = path.resolve(process.cwd(), "test-results/.auth");
 export const AUTH_STATE_PATH = path.join(AUTH_ARTIFACT_DIR, "storage-state.json");
 export const AUTH_SESSION_PATH = path.join(AUTH_ARTIFACT_DIR, "session.json");
+const E2E_SESSION_COOKIE = "mysubscription.e2e_session";
 
 export type TestSession = {
   access_token: string;
@@ -22,9 +21,13 @@ export type TestSession = {
   access_token_expires_at: string;
   refresh_token_expires_at: string;
   user: {
+    created_at: string;
     email: string;
     full_name: string;
     id: number;
+    is_active: boolean;
+    preferred_currency: string;
+    updated_at: string;
   };
 };
 
@@ -81,22 +84,28 @@ export async function registerTestUser(
 }
 
 export async function seedSession(page: Page, session: TestSession) {
-  const payload = { key: AUTH_STORAGE_KEY, nextSession: session };
+  await page.context().addCookies([
+    {
+      name: E2E_SESSION_COOKIE,
+      sameSite: "Lax",
+      url: FRONTEND_BASE_URL,
+      value: encodeURIComponent(JSON.stringify(session)),
+    },
+  ]);
 
   await page.addInitScript(
-    ({ key, nextSession }) => {
-      window.localStorage.setItem(key, JSON.stringify(nextSession));
+    (nextSession) => {
+      (window as typeof window & { __MYSUBSCRIPTION_TEST_SESSION__?: TestSession })
+        .__MYSUBSCRIPTION_TEST_SESSION__ = nextSession;
     },
-    payload,
+    session,
   );
 
   if (page.url().startsWith(FRONTEND_BASE_URL)) {
-    await page.evaluate(
-      ({ key, nextSession }) => {
-        window.localStorage.setItem(key, JSON.stringify(nextSession));
-      },
-      payload,
-    );
+    await page.evaluate((nextSession) => {
+      (window as typeof window & { __MYSUBSCRIPTION_TEST_SESSION__?: TestSession })
+        .__MYSUBSCRIPTION_TEST_SESSION__ = nextSession;
+    }, session);
   }
 }
 

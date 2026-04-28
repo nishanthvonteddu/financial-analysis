@@ -3,8 +3,7 @@
 import type { ReactNode } from "react";
 import { createContext, useEffect, useState } from "react";
 
-import { AUTH_STORAGE_KEY } from "@/lib/constants";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, setApiCsrfToken } from "@/lib/api-client";
 import type { AuthResponse, LoginInput, RegisterInput, User, UserUpdateInput } from "@/types";
 
 type AuthContextValue = {
@@ -21,6 +20,13 @@ type AuthContextValue = {
 };
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
+const E2E_SESSION_COOKIE = "mysubscription.e2e_session";
+
+declare global {
+  interface Window {
+    __MYSUBSCRIPTION_TEST_SESSION__?: AuthResponse;
+  }
+}
 
 function isAuthResponse(value: unknown): value is AuthResponse {
   if (!value || typeof value !== "object") {
@@ -39,26 +45,43 @@ function isAuthResponse(value: unknown): value is AuthResponse {
   );
 }
 
-function readStoredSession() {
+function createCsrfToken() {
+  if (!window.crypto?.getRandomValues) {
+    return Math.random().toString(36).slice(2);
+  }
+
+  const bytes = new Uint8Array(16);
+  window.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function readBootstrapSession() {
   if (typeof window === "undefined") {
     return null;
   }
 
-  const stored = window.localStorage.getItem(AUTH_STORAGE_KEY);
-  if (!stored) {
-    return null;
+  const session = window.__MYSUBSCRIPTION_TEST_SESSION__;
+  if (isAuthResponse(session)) {
+    return session;
   }
 
-  try {
-    const parsed = JSON.parse(stored) as unknown;
-    if (isAuthResponse(parsed)) {
-      return parsed;
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    const cookie = document.cookie
+      .split("; ")
+      .find((value) => value.startsWith(`${E2E_SESSION_COOKIE}=`));
+    const rawSession = cookie?.split("=").slice(1).join("=");
+    if (rawSession) {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(rawSession)) as unknown;
+        if (isAuthResponse(parsed)) {
+          return parsed;
+        }
+      } catch {
+        return null;
+      }
     }
-  } catch {
-    // Fall through to clearing the malformed session payload.
   }
 
-  window.localStorage.removeItem(AUTH_STORAGE_KEY);
   return null;
 }
 
@@ -74,34 +97,32 @@ function getRefreshDelay(expiresAt: string): number {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AuthResponse | null>(null);
+  const [csrfToken, setCsrfToken] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const applySession = (nextSession: AuthResponse) => {
+    setCsrfToken((current) => current ?? createCsrfToken());
     setSession(nextSession);
   };
 
   const logout = () => {
+    setCsrfToken(null);
     setSession(null);
   };
 
   useEffect(() => {
-    setSession(readStoredSession());
+    const bootstrapSession = readBootstrapSession();
+    if (bootstrapSession) {
+      applySession(bootstrapSession);
+    }
     setIsReady(true);
   }, []);
 
   useEffect(() => {
-    if (!isReady || typeof window === "undefined") {
-      return;
-    }
-
-    if (session) {
-      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
-      return;
-    }
-
-    window.localStorage.removeItem(AUTH_STORAGE_KEY);
-  }, [isReady, session]);
+    setApiCsrfToken(csrfToken);
+    return () => setApiCsrfToken(null);
+  }, [csrfToken]);
 
   useEffect(() => {
     if (!isReady) {

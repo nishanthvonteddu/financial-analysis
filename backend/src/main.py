@@ -9,7 +9,7 @@ from src.api.router import api_router
 from src.config import get_settings
 from src.core.database import close_database, init_database
 from src.core.logging import configure_logging, get_logger
-from src.core.middleware import RequestLoggingMiddleware
+from src.core.middleware import RequestLoggingMiddleware, SecurityControlsMiddleware
 
 
 @asynccontextmanager
@@ -84,6 +84,7 @@ def create_app() -> FastAPI:
             },
         ],
     )
+    app.add_middleware(SecurityControlsMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.backend_cors_origins,

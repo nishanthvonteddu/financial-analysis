@@ -5,10 +5,11 @@ from datetime import UTC, date, datetime, timedelta
 from secrets import token_urlsafe
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.email import BaseEmailService, get_email_service
+from src.core.encryption import blind_index, encrypt_text
 from src.core.logging import get_logger
 from src.models.notification import Notification
 from src.models.notification_preference import NotificationPreference
@@ -222,7 +223,8 @@ async def mark_all_notifications_read(
 
 async def create_telegram_link_token(session: AsyncSession, *, user: User) -> str:
     token = token_urlsafe(18)
-    user.telegram_link_token = token
+    user.telegram_link_token = encrypt_text(token)
+    user.telegram_link_token_hash = blind_index(token)
     await session.commit()
     await session.refresh(user)
     logger.info("notifications.telegram_link_token_created", user_id=user.id)
@@ -231,7 +233,9 @@ async def create_telegram_link_token(session: AsyncSession, *, user: User) -> st
 
 async def unlink_telegram(session: AsyncSession, *, user: User) -> None:
     user.telegram_chat_id = None
+    user.telegram_chat_id_hash = None
     user.telegram_link_token = None
+    user.telegram_link_token_hash = None
     user.telegram_linked_at = None
 
     preferences = await ensure_notification_preferences(session, user=user)
@@ -267,7 +271,14 @@ async def handle_telegram_webhook(
     chat_id = str(message.chat.id)
     text = (message.text or "").strip()
     if text.lower() == "/stop":
-        user = await session.scalar(select(User).where(User.telegram_chat_id == chat_id))
+        user = await session.scalar(
+            select(User).where(
+                or_(
+                    User.telegram_chat_id_hash == blind_index(chat_id),
+                    User.telegram_chat_id == chat_id,
+                )
+            )
+        )
         if user is None:
             return TelegramWebhookResponse(action="ignored")
         await unlink_telegram(session, user=user)
@@ -277,12 +288,21 @@ async def handle_telegram_webhook(
     if token is None:
         return TelegramWebhookResponse(action="ignored")
 
-    user = await session.scalar(select(User).where(User.telegram_link_token == token))
+    user = await session.scalar(
+        select(User).where(
+            or_(
+                User.telegram_link_token_hash == blind_index(token),
+                User.telegram_link_token == token,
+            )
+        )
+    )
     if user is None:
         return TelegramWebhookResponse(action="ignored")
 
-    user.telegram_chat_id = chat_id
+    user.telegram_chat_id = encrypt_text(chat_id)
+    user.telegram_chat_id_hash = blind_index(chat_id)
     user.telegram_link_token = None
+    user.telegram_link_token_hash = None
     user.telegram_linked_at = _now()
     preferences = await ensure_notification_preferences(session, user=user)
     for preference in preferences:
@@ -503,7 +523,6 @@ async def dispatch_renewal_notifications(
                 logger.info(
                     "notifications.telegram_dispatch",
                     user_id=user.id,
-                    telegram_chat_id=user.telegram_chat_id,
                     subscription_id=subscription.id,
                 )
                 await _record_sent(

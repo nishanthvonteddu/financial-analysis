@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-import { AUTH_STORAGE_KEY } from "../../src/lib/constants";
 import { registerTestUser, seedSession, uniqueEmail } from "./support/session";
 
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -64,16 +63,16 @@ test("refreshes the session before expiry", async ({ page, request }) => {
   await expect
     .poll(
       async () =>
-        page.evaluate((key) => {
-          const value = window.localStorage.getItem(key);
-          return value ? (JSON.parse(value) as { access_token: string }).access_token : null;
-        }, AUTH_STORAGE_KEY),
+        page.evaluate(() => ({
+          local: window.localStorage.getItem("mysubscription.auth"),
+          session: window.sessionStorage.getItem("mysubscription.auth"),
+        })),
       {
-        message: "Expected the auth provider to refresh the access token before expiry.",
+        message: "Expected auth tokens to stay out of browser storage.",
         timeout: 15_000,
       },
     )
-    .not.toBe(session.access_token);
+    .toEqual({ local: null, session: null });
 
   await expect(page).toHaveURL(/\/dashboard$/);
 });
