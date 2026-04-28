@@ -15,6 +15,7 @@ vi.mock("@/lib/api-client", () => ({
     register: vi.fn(),
     updateMe: vi.fn(),
   },
+  setApiCsrfToken: vi.fn(),
 }));
 
 const buildSession = (overrides: Partial<AuthResponse> = {}) => ({
@@ -61,11 +62,15 @@ describe("useAuth", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     window.localStorage.clear();
+    window.sessionStorage.clear();
+    window.__MYSUBSCRIPTION_TEST_SESSION__ = undefined;
   });
 
   afterEach(() => {
     vi.clearAllMocks();
     window.localStorage.clear();
+    window.sessionStorage.clear();
+    window.__MYSUBSCRIPTION_TEST_SESSION__ = undefined;
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -90,8 +95,8 @@ describe("useAuth", () => {
     expect(screen.getByTestId("state")).toHaveTextContent("owner@example.com");
   });
 
-  it("restores a persisted session after hydration", async () => {
-    window.localStorage.setItem("mysubscription.auth", JSON.stringify(buildSession()));
+  it("hydrates a test bootstrap session without browser storage", async () => {
+    window.__MYSUBSCRIPTION_TEST_SESSION__ = buildSession();
 
     render(
       createElement(AuthProvider, null, createElement(AuthHarness)),
@@ -102,6 +107,8 @@ describe("useAuth", () => {
     });
 
     expect(screen.getByTestId("state")).toHaveTextContent("owner@example.com");
+    expect(window.localStorage.getItem("mysubscription.auth")).toBeNull();
+    expect(window.sessionStorage.getItem("mysubscription.auth")).toBeNull();
   });
 
   it("refreshes the session before the access token expires", async () => {
@@ -123,6 +130,7 @@ describe("useAuth", () => {
     });
 
     expect(apiClient.refresh).toHaveBeenCalledWith("refresh-token");
-    expect(window.localStorage.getItem("mysubscription.auth")).toContain("refreshed-token");
+    expect(window.localStorage.getItem("mysubscription.auth")).toBeNull();
+    expect(window.sessionStorage.getItem("mysubscription.auth")).toBeNull();
   });
 });
