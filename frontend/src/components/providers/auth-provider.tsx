@@ -20,6 +20,7 @@ type AuthContextValue = {
 };
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
+const E2E_SESSION_COOKIE = "mysubscription.e2e_session";
 
 declare global {
   interface Window {
@@ -62,6 +63,23 @@ function readBootstrapSession() {
   const session = window.__MYSUBSCRIPTION_TEST_SESSION__;
   if (isAuthResponse(session)) {
     return session;
+  }
+
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    const cookie = document.cookie
+      .split("; ")
+      .find((value) => value.startsWith(`${E2E_SESSION_COOKIE}=`));
+    const rawSession = cookie?.split("=").slice(1).join("=");
+    if (rawSession) {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(rawSession)) as unknown;
+        if (isAuthResponse(parsed)) {
+          return parsed;
+        }
+      } catch {
+        return null;
+      }
+    }
   }
 
   return null;
