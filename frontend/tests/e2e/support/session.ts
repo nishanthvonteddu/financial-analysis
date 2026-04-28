@@ -12,6 +12,7 @@ export const FRONTEND_BASE_URL = `http://127.0.0.1:${frontendPort}`;
 export const AUTH_ARTIFACT_DIR = path.resolve(process.cwd(), "test-results/.auth");
 export const AUTH_STATE_PATH = path.join(AUTH_ARTIFACT_DIR, "storage-state.json");
 export const AUTH_SESSION_PATH = path.join(AUTH_ARTIFACT_DIR, "session.json");
+const E2E_SESSION_COOKIE = "mysubscription.e2e_session";
 
 export type TestSession = {
   access_token: string;
@@ -83,6 +84,15 @@ export async function registerTestUser(
 }
 
 export async function seedSession(page: Page, session: TestSession) {
+  await page.context().addCookies([
+    {
+      name: E2E_SESSION_COOKIE,
+      sameSite: "Lax",
+      url: FRONTEND_BASE_URL,
+      value: encodeURIComponent(JSON.stringify(session)),
+    },
+  ]);
+
   await page.addInitScript(
     (nextSession) => {
       (window as typeof window & { __MYSUBSCRIPTION_TEST_SESSION__?: TestSession })
