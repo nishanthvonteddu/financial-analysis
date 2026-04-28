@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { apiClient } from "@/lib/api-client";
+import { apiClient, setApiCsrfToken } from "@/lib/api-client";
 
 describe("apiClient", () => {
   afterEach(() => {
+    setApiCsrfToken(null);
     vi.restoreAllMocks();
   });
 
@@ -126,6 +127,28 @@ describe("apiClient", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:8000/api/v1/subscriptions/4",
       expect.objectContaining({
+        method: "DELETE",
+      }),
+    );
+  });
+
+  it("adds a CSRF token header to protected state-changing requests", async () => {
+    const fetchMock = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(null, {
+        status: 204,
+      }),
+    );
+    setApiCsrfToken("csrf-token");
+
+    await apiClient.deleteSubscription("access-token", 4);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:8000/api/v1/subscriptions/4",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Bearer access-token",
+          "X-CSRF-Token": "csrf-token",
+        }),
         method: "DELETE",
       }),
     );
