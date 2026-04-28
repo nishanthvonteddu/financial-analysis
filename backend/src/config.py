@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     app_base_url: str = "http://localhost:8000"
     telegram_webhook_secret: str | None = None
     disable_rate_limiting: bool = False
+    global_rate_limit: int = 600
+    global_rate_window_seconds: int = 60
+    max_request_body_bytes: int = 11 * 1024 * 1024
+    field_encryption_key: str | None = None
+    security_hsts_enabled: bool = False
     aws_region: str = "us-east-1"
     aws_bucket_name: str | None = None
     upload_job_backend: str = "inline"
@@ -39,6 +44,8 @@ class Settings(BaseSettings):
             and self.jwt_secret_key == "dev-secret-change-me"
         ):
             raise ValueError("JWT_SECRET_KEY must be overridden outside development and test.")
+        if environment not in {"development", "test"} and not self.field_encryption_key:
+            raise ValueError("FIELD_ENCRYPTION_KEY must be set outside development and test.")
         return self
 
     model_config = SettingsConfigDict(
