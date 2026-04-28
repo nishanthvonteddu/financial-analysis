@@ -30,7 +30,11 @@ def upgrade() -> None:
         "users",
         sa.Column("telegram_link_token_hash", sa.String(length=64), nullable=True),
     )
-    op.create_unique_constraint("uq_users_telegram_chat_id_hash", "users", ["telegram_chat_id_hash"])
+    op.create_unique_constraint(
+        "uq_users_telegram_chat_id_hash",
+        "users",
+        ["telegram_chat_id_hash"],
+    )
     op.create_unique_constraint(
         "uq_users_telegram_link_token_hash",
         "users",
