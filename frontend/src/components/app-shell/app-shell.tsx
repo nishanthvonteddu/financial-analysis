@@ -255,6 +255,8 @@ export function AppShell({ children }: AppShellProps) {
                     )}
                     href={href}
                     key={href}
+                    onFocus={() => router.prefetch(href)}
+                    onMouseEnter={() => router.prefetch(href)}
                   >
                     <span
                       className={cn(
@@ -428,6 +430,8 @@ export function AppShell({ children }: AppShellProps) {
                     )}
                     href={href}
                     key={href}
+                    onFocus={() => router.prefetch(href)}
+                    onMouseEnter={() => router.prefetch(href)}
                   >
                     <Icon className="size-4" />
                     <span>{mobileLabel}</span>
