@@ -504,17 +504,19 @@ async def get_subscription_score(
     session: AsyncSession,
     *,
     user: User,
+    subscriptions: list[Subscription] | None = None,
 ) -> SubscriptionScoreResponse:
     target_currency = _get_user_currency(user)
-    subscriptions = list(
-        (
-            await session.scalars(
-                select(Subscription)
-                .where(Subscription.user_id == user.id, Subscription.status == "active")
-                .order_by(Subscription.id.asc())
-            )
-        ).all()
-    )
+    if subscriptions is None:
+        subscriptions = list(
+            (
+                await session.scalars(
+                    select(Subscription)
+                    .where(Subscription.user_id == user.id, Subscription.status == "active")
+                    .order_by(Subscription.id.asc())
+                )
+            ).all()
+        )
 
     monthly_equivalents = [
         await _monthly_equivalent(session, subscription, target_currency=target_currency)
