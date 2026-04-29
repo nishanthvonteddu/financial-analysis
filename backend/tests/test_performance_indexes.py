@@ -62,6 +62,11 @@ def test_phase_two_three_query_indexes_are_declared() -> None:
             "created_at",
             "id",
         ),
+        ("exchange_rates", "ix_exchange_rates_pair_effective"): (
+            "base_currency",
+            "quote_currency",
+            "effective_date",
+        ),
     }
 
     for (table_name, index_name), columns in expected_indexes.items():
