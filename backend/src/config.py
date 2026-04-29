@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     aws_bucket_name: str | None = None
     upload_job_backend: str = "inline"
     redis_url: str = "redis://localhost:6379/0"
+    slow_query_threshold_ms: int = 500
 
     @model_validator(mode="after")
     def validate_security_defaults(self) -> "Settings":
