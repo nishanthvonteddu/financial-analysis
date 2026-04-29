@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import Date, Numeric, String, UniqueConstraint
+from sqlalchemy import Date, Index, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base, TimestampMixin
@@ -15,6 +15,12 @@ class ExchangeRate(TimestampMixin, Base):
             "quote_currency",
             "effective_date",
             name="uq_exchange_rates_pair_date",
+        ),
+        Index(
+            "ix_exchange_rates_pair_effective",
+            "base_currency",
+            "quote_currency",
+            "effective_date",
         ),
     )
 
