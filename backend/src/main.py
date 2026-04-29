@@ -4,12 +4,17 @@ from contextlib import asynccontextmanager
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 from src.api.router import api_router
 from src.config import get_settings
 from src.core.database import close_database, init_database
 from src.core.logging import configure_logging, get_logger
-from src.core.middleware import RequestLoggingMiddleware, SecurityControlsMiddleware
+from src.core.middleware import (
+    PrivateCacheControlMiddleware,
+    RequestLoggingMiddleware,
+    SecurityControlsMiddleware,
+)
 
 
 @asynccontextmanager
@@ -85,6 +90,7 @@ def create_app() -> FastAPI:
         ],
     )
     app.add_middleware(SecurityControlsMiddleware)
+    app.add_middleware(GZipMiddleware, minimum_size=1024)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.backend_cors_origins,
@@ -92,6 +98,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app.add_middleware(PrivateCacheControlMiddleware)
     app.add_middleware(RequestLoggingMiddleware)
     app.include_router(api_router, prefix=settings.api_v1_prefix)
     return app
