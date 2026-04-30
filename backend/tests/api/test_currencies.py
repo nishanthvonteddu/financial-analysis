@@ -19,6 +19,8 @@ def test_currencies_api_lists_supported_codes_and_missing_rate_fallback(client) 
 
     list_response = client.get("/api/v1/currencies", headers=headers)
     assert list_response.status_code == 200
+    assert list_response.headers["cache-control"] == "private, max-age=30"
+    assert "authorization" in list_response.headers["vary"].lower()
     assert [item["code"] for item in list_response.json()["items"]] == [
         "USD",
         "EUR",

@@ -17,6 +17,11 @@ CSRF_EXEMPT_SUFFIXES = (
     "/auth/register",
     "/notifications/telegram/webhook",
 )
+CACHEABLE_GET_SUFFIXES = (
+    "/currencies",
+    "/dashboard/score",
+    "/dashboard/summary",
+)
 
 
 def _client_host(request: Request) -> str:
@@ -137,4 +142,23 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             duration_ms=duration_ms,
         )
         response.headers["x-request-id"] = request_id
+        return response
+
+
+class PrivateCacheControlMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        response = await call_next(request)
+        if (
+            request.method.upper() == "GET"
+            and response.status_code == 200
+            and request.url.path.endswith(CACHEABLE_GET_SUFFIXES)
+        ):
+            response.headers.setdefault("Cache-Control", "private, max-age=30")
+            vary_values = {
+                value.strip().lower()
+                for value in response.headers.get("Vary", "").split(",")
+                if value.strip()
+            }
+            if "authorization" not in vary_values:
+                response.headers.append("Vary", "Authorization")
         return response

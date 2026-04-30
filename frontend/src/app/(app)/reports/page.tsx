@@ -1,54 +1,51 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { startTransition, useDeferredValue, useEffect, useState } from "react";
-import { ArrowRight, BarChart3, LoaderCircle, PieChart as PieChartIcon } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-} from "recharts";
+import { ArrowRight, BarChart3, LoaderCircle } from "lucide-react";
 
 import { ReportAnalytics } from "@/components/reports/report-analytics";
 import { ExpenseReportCard } from "@/components/reports/expense-report-card";
 import { Button } from "@/components/ui/button";
-import { CurrencyDisplay, formatCurrency } from "@/components/ui/currency-display";
+import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useExpenseAnalytics, useExpenseReport, useExpenseReports } from "@/hooks/use-expense-reports";
 import type { AnalyticsRangeKey, ExpenseReport } from "@/types";
 
-const CATEGORY_COLORS = ["#111418", "#dc5d30", "#d9895d", "#95a6ba", "#cdb28f"];
 const EMPTY_REPORTS: ExpenseReport[] = [];
 
-function ChartTooltip({
-  active,
-  label,
-  payload,
-}: {
-  active?: boolean;
-  label?: string;
-  payload?: Array<{ payload?: { total_amount?: number } }>;
-}) {
-  if (!active || !payload?.length) {
-    return null;
-  }
-
+function ExpenseReportChartsLoading() {
   return (
-    <div className="rounded-[1.2rem] border border-black/10 bg-white/94 px-4 py-3 shadow-line">
-      <p className="text-xs uppercase tracking-[0.28em] text-black/42">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-ink">
-        {formatCurrency({ value: payload[0]?.payload?.total_amount ?? 0 })}
-      </p>
+    <div className="grid gap-5 xl:grid-cols-2">
+      {Array.from({ length: 2 }).map((_, index) => (
+        <section className="rounded-[1.6rem] border border-black/10 bg-white/88 p-5" key={index}>
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-11 rounded-[1rem]" />
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-28" />
+              <Skeleton className="h-5 w-44" />
+            </div>
+          </div>
+          <Skeleton className="mt-5 h-64 w-full rounded-[1.2rem]" />
+        </section>
+      ))}
     </div>
   );
 }
+
+const ExpenseReportCharts = dynamic(
+  () =>
+    import("@/components/reports/expense-report-charts").then(
+      (module) => module.ExpenseReportCharts,
+    ),
+  {
+    loading: ExpenseReportChartsLoading,
+    ssr: false,
+  },
+);
 
 function formatGeneratedAt(value: string | null) {
   if (!value) {
@@ -203,85 +200,7 @@ export default function ReportsPage() {
                   </div>
                 </div>
 
-                <div className="grid gap-5 xl:grid-cols-2">
-                  <section className="rounded-[1.6rem] border border-black/10 bg-white/88 p-5">
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex size-11 items-center justify-center rounded-[1rem] border border-black/10 bg-stone text-ink">
-                        <BarChart3 className="size-5" />
-                      </span>
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.28em] text-black/42">Spend trend</p>
-                        <h3 className="mt-1 text-xl font-semibold text-ink">Timeline by month</h3>
-                      </div>
-                    </div>
-
-                    <div className="mt-5 h-64">
-                      <ResponsiveContainer height="100%" width="100%">
-                        <BarChart
-                          accessibilityLayer
-                          data={selectedReport.summary.spend_timeline.map((point) => ({
-                            label: point.label,
-                            total_amount: Number(point.total_amount),
-                          }))}
-                          margin={{ bottom: 0, left: -12, right: 8, top: 6 }}
-                        >
-                          <CartesianGrid
-                            stroke="rgba(17,20,24,0.08)"
-                            strokeDasharray="4 8"
-                            vertical={false}
-                          />
-                          <XAxis
-                            axisLine={false}
-                            dataKey="label"
-                            tick={{ fill: "rgba(17,20,24,0.45)", fontSize: 12 }}
-                            tickLine={false}
-                          />
-                          <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(220, 93, 48, 0.08)" }} />
-                          <Bar dataKey="total_amount" fill="#dc5d30" radius={[12, 12, 0, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </section>
-
-                  <section className="rounded-[1.6rem] border border-black/10 bg-white/88 p-5">
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex size-11 items-center justify-center rounded-[1rem] border border-black/10 bg-stone text-ink">
-                        <PieChartIcon className="size-5" />
-                      </span>
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.28em] text-black/42">Category split</p>
-                        <h3 className="mt-1 text-xl font-semibold text-ink">Where the spend landed</h3>
-                      </div>
-                    </div>
-
-                    <div className="mt-5 h-64">
-                      <ResponsiveContainer height="100%" width="100%">
-                        <PieChart>
-                          <Pie
-                            cx="50%"
-                            cy="50%"
-                            data={selectedReport.summary.category_breakdown.map((item) => ({
-                              label: item.category_name,
-                              total_amount: Number(item.total_amount),
-                            }))}
-                            dataKey="total_amount"
-                            innerRadius={54}
-                            outerRadius={92}
-                            paddingAngle={3}
-                          >
-                            {selectedReport.summary.category_breakdown.map((item, index) => (
-                              <Cell
-                                fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]}
-                                key={item.category_name}
-                              />
-                            ))}
-                          </Pie>
-                          <Tooltip content={<ChartTooltip />} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </section>
-                </div>
+                <ExpenseReportCharts report={selectedReport} />
 
                 <section className="rounded-[1.6rem] border border-black/10 bg-white/88 p-5">
                   <p className="text-xs uppercase tracking-[0.28em] text-black/42">Top merchants</p>

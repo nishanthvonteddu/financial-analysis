@@ -4,6 +4,7 @@ from typing import Literal, cast
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import load_only
 
 from src.core.logging import get_logger
 from src.models.category import Category
@@ -144,6 +145,26 @@ async def get_dashboard_summary(
         (
             await session.scalars(
                 select(Subscription)
+                .options(
+                    load_only(
+                        Subscription.id,
+                        Subscription.user_id,
+                        Subscription.category_id,
+                        Subscription.payment_method_id,
+                        Subscription.name,
+                        Subscription.vendor,
+                        Subscription.description,
+                        Subscription.website_url,
+                        Subscription.amount,
+                        Subscription.currency,
+                        Subscription.cadence,
+                        Subscription.status,
+                        Subscription.next_charge_date,
+                        Subscription.end_date,
+                        Subscription.day_of_month,
+                        Subscription.notes,
+                    )
+                )
                 .where(Subscription.user_id == user.id)
                 .order_by(Subscription.id.asc())
             )
@@ -157,7 +178,15 @@ async def get_dashboard_summary(
         }
     )
     categories = (
-        list((await session.scalars(select(Category).where(Category.id.in_(category_ids)))).all())
+        list(
+            (
+                await session.scalars(
+                    select(Category)
+                    .options(load_only(Category.id, Category.name))
+                    .where(Category.id.in_(category_ids))
+                )
+            ).all()
+        )
         if category_ids
         else []
     )
@@ -241,6 +270,15 @@ async def get_dashboard_summary(
         (
             await session.scalars(
                 select(PaymentHistory)
+                .options(
+                    load_only(
+                        PaymentHistory.id,
+                        PaymentHistory.subscription_id,
+                        PaymentHistory.paid_at,
+                        PaymentHistory.amount,
+                        PaymentHistory.currency,
+                    )
+                )
                 .join(Subscription, Subscription.id == PaymentHistory.subscription_id)
                 .where(
                     Subscription.user_id == user.id,
@@ -283,7 +321,11 @@ async def get_dashboard_summary(
         )
         for point in month_points
     ]
-    score_payload = await get_subscription_score(session, user=user)
+    score_payload = await get_subscription_score(
+        session,
+        user=user,
+        subscriptions=active_subscriptions,
+    )
     score_overview = DashboardScoreOverview.model_validate(build_score_overview(score_payload))
     duplicate_alerts = [
         DashboardDuplicateAlertItem.model_validate(candidate.model_dump())

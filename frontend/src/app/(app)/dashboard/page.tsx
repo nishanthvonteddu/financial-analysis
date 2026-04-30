@@ -1,19 +1,53 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { startTransition, useMemo } from "react";
 import { ArrowRight, Activity, Gauge, LayoutTemplate } from "lucide-react";
 
 import { WorkspaceOnboarding } from "@/components/onboarding/workspace-onboarding";
 import { SnapshotBar } from "@/components/dashboard/snapshot-bar";
-import { DashboardWidgetBoard } from "@/components/dashboard/widget-board";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardLayout, useDashboardSummary, useUpdateDashboardLayout } from "@/hooks/use-dashboard";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { useSubscriptionCatalog, useSubscriptionList } from "@/hooks/use-subscriptions";
 import { useUploadHistory } from "@/hooks/use-uploads";
 import type { DashboardLayoutWidget } from "@/types";
+
+function DashboardBoardLoading() {
+  return (
+    <section className="rounded-[2rem] border border-black/10 bg-white/76 p-5 shadow-line backdrop-blur sm:p-6">
+      <div className="flex flex-col gap-4 border-b border-black/10 pb-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-36" />
+          <Skeleton className="h-8 w-72 max-w-full" />
+          <Skeleton className="h-4 w-full max-w-lg" />
+        </div>
+        <Skeleton className="h-10 w-36 rounded-full" />
+      </div>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div className="rounded-[1.7rem] border border-black/10 bg-white/80 p-5" key={index}>
+            <Skeleton className="h-5 w-28" />
+            <Skeleton className="mt-4 h-9 w-32" />
+            <Skeleton className="mt-6 h-24 w-full" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const DashboardWidgetBoard = dynamic(
+  () =>
+    import("@/components/dashboard/widget-board").then((module) => module.DashboardWidgetBoard),
+  {
+    loading: DashboardBoardLoading,
+    ssr: false,
+  },
+);
 
 export default function DashboardPage() {
   const summaryQuery = useDashboardSummary();
