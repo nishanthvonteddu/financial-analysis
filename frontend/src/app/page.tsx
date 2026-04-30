@@ -75,6 +75,9 @@ export default function Home() {
 
             <div className="flex items-center gap-3">
               <Button asChild className="rounded-full px-5" variant="ghost">
+                <Link href="/privacy">Privacy</Link>
+              </Button>
+              <Button asChild className="rounded-full px-5" variant="ghost">
                 <Link href="/login">Sign in</Link>
               </Button>
               <Button asChild className="rounded-full px-5">
@@ -283,6 +286,13 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <footer className="mx-auto flex max-w-7xl flex-col gap-3 border-t border-black/10 px-6 py-8 text-sm text-black/58 dark:border-white/10 dark:text-white/58 sm:flex-row sm:items-center sm:justify-between sm:px-10 lg:px-12">
+        <span>Recurring spend workspace</span>
+        <Link className="transition hover:text-ink dark:hover:text-white" href="/privacy">
+          Privacy policy
+        </Link>
+      </footer>
     </main>
   );
 }
