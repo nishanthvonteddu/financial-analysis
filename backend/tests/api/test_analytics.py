@@ -197,16 +197,9 @@ def test_expense_analytics_returns_category_method_frequency_and_trend_data(clie
         start_date=str(today - timedelta(days=400)),
     )
 
-    _seed_payment_history(
-        netflix_id,
-        datetime.combine(current_month_start + timedelta(days=2), datetime.min.time(), tzinfo=UTC),
-        Decimal("15.00"),
-    )
-    _seed_payment_history(
-        spotify_id,
-        datetime.combine(current_month_start + timedelta(days=4), datetime.min.time(), tzinfo=UTC),
-        Decimal("10.00"),
-    )
+    current_month_paid_at = datetime.combine(today, datetime.min.time(), tzinfo=UTC)
+    _seed_payment_history(netflix_id, current_month_paid_at, Decimal("15.00"))
+    _seed_payment_history(spotify_id, current_month_paid_at, Decimal("10.00"))
     _seed_payment_history(
         electric_id,
         datetime.combine(previous_month_start + timedelta(days=5), datetime.min.time(), tzinfo=UTC),
@@ -331,7 +324,7 @@ def test_expense_analytics_converts_observed_and_projected_totals(client) -> Non
     )
     _seed_payment_history(
         subscription_id,
-        datetime.combine(current_month_start + timedelta(days=2), datetime.min.time(), tzinfo=UTC),
+        datetime.combine(today, datetime.min.time(), tzinfo=UTC),
         Decimal("20.00"),
     )
 
