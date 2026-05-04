@@ -2,7 +2,7 @@
 
 FinSight is a personal financial analysis platform. Upload your bank statements, and it tells you exactly where your money is going — what is growing, what is shrinking, and what has quietly been bleeding for months.
 
-Subscription tracking is one feature. The core product is financial intelligence: pattern detection, spend breakdown, trend analysis, and exportable reports — all from a single CSV or PDF drop.
+The core product is financial intelligence: pattern detection, spend breakdown, trend analysis, and exportable reports — all from a single CSV or PDF drop.
 
 ## Stack
 
