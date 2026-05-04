@@ -17,7 +17,7 @@ export function RenewalBadge({ className, renewal }: RenewalBadgeProps) {
     return (
       <span
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-rose-700",
+          "inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-red-700",
           className,
         )}
       >
@@ -31,7 +31,7 @@ export function RenewalBadge({ className, renewal }: RenewalBadgeProps) {
     return (
       <span
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700",
+          "inline-flex items-center gap-1.5 rounded-md border border-black/10 bg-stone px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-ink",
           className,
         )}
       >
