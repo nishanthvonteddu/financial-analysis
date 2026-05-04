@@ -12,6 +12,8 @@ const config: Config = {
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        brand: "hsl(var(--brand))",
+        "brand-foreground": "hsl(var(--brand-foreground))",
         card: "hsl(var(--card))",
         border: "hsl(var(--border))",
         muted: "hsl(var(--muted))",
@@ -34,6 +36,32 @@ const config: Config = {
       backgroundImage: {
         mesh:
           "radial-gradient(circle at top left, rgba(239,229,214,0.95), transparent 42%), radial-gradient(circle at 85% 10%, rgba(220,93,48,0.16), transparent 28%), linear-gradient(180deg, rgba(219,229,239,0.24), transparent 48%)",
+      },
+      animation: {
+        appear: "appear 0.5s ease-out forwards",
+        "appear-zoom": "appear-zoom 0.8s ease-out forwards",
+      },
+      keyframes: {
+        appear: {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(10px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        "appear-zoom": {
+          "0%": {
+            opacity: "0",
+            transform: "scale(0.98)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "scale(1)",
+          },
+        },
       },
     },
   },

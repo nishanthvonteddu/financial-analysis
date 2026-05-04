@@ -6,6 +6,14 @@ const withBundleAnalyzer = createBundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        hostname: "images.unsplash.com",
+        protocol: "https",
+      },
+    ],
+  },
   reactStrictMode: true,
 };
 
