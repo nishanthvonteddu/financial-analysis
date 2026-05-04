@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --background: 38 33% 97%;
+  --background: 42 22% 97%;
   --foreground: 210 16% 9%;
-  --muted: 210 18% 92%;
+  --muted: 210 14% 93%;
   --muted-foreground: 212 10% 34%;
   --card: 0 0% 100%;
-  --border: 214 14% 84%;
-  --accent: 17 71% 52%;
+  --border: 214 12% 84%;
+  --accent: 16 62% 45%;
   --accent-foreground: 32 42% 96%;
 }
 
@@ -34,9 +34,7 @@ html.dark {
 
 body {
   min-height: 100vh;
-  background:
-    linear-gradient(180deg, rgba(246, 248, 250, 0.98), rgba(232, 238, 244, 0.72) 42%, rgba(248, 247, 244, 0.96)),
-    hsl(var(--background));
+  background: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--font-space-grotesk), sans-serif;
   text-rendering: optimizeLegibility;
@@ -44,9 +42,7 @@ body {
 }
 
 .dark body {
-  background:
-    linear-gradient(180deg, rgba(10, 16, 24, 0.98), rgba(18, 25, 34, 0.96)),
-    hsl(var(--background));
+  background: hsl(var(--background));
 }
 
 ::selection {
@@ -59,6 +55,25 @@ body {
 
 a {
   transition: color 180ms ease, opacity 180ms ease, transform 180ms ease;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.tracking-tight {
+  letter-spacing: 0 !important;
+}
+
+.shadow-line {
+  box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.08) !important;
+}
+
+.dark .shadow-line {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
 }
 
 *:focus-visible {
