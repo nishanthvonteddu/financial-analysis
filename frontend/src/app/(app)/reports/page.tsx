@@ -83,10 +83,10 @@ export default function ReportsPage() {
     reportQuery.data ?? reports.find((report) => report.id === selectedReportId) ?? null;
 
   return (
-    <div className="space-y-8 animate-page-enter">
+    <div className="animate-page-enter space-y-6">
       <PageHeader
         action={
-          <Button asChild className="rounded-full px-5" variant="outline">
+          <Button asChild variant="outline">
             <Link href="/uploads">
               Review uploads
               <ArrowRight className="ml-2 size-4" />
@@ -112,7 +112,7 @@ export default function ReportsPage() {
       {!reportsQuery.isLoading && reports.length === 0 ? (
         <EmptyState
           action={
-            <Button asChild className="rounded-full px-5" variant="outline">
+            <Button asChild variant="outline">
               <Link href="/uploads">Open uploads</Link>
             </Button>
           }
@@ -121,10 +121,10 @@ export default function ReportsPage() {
           title="No uploaded report snapshots yet"
         />
       ) : (
-        <div className="grid gap-6 xl:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.1fr)]">
+        <div className="grid gap-5 xl:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.1fr)]">
           <section className="space-y-4">
             {reportsQuery.isLoading ? (
-              <div className="rounded-[2rem] border border-black/10 bg-white/76 p-6 shadow-line backdrop-blur">
+              <div className="rounded-xl border border-black/10 bg-white p-5 shadow-line">
                 <div className="flex items-center gap-3 text-sm text-black/58">
                   <LoaderCircle className="size-4 animate-spin" />
                   Loading expense reports...
@@ -142,20 +142,20 @@ export default function ReportsPage() {
             )}
           </section>
 
-          <section className="rounded-[2rem] border border-black/10 bg-white/76 p-6 shadow-line backdrop-blur sm:p-7">
+          <section className="rounded-xl border border-black/10 bg-white p-5 shadow-line sm:p-6">
             {!selectedReport || reportQuery.isLoading ? (
               <div className="flex min-h-72 items-center justify-center gap-3 text-sm text-black/58">
                 <LoaderCircle className="size-4 animate-spin" />
                 Loading report detail...
               </div>
             ) : (
-              <div className="space-y-6">
-                <div className="flex flex-col gap-5 border-b border-black/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
+              <div className="space-y-5">
+                <div className="flex flex-col gap-4 border-b border-black/10 pb-5 lg:flex-row lg:items-end lg:justify-between">
                   <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.32em] text-black/45">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/48">
                       {selectedReport.summary.provider || "Statement upload"}
                     </p>
-                    <h2 className="text-3xl font-semibold tracking-tight text-ink">
+                    <h2 className="text-2xl font-semibold text-ink">
                       {selectedReport.summary.upload_name || `Expense report #${selectedReport.id}`}
                     </h2>
                     <p className="max-w-2xl text-sm leading-6 text-black/62">
@@ -165,36 +165,36 @@ export default function ReportsPage() {
                     </p>
                   </div>
 
-                  <div className="rounded-[1.5rem] bg-[#101922] px-5 py-4 text-white">
-                    <p className="text-xs uppercase tracking-[0.28em] text-white/46">Report total</p>
+                  <div className="rounded-xl bg-ink px-5 py-4 text-white">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/48">Report total</p>
                     <CurrencyDisplay
-                      className="mt-2 block text-3xl font-semibold tracking-tight"
+                      className="mt-2 block text-2xl font-semibold"
                       currency={selectedReport.currency}
                       value={Number(selectedReport.total_amount)}
                     />
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="rounded-[1.4rem] border border-black/10 bg-stone/65 p-4">
-                    <p className="text-xs uppercase tracking-[0.28em] text-black/42">Average charge</p>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="rounded-xl border border-black/10 bg-stone/65 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/48">Average charge</p>
                     <CurrencyDisplay
-                      className="mt-3 block text-3xl font-semibold tracking-tight text-ink"
+                      className="mt-3 block text-2xl font-semibold text-ink"
                       currency={selectedReport.currency}
                       value={Number(selectedReport.summary.average_transaction)}
                     />
                   </div>
-                  <div className="rounded-[1.4rem] border border-black/10 bg-stone/65 p-4">
-                    <p className="text-xs uppercase tracking-[0.28em] text-black/42">Largest charge</p>
+                  <div className="rounded-xl border border-black/10 bg-stone/65 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/48">Largest charge</p>
                     <CurrencyDisplay
-                      className="mt-3 block text-3xl font-semibold tracking-tight text-ink"
+                      className="mt-3 block text-2xl font-semibold text-ink"
                       currency={selectedReport.currency}
                       value={Number(selectedReport.summary.largest_transaction)}
                     />
                   </div>
-                  <div className="rounded-[1.4rem] border border-black/10 bg-stone/65 p-4">
-                    <p className="text-xs uppercase tracking-[0.28em] text-black/42">Recurring candidates</p>
-                    <p className="mt-3 text-3xl font-semibold tracking-tight text-ink">
+                  <div className="rounded-xl border border-black/10 bg-stone/65 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/48">Recurring candidates</p>
+                    <p className="mt-3 text-2xl font-semibold text-ink">
                       {selectedReport.summary.recurring_transaction_count}
                     </p>
                   </div>
