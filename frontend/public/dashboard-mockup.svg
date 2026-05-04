@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Professional financial analysis dashboard</title>
+  <desc id="desc">A monochrome flat user interface with revenue, net profit, charts, and expense analysis.</desc>
+  <defs>
+    <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#151a20"/>
+      <stop offset="1" stop-color="#0f1318"/>
+    </linearGradient>
+    <linearGradient id="soft" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#d8dde4"/>
+    </linearGradient>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#000000" flood-opacity=".26"/>
+    </filter>
+    <clipPath id="clip">
+      <rect width="1600" height="1000" rx="0"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#clip)">
+    <rect width="1600" height="1000" fill="#090b0e"/>
+
+    <rect x="0" y="0" width="272" height="1000" fill="#11161c"/>
+    <rect x="272" y="0" width="1328" height="1000" fill="#0b0e12"/>
+    <path d="M320 160H1536" stroke="#252c35" stroke-width="1"/>
+    <path d="M272 0V1000" stroke="#2a313b" stroke-width="1"/>
+
+    <g font-family="Inter, Arial, sans-serif">
+      <circle cx="66" cy="70" r="28" fill="#f8fafc"/>
+      <path d="M57 80V64M67 80V54M77 80V61" stroke="#0b0e12" stroke-width="5" stroke-linecap="round"/>
+      <text x="108" y="64" fill="#f8fafc" font-size="28" font-weight="800">FinSight</text>
+      <text x="108" y="92" fill="#8b949f" font-size="13" font-weight="600" letter-spacing="2">FINANCIAL ANALYSIS</text>
+
+      <rect x="36" y="154" width="200" height="52" rx="14" fill="#f8fafc"/>
+      <text x="76" y="187" fill="#0b0e12" font-size="16" font-weight="800">Overview</text>
+      <text x="76" y="262" fill="#aab2bd" font-size="16" font-weight="700">Cash flow</text>
+      <text x="76" y="326" fill="#aab2bd" font-size="16" font-weight="700">Revenue</text>
+      <text x="76" y="390" fill="#aab2bd" font-size="16" font-weight="700">Expenses</text>
+      <text x="76" y="454" fill="#aab2bd" font-size="16" font-weight="700">Reports</text>
+      <text x="76" y="518" fill="#aab2bd" font-size="16" font-weight="700">Forecasts</text>
+      <text x="76" y="582" fill="#aab2bd" font-size="16" font-weight="700">Recurring costs</text>
+
+      <rect x="36" y="790" width="200" height="138" rx="22" fill="#171d24" stroke="#303842"/>
+      <text x="62" y="830" fill="#f8fafc" font-size="18" font-weight="800">Analysis health</text>
+      <text x="62" y="862" fill="#8f99a5" font-size="13">Statements synced</text>
+      <text x="62" y="905" fill="#f8fafc" font-size="34" font-weight="800">98%</text>
+      <path d="M62 882H206" stroke="#303842" stroke-width="10" stroke-linecap="round"/>
+      <path d="M62 882H190" stroke="#f8fafc" stroke-width="10" stroke-linecap="round"/>
+
+      <text x="328" y="72" fill="#f8fafc" font-size="36" font-weight="800">Financial analysis dashboard</text>
+      <text x="328" y="108" fill="#8f99a5" font-size="16">Revenue, net profit, cash-flow movement, and expense concentration in one monochrome workspace.</text>
+      <rect x="1286" y="48" width="250" height="52" rx="26" fill="#151a20" stroke="#303842"/>
+      <text x="1322" y="81" fill="#f8fafc" font-size="15" font-weight="800">Q4 2026 forecast</text>
+
+      <g filter="url(#softShadow)">
+        <rect x="328" y="198" width="276" height="162" rx="24" fill="url(#soft)" />
+        <text x="358" y="242" fill="#505965" font-size="15" font-weight="700">Revenue</text>
+        <text x="358" y="304" fill="#0b0e12" font-size="48" font-weight="900">$248.6K</text>
+        <text x="358" y="334" fill="#505965" font-size="15" font-weight="700">+18.4% month over month</text>
+      </g>
+      <g filter="url(#softShadow)">
+        <rect x="632" y="198" width="276" height="162" rx="24" fill="#151a20" stroke="#303842"/>
+        <text x="662" y="242" fill="#aab2bd" font-size="15" font-weight="700">Net profit</text>
+        <text x="662" y="304" fill="#f8fafc" font-size="48" font-weight="900">$84.2K</text>
+        <text x="662" y="334" fill="#8f99a5" font-size="15" font-weight="700">34% operating margin</text>
+      </g>
+      <g filter="url(#softShadow)">
+        <rect x="936" y="198" width="276" height="162" rx="24" fill="#151a20" stroke="#303842"/>
+        <text x="966" y="242" fill="#aab2bd" font-size="15" font-weight="700">Cash runway</text>
+        <text x="966" y="304" fill="#f8fafc" font-size="48" font-weight="900">14.8 mo</text>
+        <text x="966" y="334" fill="#8f99a5" font-size="15" font-weight="700">Stable expense curve</text>
+      </g>
+      <g filter="url(#softShadow)">
+        <rect x="1240" y="198" width="296" height="162" rx="24" fill="#151a20" stroke="#303842"/>
+        <text x="1270" y="242" fill="#aab2bd" font-size="15" font-weight="700">Expense ratio</text>
+        <text x="1270" y="304" fill="#f8fafc" font-size="48" font-weight="900">62%</text>
+        <text x="1270" y="334" fill="#8f99a5" font-size="15" font-weight="700">Includes recurring costs</text>
+      </g>
+
+      <rect x="328" y="400" width="760" height="372" rx="28" fill="url(#panel)" stroke="#303842"/>
+      <text x="366" y="452" fill="#f8fafc" font-size="23" font-weight="800">Revenue and net profit trend</text>
+      <text x="366" y="482" fill="#8f99a5" font-size="14">Clean line graph showing movement across the last twelve months.</text>
+      <g stroke="#252c35" stroke-width="1">
+        <path d="M368 690H1044"/>
+        <path d="M368 628H1044"/>
+        <path d="M368 566H1044"/>
+        <path d="M368 504H1044"/>
+      </g>
+      <path d="M380 672C438 618 486 642 544 592C606 538 654 552 712 500C778 442 830 492 884 458C940 422 992 432 1042 386" fill="none" stroke="#f8fafc" stroke-width="8" stroke-linecap="round"/>
+      <path d="M380 708C438 678 496 690 550 644C610 592 668 620 724 570C786 514 840 562 896 526C956 488 998 510 1042 468" fill="none" stroke="#7e8793" stroke-width="7" stroke-linecap="round"/>
+      <g fill="#f8fafc">
+        <circle cx="380" cy="672" r="6"/>
+        <circle cx="544" cy="592" r="6"/>
+        <circle cx="712" cy="500" r="6"/>
+        <circle cx="884" cy="458" r="6"/>
+        <circle cx="1042" cy="386" r="6"/>
+      </g>
+      <g fill="#8f99a5" font-size="13" font-weight="700">
+        <text x="372" y="738">Jan</text>
+        <text x="520" y="738">Mar</text>
+        <text x="676" y="738">Jun</text>
+        <text x="840" y="738">Sep</text>
+        <text x="1018" y="738">Dec</text>
+      </g>
+
+      <rect x="1120" y="400" width="416" height="372" rx="28" fill="url(#panel)" stroke="#303842"/>
+      <text x="1158" y="452" fill="#f8fafc" font-size="23" font-weight="800">Expense breakdown</text>
+      <text x="1158" y="482" fill="#8f99a5" font-size="14">Donut chart grouped by operating category.</text>
+      <circle cx="1328" cy="594" r="102" fill="none" stroke="#252c35" stroke-width="34"/>
+      <path d="M1328 492A102 102 0 0 1 1425 625" fill="none" stroke="#f8fafc" stroke-width="34" stroke-linecap="round"/>
+      <path d="M1422 636A102 102 0 0 1 1268 676" fill="none" stroke="#aeb6c1" stroke-width="34" stroke-linecap="round"/>
+      <path d="M1256 668A102 102 0 0 1 1318 492" fill="none" stroke="#5d6672" stroke-width="34" stroke-linecap="round"/>
+      <text x="1290" y="586" fill="#f8fafc" font-size="34" font-weight="900">62%</text>
+      <text x="1285" y="616" fill="#8f99a5" font-size="13" font-weight="700">expenses</text>
+      <g font-size="14" font-weight="700">
+        <rect x="1160" y="716" width="14" height="14" rx="4" fill="#f8fafc"/>
+        <text x="1186" y="728" fill="#aab2bd">Operations 42%</text>
+        <rect x="1322" y="716" width="14" height="14" rx="4" fill="#aeb6c1"/>
+        <text x="1348" y="728" fill="#aab2bd">Vendors 35%</text>
+        <rect x="1160" y="748" width="14" height="14" rx="4" fill="#5d6672"/>
+        <text x="1186" y="760" fill="#aab2bd">Recurring 23%</text>
+      </g>
+
+      <rect x="328" y="812" width="372" height="132" rx="24" fill="#151a20" stroke="#303842"/>
+      <text x="360" y="854" fill="#f8fafc" font-size="20" font-weight="800">Monthly expense bars</text>
+      <g transform="translate(360 882)" fill="#f8fafc">
+        <rect x="0" y="24" width="24" height="28" rx="4"/>
+        <rect x="42" y="8" width="24" height="44" rx="4"/>
+        <rect x="84" y="18" width="24" height="34" rx="4"/>
+        <rect x="126" y="-6" width="24" height="58" rx="4"/>
+        <rect x="168" y="12" width="24" height="40" rx="4"/>
+        <rect x="210" y="-18" width="24" height="70" rx="4"/>
+        <rect x="252" y="2" width="24" height="50" rx="4"/>
+      </g>
+      <rect x="732" y="812" width="380" height="132" rx="24" fill="#151a20" stroke="#303842"/>
+      <text x="764" y="854" fill="#f8fafc" font-size="20" font-weight="800">Forecast confidence</text>
+      <text x="764" y="910" fill="#f8fafc" font-size="42" font-weight="900">91%</text>
+      <path d="M900 896H1068" stroke="#303842" stroke-width="12" stroke-linecap="round"/>
+      <path d="M900 896H1042" stroke="#f8fafc" stroke-width="12" stroke-linecap="round"/>
+      <rect x="1144" y="812" width="392" height="132" rx="24" fill="#151a20" stroke="#303842"/>
+      <text x="1176" y="854" fill="#f8fafc" font-size="20" font-weight="800">Key variance alerts</text>
+      <text x="1176" y="900" fill="#aab2bd" font-size="15">Vendor spend drift</text>
+      <text x="1408" y="900" fill="#f8fafc" font-size="15" font-weight="800">+12.6%</text>
+      <text x="1176" y="928" fill="#aab2bd" font-size="15">Recurring services</text>
+      <text x="1408" y="928" fill="#f8fafc" font-size="15" font-weight="800">+4.1%</text>
+    </g>
+  </g>
+</svg>
