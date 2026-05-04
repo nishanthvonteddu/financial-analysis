@@ -28,8 +28,8 @@ export function ThemeToggle({ className, compact = false, testId }: ThemeToggleP
     <button
       aria-label={label}
       className={cn(
-        "inline-flex h-11 items-center justify-center gap-2 rounded-full border border-black/10 bg-white/85 px-4 text-sm font-medium text-ink transition hover:border-black/20 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember/35 dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:border-white/20 dark:hover:bg-white/14",
-        compact && "w-11 px-0",
+        "inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-black/10 bg-white px-3 text-sm font-medium text-ink transition hover:border-black/20 hover:bg-stone/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember/35 dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:border-white/20 dark:hover:bg-white/14",
+        compact && "w-10 px-0",
         className,
       )}
       data-testid={testId}
