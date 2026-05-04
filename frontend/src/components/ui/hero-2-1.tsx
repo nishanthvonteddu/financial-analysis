@@ -25,32 +25,35 @@ const navItems = [
 ];
 
 const proofPoints = [
-  { icon: LineChart, label: "Cash-flow trend analysis" },
-  { icon: ReceiptText, label: "Statement import intelligence" },
-  { icon: WalletCards, label: "Subscription tracking as a feature" },
+  { icon: LineChart, label: "Spot trends before your bank does" },
+  { icon: ReceiptText, label: "Drop a statement. Get clarity." },
+  { icon: WalletCards, label: "Know where every dollar went" },
 ];
 
 const Hero2 = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-neutral-950 text-white">
-      <div className="absolute inset-0 z-0 bg-[linear-gradient(180deg,#020617_0%,#0a0d14_46%,#000_100%)]" />
-      <div className="absolute inset-0 z-0 opacity-55">
+    <div className="relative min-h-screen overflow-hidden bg-black text-white">
+      {/* Colorful gradient blobs */}
+      <div className="pointer-events-none absolute -right-60 -top-10 z-0 flex flex-col items-end">
+        <div className="h-40 w-[60rem] rounded-full bg-gradient-to-b from-purple-600 to-sky-600 blur-[6rem]" />
+        <div className="h-40 w-[90rem] rounded-full bg-gradient-to-b from-pink-900 to-yellow-400 blur-[6rem]" />
+        <div className="h-40 w-[60rem] rounded-full bg-gradient-to-b from-yellow-600 to-sky-500 blur-[6rem]" />
+      </div>
+      {/* Animated floating paths */}
+      <div className="absolute inset-0 z-0">
         <FloatingPaths position={1} />
         <FloatingPaths position={-1} />
       </div>
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_72%_10%,rgba(255,255,255,0.12),transparent_24%),radial-gradient(circle_at_28%_30%,rgba(148,163,184,0.14),transparent_30%),radial-gradient(circle_at_52%_62%,rgba(255,255,255,0.08),transparent_32%)]" />
-      <div className="bg-matte pointer-events-none absolute inset-0 z-0 opacity-38" />
-      <div className="bg-noise pointer-events-none absolute inset-0 z-0 opacity-24" />
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.24)_54%,rgba(0,0,0,0.8)_100%)]" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-80 bg-gradient-to-t from-black via-black/80 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 z-0 bg-noise opacity-20" />
 
       <div className="relative z-10">
+        {/* Navigation */}
         <nav className="mx-auto mt-6 flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link className="flex items-center" href="/">
             <span className="flex size-9 items-center justify-center rounded-full bg-white text-black">
-              <BarChart3 className="size-5" aria-hidden="true" />
+              <BarChart3 aria-hidden="true" className="size-5" />
             </span>
             <span className="ml-3 text-xl font-bold text-white">FinSight</span>
           </Link>
@@ -89,6 +92,7 @@ const Hero2 = () => {
           </button>
         </nav>
 
+        {/* Mobile menu */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
@@ -101,7 +105,7 @@ const Hero2 = () => {
               <div className="flex items-center justify-between">
                 <Link className="flex items-center" href="/" onClick={() => setMobileMenuOpen(false)}>
                   <span className="flex size-9 items-center justify-center rounded-full bg-white text-black">
-                    <BarChart3 className="size-5" aria-hidden="true" />
+                    <BarChart3 aria-hidden="true" className="size-5" />
                   </span>
                   <span className="ml-3 text-xl font-bold text-white">FinSight</span>
                 </Link>
@@ -131,69 +135,78 @@ const Hero2 = () => {
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Start analysis
+                  Start analyzing free
                 </Link>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className="mx-4 mt-7 flex max-w-full flex-col items-center justify-center gap-1 rounded-full bg-white/10 px-4 py-2 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-sm sm:mx-auto sm:max-w-fit sm:flex-row sm:gap-2">
-          <span className="min-w-0 text-sm font-medium leading-5 text-white">
-            Financial analysis
-            <span className="block sm:inline"> with recurring-spend visibility</span>
+        {/* Badge */}
+        <div className="mx-auto mt-7 flex max-w-fit items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-sm">
+          <span className="text-sm font-medium text-white">
+            Your money has a story. Time to read it.
           </span>
-          <ArrowRight className="size-4 shrink-0 text-white" aria-hidden="true" />
+          <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-white" />
         </div>
 
-        <section className="mx-auto mt-12 w-full max-w-7xl overflow-hidden px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="mx-auto max-w-[21rem] text-3xl font-bold leading-tight text-white min-[390px]:text-4xl sm:max-w-5xl sm:text-5xl md:text-6xl lg:text-7xl">
-            Financial analysis that turns transactions into decisions
+        {/* Hero */}
+        <section className="mx-auto mt-12 w-full max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+          <h1 className="mx-auto max-w-4xl text-5xl font-bold leading-tight text-white md:text-6xl lg:text-7xl">
+            Financial intelligence that fits in one tab
           </h1>
-          <p className="mx-auto mt-6 max-w-[21rem] text-base leading-7 text-gray-300 sm:max-w-2xl sm:text-lg sm:leading-8">
-            Import statements, detect spending patterns, forecast cash flow, and review recurring costs
-            from one financial command center.
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-300">
+            Import your bank statements and get a full picture of where your money flows, what is
+            growing, what is shrinking, and what has quietly been bleeding for months.
           </p>
+
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               className="inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-base font-medium text-black transition hover:bg-white/90"
               href="/register"
             >
-              Start financial analysis
+              Start analyzing free
             </Link>
             <Link
               className="inline-flex h-12 items-center justify-center rounded-full border border-gray-600 px-8 text-base font-medium text-white transition hover:bg-white/10"
               href="/dashboard"
             >
-              View command center
+              See it in action
             </Link>
           </div>
 
-          <div className="mx-auto mt-10 grid max-w-3xl gap-3 text-left sm:grid-cols-3">
+          {/* Proof points */}
+          <div className="mx-auto mt-10 grid max-w-3xl gap-3 sm:grid-cols-3">
             {proofPoints.map(({ icon: Icon, label }) => (
               <div
                 className="flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.07] px-4 py-3 text-sm text-gray-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm"
                 key={label}
               >
-                <Icon className="size-4 shrink-0 text-white/78" aria-hidden="true" />
+                <Icon aria-hidden="true" className="size-4 shrink-0 text-white/78" />
                 <span>{label}</span>
               </div>
             ))}
           </div>
 
-          <div className="relative mx-auto my-16 w-full max-w-6xl md:my-20">
-            <div className="bg-grainy absolute inset-0 rounded-[3rem] bg-white opacity-20 blur-[10rem]" />
-            <div className="absolute -inset-10 rounded-[4rem] bg-[radial-gradient(circle_at_62%_30%,rgba(125,211,252,0.18),transparent_34%),radial-gradient(circle_at_42%_18%,rgba(251,191,36,0.12),transparent_32%)] blur-3xl" />
-            <div className="dashboard-hero-blend relative">
-              <Image
-                alt="Financial analysis command center preview"
-                className="h-auto w-full rounded-[2rem] grayscale opacity-95 shadow-[0_42px_150px_rgba(0,0,0,0.78)]"
-                height={900}
-                priority
-                src="/financial-dashboard-reference.jpg"
-                width={1200}
-              />
-            </div>
+          {/* Hero image */}
+          <div className="relative -mx-4 mt-16 sm:-mx-6 lg:-mx-8">
+            {/* glow behind image */}
+            <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-purple-600/30 via-sky-500/20 to-transparent blur-3xl" />
+            {/* top fade — content blends into image */}
+            <div className="absolute inset-x-0 top-0 z-10 h-32 bg-gradient-to-b from-black to-transparent" />
+            {/* bottom fade — image dissolves into black */}
+            <div className="absolute inset-x-0 bottom-0 z-10 h-64 bg-gradient-to-t from-black via-black/80 to-transparent" />
+            {/* side fades */}
+            <div className="absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-black to-transparent" />
+            <div className="absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-black to-transparent" />
+            <Image
+              alt="FinSight financial command center"
+              className="h-auto w-full opacity-75 mix-blend-luminosity"
+              height={900}
+              priority
+              src="/financial-dashboard-reference.jpg"
+              width={1920}
+            />
           </div>
         </section>
       </div>
@@ -211,9 +224,12 @@ function NavItem({
   hasDropdown?: boolean;
 }) {
   return (
-    <Link className="flex items-center text-sm text-gray-300 transition hover:text-white" href={href}>
+    <Link
+      className="flex items-center text-sm text-gray-300 transition hover:text-white"
+      href={href}
+    >
       <span>{label}</span>
-      {hasDropdown ? <ChevronDown className="ml-1 size-4" aria-hidden="true" /> : null}
+      {hasDropdown ? <ChevronDown aria-hidden="true" className="ml-1 size-4" /> : null}
     </Link>
   );
 }
@@ -234,7 +250,7 @@ function MobileNavItem({
       onClick={onClick}
     >
       <span>{label}</span>
-      <ArrowRight className="size-4 text-gray-400" aria-hidden="true" />
+      <ArrowRight aria-hidden="true" className="size-4 text-gray-400" />
     </Link>
   );
 }
