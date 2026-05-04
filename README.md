@@ -54,28 +54,6 @@ make dev-frontend   # http://localhost:3000
 
 API docs are available at `http://localhost:8000/docs`.
 
-## Environment Variables
-
-**Backend** — loaded from `backend/.env.development`:
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `DATABASE_URL` | `postgresql+asyncpg://postgres:postgres@localhost:5432/mysubscription_tracker` | Primary database |
-| `REDIS_URL` | `redis://localhost:6379/0` | Background job queue |
-| `JWT_SECRET_KEY` | `dev-secret-change-me` | Token signing — change before deploying |
-| `FIELD_ENCRYPTION_KEY` | unset | Required in production for encrypted fields |
-| `BACKEND_CORS_ORIGINS` | `["http://localhost:3000"]` | Allowed browser origins |
-| `UPLOAD_JOB_BACKEND` | `inline` | `inline` for local dev, `arq` for Redis-backed workers |
-| `SENTRY_DSN` | unset | Optional production error reporting |
-| `GLOBAL_RATE_LIMIT` | `600` | Requests per window per client |
-| `MAX_REQUEST_BODY_BYTES` | `11534336` | Upload body cap (~11 MB) |
-
-**Frontend:**
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000/api/v1` | API origin used by the browser |
-
 ## Common Commands
 
 ```bash
