@@ -20,16 +20,16 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   metadataBase: new URL("http://localhost:3000"),
   title: {
-    default: "MySubscription Tracker",
-    template: "%s | MySubscription Tracker",
+    default: "FinSight",
+    template: "%s | FinSight",
   },
   description:
-    "Track recurring spending, import statement files, and manage renewal risk from one deliberate workspace.",
-  applicationName: "MySubscription Tracker",
+    "Analyze statements, cash-flow trends, recurring exposure, and savings opportunities from one financial workspace.",
+  applicationName: "FinSight",
   keywords: [
-    "subscriptions",
-    "renewals",
-    "expense tracking",
+    "financial analysis",
+    "cash flow",
+    "spend analysis",
     "dashboard",
     "statement imports",
   ],
@@ -38,16 +38,16 @@ export const metadata: Metadata = {
     shortcut: "/icon.svg",
   },
   openGraph: {
-    title: "MySubscription Tracker",
+    title: "FinSight",
     description:
-      "Track recurring spending, import statement files, and manage renewal risk from one deliberate workspace.",
+      "Analyze statements, cash-flow trends, recurring exposure, and savings opportunities from one financial workspace.",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "MySubscription Tracker",
+    title: "FinSight",
     description:
-      "Track recurring spending, import statement files, and manage renewal risk from one deliberate workspace.",
+      "Analyze statements, cash-flow trends, recurring exposure, and savings opportunities from one financial workspace.",
   },
 };
 
