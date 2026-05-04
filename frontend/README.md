@@ -1,6 +1,6 @@
-# MySubscription Tracker Frontend
+# FinSight Frontend
 
-Next.js App Router frontend for the MySubscription Tracker workspace.
+Next.js App Router frontend for the FinSight financial analysis platform.
 
 ## Requirements
 
@@ -21,8 +21,8 @@ The app runs on `http://localhost:3000`.
 ## Environment
 
 | Variable | Default | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000/api/v1` | Browser API base URL |
+|---|---|---|
+| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000/api/v1` | API base URL used by the browser client |
 
 ## Scripts
 
@@ -30,66 +30,54 @@ The app runs on `http://localhost:3000`.
 npm run dev             # Next.js development server
 npm run build           # Production build
 npm run build:analyze   # Production build with bundle analyzer
-npm run start           # Serve a production build
-npm run lint            # Next.js lint
-npm run typecheck       # TypeScript check
+npm run start           # Serve production build
+npm run lint            # Next.js ESLint
+npm run typecheck       # TypeScript type check
 npm run test            # Vitest unit tests
 npm run test:watch      # Watch-mode unit tests
-npm run test:coverage   # Unit tests with coverage
+npm run test:coverage   # Unit tests with coverage report
 npm run test:e2e        # Playwright E2E suite
 ```
 
-## App Routes
+## Routes
 
-Public routes:
+**Public:**
 
-- `/` landing page
-- `/login`
-- `/register`
-- `/privacy`
+- `/` — Landing page
+- `/login` — Sign in
+- `/register` — Create account
+- `/privacy` — Privacy policy
 
-Authenticated workspace routes:
+**Authenticated workspace:**
 
-- `/dashboard` snapshot bar, onboarding, widgets, layout persistence
-- `/uploads` CSV/PDF intake, processing status, history, delete actions
-- `/subscriptions` searchable subscription management and manual entry
-- `/subscriptions/[subscriptionId]` subscription detail and payment history
-- `/reports` expense reports and analytics charts
-- `/exports` CSV, JSON, and iCalendar downloads
-- `/score` subscription health score and duplicate candidates
-- `/family` household sharing, invite, member privacy, recommendations
-- `/calendar` renewal calendar
-- `/payments` payment rail placeholder and billing navigation
-- `/settings` profile, currency, categories, payment methods, theme, destructive reset
+- `/dashboard` — Financial overview, widgets, onboarding
+- `/uploads` — Statement intake (CSV/PDF), processing status, history
+- `/subscriptions` — Subscription list and manual entry
+- `/subscriptions/[id]` — Subscription detail and payment history
+- `/reports` — Expense reports and analytics charts
+- `/exports` — CSV, JSON, and iCalendar downloads
+- `/score` — Subscription health score and duplicate detection
+- `/family` — Household sharing and member management
+- `/calendar` — Renewal calendar
+- `/payments` — Payment methods and billing
+- `/settings` — Profile, currency, categories, theme, account reset
 
-## Component Guide
+## Architecture Notes
 
-- Route pages in `src/app` should stay thin and compose workspace components from
-  `src/components`.
-- API access lives in `src/lib/api-client.ts`; feature hooks in `src/hooks` wrap React Query
-  mutations and queries.
-- Shared UI primitives live in `src/components/ui`. Prefer these before adding route-local
-  button, dialog, empty-state, skeleton, or page-header patterns.
-- Authenticated pages render inside `src/components/app-shell/app-shell.tsx`, which owns
-  navigation, route metadata, workspace search labels, notification access, and sign-out.
-- Domain components live in feature folders: `dashboard`, `uploads`, `subscriptions`,
-  `reports`, `exports`, `family`, `notifications`, `onboarding`.
-- Form validation should use local Zod schemas or shared validators from `src/lib/validators.ts`.
-- Currency formatting should use `CurrencyDisplay` or helpers from `src/lib/currency.ts`.
+- Route pages in `src/app` stay thin and compose feature components from `src/components`
+- API access is in `src/lib/api-client.ts`; feature hooks in `src/hooks` wrap React Query
+- Shared UI primitives live in `src/components/ui` — use these before adding route-local patterns
+- Authenticated pages render inside `src/components/app-shell/app-shell.tsx` which owns navigation, search, notifications, and sign-out
+- Domain components live in feature folders: `dashboard`, `uploads`, `subscriptions`, `reports`, `exports`, `family`, `notifications`, `onboarding`
+- Form validation uses Zod schemas (local or shared via `src/lib/validators.ts`)
+- Currency formatting goes through `CurrencyDisplay` or helpers in `src/lib/currency.ts`
 
 ## Testing
 
-Unit tests:
-
 ```bash
+# Unit tests
 npm run test
-```
 
-E2E tests:
-
-```bash
+# E2E tests
 PLAYWRIGHT_BROWSERS_PATH=/tmp/ms-playwright npm run test:e2e
 ```
-
-The E2E suite starts the Next.js app and backend test server through Playwright config and
-shared setup helpers. CI installs Chromium, Firefox, and WebKit before running the matrix.
