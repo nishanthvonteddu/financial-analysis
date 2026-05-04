@@ -108,14 +108,14 @@ export function UploadDropzone({ disabled = false, onUpload, sectionId }: Upload
 
   return (
     <section
-      className="overflow-hidden rounded-[2rem] border border-black/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(245,239,231,0.92))] shadow-line backdrop-blur"
+      className="overflow-hidden rounded-xl border border-black/10 bg-white shadow-line"
       id={sectionId}
     >
-      <div className="border-b border-black/10 px-5 py-5 sm:px-6">
-        <p className="text-xs uppercase tracking-[0.32em] text-black/45">Ingest</p>
-        <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="border-b border-black/10 px-5 py-4 sm:px-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/48">Ingest</p>
+        <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl space-y-2">
-            <h3 className="text-3xl font-semibold tracking-tight text-ink">Upload a bank export</h3>
+            <h3 className="text-2xl font-semibold text-ink">Upload a bank export</h3>
             <p className="text-sm leading-6 text-black/62">
               Drag in a PDF or CSV statement, validate it before it leaves the browser, and hand
               the file straight into the parsing queue.
@@ -123,7 +123,6 @@ export function UploadDropzone({ disabled = false, onUpload, sectionId }: Upload
           </div>
 
           <Button
-            className="rounded-full px-5"
             disabled={disabled || isUploading}
             onClick={openFileDialog}
             type="button"
@@ -153,8 +152,8 @@ export function UploadDropzone({ disabled = false, onUpload, sectionId }: Upload
           className={cn(
             "relative overflow-hidden rounded-[1.9rem] border border-dashed px-5 py-7 transition sm:px-7 sm:py-10",
             dragActive
-              ? "border-ember bg-[#fff5ed] shadow-[inset_0_0_0_1px_rgba(220,93,48,0.15)]"
-              : "border-black/12 bg-white/78",
+              ? "border-ember bg-orange-50 shadow-[inset_0_0_0_1px_rgba(177,82,48,0.14)]"
+              : "border-black/12 bg-stone/45",
             disabled ? "opacity-60" : "",
           )}
           onDragEnter={(event) => {
@@ -181,27 +180,27 @@ export function UploadDropzone({ disabled = false, onUpload, sectionId }: Upload
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <button
-              className="group flex w-full max-w-xl flex-col items-start rounded-[1.6rem] p-1 text-left outline-none transition hover:bg-black/[0.025] focus-visible:ring-2 focus-visible:ring-ember/35 disabled:cursor-not-allowed disabled:opacity-70"
+              className="group flex w-full max-w-xl flex-col items-start rounded-xl p-1 text-left outline-none transition hover:bg-white/55 focus-visible:ring-2 focus-visible:ring-ember/35 disabled:cursor-not-allowed disabled:opacity-70"
               disabled={disabled || isUploading}
               onClick={openFileDialog}
               type="button"
             >
-              <span className="inline-flex size-14 items-center justify-center rounded-[1.35rem] border border-black/10 bg-stone text-ink transition group-hover:border-black/20 group-hover:bg-white">
+              <span className="inline-flex size-12 items-center justify-center rounded-lg border border-black/10 bg-white text-ink transition group-hover:border-black/20">
                 {isUploading ? (
-                  <LoaderCircle className="size-6 animate-spin" />
+                  <LoaderCircle className="size-5 animate-spin" />
                 ) : (
-                  <FileUp className="size-6" />
+                  <FileUp className="size-5" />
                 )}
               </span>
-              <span className="mt-4 block text-xl font-semibold text-ink">Drop a statement or browse locally</span>
+              <span className="mt-4 block text-lg font-semibold text-ink">Drop a statement or browse locally</span>
               <span className="mt-2 block text-sm leading-6 text-black/62">
                 CSV exports move fastest. PDFs work too and stay visible in the queue while parsing
                 and detection finish in the background.
               </span>
             </button>
 
-            <div className="min-w-0 max-w-sm space-y-3 rounded-[1.5rem] border border-black/10 bg-[#101922] p-5 text-white shadow-[0_24px_70px_rgba(16,25,34,0.18)]">
-              <p className="text-xs uppercase tracking-[0.3em] text-white/45">Validation</p>
+            <div className="min-w-0 max-w-sm space-y-3 rounded-xl border border-black/10 bg-ink p-5 text-white shadow-line">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/48">Validation</p>
               <p
                 className={cn(
                   "text-sm leading-6",
@@ -212,7 +211,7 @@ export function UploadDropzone({ disabled = false, onUpload, sectionId }: Upload
                 {helperText}
               </p>
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs uppercase tracking-[0.22em] text-white/48">
+                <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.14em] text-white/48">
                   <span>{isUploading ? "Upload progress" : "Ready state"}</span>
                   <span>{isUploading ? `${uploadProgress}%` : errorMessage ? "Check file" : "Waiting"}</span>
                 </div>
@@ -221,14 +220,14 @@ export function UploadDropzone({ disabled = false, onUpload, sectionId }: Upload
                     aria-hidden="true"
                     className={cn(
                       "h-full rounded-full transition-[width] duration-300",
-                      errorMessage ? "bg-[#ff7f66]" : "bg-[#f4caad]",
+                      errorMessage ? "bg-red-300" : "bg-white",
                     )}
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
               </div>
-              <div className="flex items-start gap-3 rounded-[1.15rem] border border-white/10 bg-white/5 p-3 text-xs leading-5 text-white/58">
-                <TriangleAlert className="mt-0.5 size-4 shrink-0 text-[#f4caad]" />
+              <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-3 text-xs leading-5 text-white/58">
+                <TriangleAlert className="mt-0.5 size-4 shrink-0 text-white/70" />
                 <p>Accepted formats: CSV and PDF. Larger files or mismatched extensions are rejected before upload.</p>
               </div>
             </div>
