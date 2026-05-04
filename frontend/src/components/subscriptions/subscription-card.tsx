@@ -61,36 +61,36 @@ export function SubscriptionCard({
   return (
     <article
       className={cn(
-        "rounded-[2rem] border border-black/10 bg-white/72 p-5 shadow-line backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:border-black/20 hover:bg-white",
+        "rounded-xl border border-black/10 bg-white p-5 shadow-line transition duration-150 hover:border-black/20",
         viewMode === "list" && "flex flex-col gap-5 md:flex-row md:items-center md:p-4",
       )}
       data-view-mode={viewMode}
       style={{ contentVisibility: "auto" }}
     >
-      <div className="inline-flex size-14 shrink-0 items-center justify-center rounded-[1.35rem] bg-[#101922] text-lg font-semibold text-white">
+      <div className="inline-flex size-12 shrink-0 items-center justify-center rounded-lg bg-ink text-base font-semibold text-white">
         {subscription.name.slice(0, 1).toUpperCase()}
       </div>
 
       <div className="min-w-0 flex-1 space-y-4">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0 space-y-2">
-            <p className="text-xs uppercase tracking-[0.32em] text-black/42">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/48">
               {categoryName ?? "Uncategorized"}
             </p>
             <div>
-              <h3 className="truncate text-xl font-semibold text-ink">{subscription.name}</h3>
+              <h3 className="truncate text-lg font-semibold text-ink">{subscription.name}</h3>
               <p className="truncate text-sm text-black/58">{subscription.vendor}</p>
             </div>
           </div>
 
           <div className="shrink-0 text-left md:text-right">
             <CurrencyDisplay
-              className="text-2xl font-semibold text-ink"
+              className="text-xl font-semibold text-ink"
               currency={subscription.currency}
               value={Number.isFinite(amount) ? amount : 0}
             />
             <div className="mt-2 flex flex-wrap items-center gap-2 md:justify-end">
-              <span className="inline-flex h-7 items-center rounded-full border border-black/10 bg-stone/70 px-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-black/52">
+              <span className="inline-flex h-7 items-center rounded-md border border-black/10 bg-stone/70 px-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-black/52">
                 {subscription.currency}
               </span>
               <span className="text-sm capitalize text-black/48">{subscription.cadence} billing</span>
@@ -120,7 +120,7 @@ export function SubscriptionCard({
           </p>
 
           {href ? (
-            <Button asChild className="shrink-0 rounded-full px-4" size="sm" variant="ghost">
+            <Button asChild className="shrink-0" size="sm" variant="ghost">
               <Link href={href}>
                 Open detail
                 <ArrowRight className="ml-2 size-4" />
