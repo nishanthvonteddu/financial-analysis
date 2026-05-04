@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
     "./test-utils/**/*.{js,ts,jsx,tsx}",
@@ -9,9 +10,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        card: "hsl(var(--card))",
+        border: "hsl(var(--border))",
+        muted: "hsl(var(--muted))",
+        "muted-foreground": "hsl(var(--muted-foreground))",
+        accent: "hsl(var(--accent))",
         ink: "#111418",
         sand: "#efe5d6",
-        ember: "#dc5d30",
+        ember: "#b65230",
         mist: "#dbe5ef",
         stone: "#f6f1e8",
       },
