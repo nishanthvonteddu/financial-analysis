@@ -4,8 +4,21 @@ import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 
+// Colors sampled from the hero gradient blobs so paths feel like part of the same palette
+const PATH_COLORS = [
+  "#9333ea", // purple-600
+  "#7c3aed", // violet-600
+  "#6366f1", // indigo-500
+  "#0ea5e9", // sky-500
+  "#38bdf8", // sky-400
+  "#be185d", // pink-800
+  "#d97706", // amber-600
+  "#f59e0b", // amber-500
+];
+
 export function FloatingPaths({ position }: { position: number }) {
-  const paths = Array.from({ length: 36 }, (_, i) => ({
+  const paths = Array.from({ length: 28 }, (_, i) => ({
+    color: PATH_COLORS[i % PATH_COLORS.length],
     d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
       380 - i * 5 * position
     } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
@@ -14,33 +27,25 @@ export function FloatingPaths({ position }: { position: number }) {
       684 - i * 5 * position
     } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
     id: i,
-    width: 0.5 + i * 0.03,
+    width: 0.4 + i * 0.025,
   }));
 
   return (
     <div className="pointer-events-none absolute inset-0">
-      <svg
-        className="h-full w-full text-white"
-        fill="none"
-        viewBox="0 0 696 316"
-      >
+      <svg className="h-full w-full" fill="none" viewBox="0 0 696 316">
         <title>Background Paths</title>
         {paths.map((path) => (
           <motion.path
-            animate={{
-              opacity: [0.08, 0.22, 0.08],
-              pathLength: 1,
-              pathOffset: [0, 1, 0],
-            }}
+            animate={{ opacity: [0.06, 0.18, 0.06] }}
             d={path.d}
-            initial={{ opacity: 0.12, pathLength: 0.3 }}
+            initial={{ opacity: 0.06 }}
             key={path.id}
-            stroke="currentColor"
-            strokeOpacity={0.08 + path.id * 0.012}
+            stroke={path.color}
             strokeWidth={path.width}
             transition={{
-              duration: 22 + path.id * 0.18,
-              ease: "linear",
+              delay: path.id * 0.6,
+              duration: 12 + path.id * 0.8,
+              ease: "easeInOut",
               repeat: Number.POSITIVE_INFINITY,
             }}
           />
