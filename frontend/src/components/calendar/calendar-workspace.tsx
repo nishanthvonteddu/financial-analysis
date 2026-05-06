@@ -344,14 +344,14 @@ export function CalendarWorkspace({
             action={
               <Button asChild className="rounded-full px-5" variant="outline">
                 <Link href="/subscriptions">
-                  Add renewal dates
+                  Add charge dates
                   <ArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
             }
-            description="Active subscriptions with auto-renewal and next charge dates will appear in the calendar."
+            description="Recurring charges with auto-renewal and next charge dates will appear in the calendar."
             icon={<CalendarDays className="size-5" />}
-            title="No renewals scheduled this month"
+            title="No recurring charges scheduled this month"
           />
         ) : (
           <section className="rounded-[2rem] border border-black/10 bg-white/76 p-5 shadow-line backdrop-blur">
