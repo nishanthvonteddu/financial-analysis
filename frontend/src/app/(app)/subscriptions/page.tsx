@@ -300,9 +300,9 @@ export default function SubscriptionsPage() {
           }}
           paymentMethods={paymentMethods}
           preferredCurrency={workspaceCurrency}
-          submitLabel="Save subscription"
+          submitLabel="Save recurring charge"
           testId="subscription-create-form"
-          title="Add a subscription"
+          title="Add recurring charge"
         />
       </div>
     </div>
