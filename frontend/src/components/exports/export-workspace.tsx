@@ -143,9 +143,9 @@ export function ExportWorkspace() {
                 type="checkbox"
               />
               <span>
-                <span className="block text-base font-semibold text-ink">Active subscriptions</span>
+                <span className="block text-base font-semibold text-ink">Recurring charges</span>
                 <span className="mt-1 block text-sm leading-6 text-black/58">
-                  Excludes paused and cancelled plans.
+                  Excludes paused and cancelled recurring items.
                 </span>
               </span>
             </label>
