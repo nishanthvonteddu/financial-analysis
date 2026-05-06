@@ -69,13 +69,13 @@ export default function ScorePage() {
       <div className="space-y-8 animate-page-enter">
         <PageHeader
           description="Loading the latest score, duplicate watchlist, and recommended cleanup moves."
-          eyebrow="Subscription score"
-          title="Portfolio health"
+          eyebrow="Recurring spend score"
+          title="Recurring charge health"
         />
         <div className="rounded-[2rem] border border-black/10 bg-white/76 p-6 shadow-line backdrop-blur sm:p-8">
           <div className="flex items-center gap-3 text-sm text-black/58">
             <LoaderCircle className="size-4 animate-spin" />
-            Loading subscription score...
+            Loading recurring-spend score...
           </div>
         </div>
       </div>
@@ -89,24 +89,24 @@ export default function ScorePage() {
           action={
             <Button asChild className="rounded-full px-5" variant="outline">
               <Link href="/subscriptions">
-                Open subscriptions
+                Open recurring spend
                 <ArrowRight className="ml-2 size-4" />
               </Link>
             </Button>
           }
-          description="The score activates after the workspace has at least one live subscription to inspect."
-          eyebrow="Subscription score"
-          title="Portfolio health"
+          description="The score activates after the workspace has at least one recurring charge to inspect."
+          eyebrow="Recurring spend score"
+          title="Recurring charge health"
         />
         <EmptyState
           action={
             <Button asChild className="rounded-full px-5" variant="outline">
-              <Link href="/subscriptions">Add the first subscription</Link>
+              <Link href="/subscriptions">Add the first recurring charge</Link>
             </Button>
           }
-          description="Once active plans exist, this page will grade coverage, renewal readiness, context, and duplicate risk."
+          description="Once recurring charges exist, this page will grade coverage, charge timing, context, and duplicate risk."
           icon={<Gauge className="size-5" />}
-          title="No active subscriptions to score yet"
+          title="No recurring charges to score yet"
         />
       </div>
     );
@@ -118,14 +118,14 @@ export default function ScorePage() {
         action={
           <Button asChild className="rounded-full px-5" variant="outline">
             <Link href="/subscriptions">
-              Review subscriptions
+              Review recurring spend
               <ArrowRight className="ml-2 size-4" />
             </Link>
           </Button>
         }
-        description="Grade the live subscription portfolio, surface the sharpest duplicate overlaps, and keep the next cleanup action explicit."
-        eyebrow="Subscription score"
-        title="Portfolio health"
+        description="Grade recurring-spend health as one part of the broader financial analysis workspace."
+        eyebrow="Recurring spend score"
+        title="Recurring charge health"
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.18fr)_360px]">
@@ -143,13 +143,13 @@ export default function ScorePage() {
                     {score.grade} · {formatBandLabel(score.band)}
                   </h2>
                   <p className="mt-3 max-w-xl text-sm leading-6 text-white/68">
-                    The score blends portfolio coverage, renewal readiness, service context, and duplicate pressure across the current active subscriptions.
+                    The score blends recurring-charge coverage, payment timing, merchant context, and duplicate pressure inside the current financial workspace.
                   </p>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div className="rounded-[1.35rem] border border-white/10 bg-white/6 px-4 py-4">
-                    <p className="text-xs uppercase tracking-[0.24em] text-white/42">Active plans</p>
+                    <p className="text-xs uppercase tracking-[0.24em] text-white/42">Recurring charges</p>
                     <p className="mt-3 text-2xl font-semibold tracking-tight">{score.active_subscription_count}</p>
                   </div>
                   <div className="rounded-[1.35rem] border border-white/10 bg-white/6 px-4 py-4">
