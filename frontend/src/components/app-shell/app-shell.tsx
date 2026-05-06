@@ -42,10 +42,10 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    caption: "Command center",
+    caption: "Financial command center",
     href: "/dashboard",
     icon: LayoutDashboard,
-    label: "Dashboard",
+    label: "Analysis",
     mobileLabel: "Home",
   },
   {
@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
     mobileLabel: "Reports",
   },
   {
-    caption: "Plans and spend",
+    caption: "Recurring spend",
     href: "/subscriptions",
     icon: Sparkles,
     label: "Subscriptions",
@@ -108,24 +108,24 @@ const navItems: NavItem[] = [
 
 const routeMeta: Record<string, { description: string; searchPlaceholder: string; title: string }> = {
   "/calendar": {
-    description: "Renewal views and reminder pacing will land here as scheduling work expands.",
-    searchPlaceholder: "Search renewal dates, reminder windows, shared calendars",
-    title: "Calendar",
+    description: "Upcoming recurring charges and scheduled financial events, shown as a planning calendar.",
+    searchPlaceholder: "Search charge dates, reminder windows, shared calendars",
+    title: "Financial calendar",
   },
   "/dashboard": {
-    description: "Live overview of recurring spend, next charges, and the queues that need attention.",
-    searchPlaceholder: "Search subscriptions, merchants, reminders",
-    title: "Overview",
+    description: "Live overview of statement imports, spend trends, categories, recurring exposure, and actions that need attention.",
+    searchPlaceholder: "Search statements, merchants, categories, reports",
+    title: "Financial analysis",
   },
   "/exports": {
-    description: "CSV, JSON, and iCalendar files for subscription data portability.",
-    searchPlaceholder: "Search export formats, payment history, calendar files",
+    description: "CSV, JSON, and calendar files for exporting analysis, transactions, reports, and recurring-spend data.",
+    searchPlaceholder: "Search export formats, reports, transaction history",
     title: "Exports",
   },
   "/family": {
-    description: "Household membership, sharing privacy, and shared plan recommendations.",
-    searchPlaceholder: "Search family members, shared plans, invite codes",
-    title: "Family",
+    description: "Household-level visibility for shared expenses, privacy controls, and overlapping recurring costs.",
+    searchPlaceholder: "Search family members, shared expenses, invite codes",
+    title: "Household",
   },
   "/reports": {
     description: "Chart-backed expense reports generated from uploaded statements and payment history.",
@@ -133,13 +133,13 @@ const routeMeta: Record<string, { description: string; searchPlaceholder: string
     title: "Reports",
   },
   "/score": {
-    description: "Subscription score, duplicate overlap candidates, and the next cleanup actions.",
+    description: "Recurring-spend score, duplicate overlap candidates, and cleanup actions inside the broader financial picture.",
     searchPlaceholder: "Search score recommendations, duplicate candidates, renewal gaps",
-    title: "Subscription score",
+    title: "Recurring spend score",
   },
   "/payments": {
-    description: "Billing rails, cards, and fallback payment methods live here.",
-    searchPlaceholder: "Search cards, billing fallback, payment health",
+    description: "Cards, accounts, billing rails, and payment methods used across imported transactions and recurring costs.",
+    searchPlaceholder: "Search cards, accounts, billing fallback, payment health",
     title: "Payments",
   },
   "/uploads": {
@@ -148,22 +148,22 @@ const routeMeta: Record<string, { description: string; searchPlaceholder: string
     title: "Uploads",
   },
   "/settings": {
-    description: "Theme, team-level defaults, and session controls stay in this operator surface.",
+    description: "Currency, theme, financial workspace defaults, and session controls stay here.",
     searchPlaceholder: "Search preferences, access, workspace settings",
     title: "Settings",
   },
   "/subscriptions": {
-    description: "Manual entry, plan editing, and lifecycle controls are now active in this workspace.",
+    description: "Track recurring plans as one part of the larger spend analysis workspace.",
     searchPlaceholder: "Search plans, vendors, categories, payment methods",
-    title: "Subscriptions",
+    title: "Recurring spend",
   },
 };
 
 function getInitials(name: string | undefined, email: string | undefined) {
-  const source = name?.trim() || email?.split("@")[0] || "MS";
+  const source = name?.trim() || email?.split("@")[0] || "FS";
   const parts = source.split(/\s+/).filter(Boolean).slice(0, 2);
 
-  return parts.map((part) => part[0]?.toUpperCase() ?? "").join("") || "MS";
+  return parts.map((part) => part[0]?.toUpperCase() ?? "").join("") || "FS";
 }
 
 function isActivePath(pathname: string, href: string) {
@@ -219,10 +219,10 @@ export function AppShell({ children }: AppShellProps) {
           >
             <div className={cn("min-w-0", isSidebarExpanded ? "block" : "hidden")}>
               <p className="truncate text-base font-semibold text-white">
-                MySubscription
+                FinSight
               </p>
               <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.14em] text-white/45">
-                Operator panel
+                Analysis workspace
               </p>
             </div>
             <button
@@ -302,8 +302,8 @@ export function AppShell({ children }: AppShellProps) {
             >
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/42">Milestone status</p>
               <p className="mt-3 text-sm leading-6 text-white/75">
-                Core workflows are live. This pass tightens navigation, interaction states, and
-                workspace accessibility before final hardening begins.
+                Statement analysis, reports, recurring-spend tracking, exports, and household views
+                now live under one financial workspace.
               </p>
             </div>
           </div>
