@@ -18,17 +18,22 @@ const currencyOptions = [
 
 const setupActions = [
   {
-    description: "Manual entry with your saved currency already filled in.",
-    href: "/subscriptions",
-    label: "Add a subscription",
-  },
-  {
     description: "Pull a statement in and let the queue seed the workspace.",
     href: "/uploads",
     label: "Upload a statement",
   },
   {
-    description: "Tune categories, payment rails, and display settings.",
+    description: "Open analysis once statements or recurring charges create spend signals.",
+    href: "/dashboard",
+    label: "Open analysis dashboard",
+  },
+  {
+    description: "Add a recurring bill when statement imports do not include it yet.",
+    href: "/subscriptions",
+    label: "Add recurring expense",
+  },
+  {
+    description: "Tune currency, categories, payment rails, and display settings.",
     href: "/settings",
     label: "Open settings",
   },
@@ -60,10 +65,10 @@ export function WorkspaceOnboarding() {
 
   const stepContent = [
     {
-      description: "Pick the currency you want manual entry to suggest first. You can still override any individual plan later.",
+      description: "Pick the currency you want reports, charts, and manual entries to suggest first. You can still override individual records later.",
       eyebrow: "Currency",
       icon: <WalletCards className="size-5" />,
-      title: "Start with the billing code you see most often",
+      title: "Start with the currency you analyze most often",
     },
     {
       description: "Choose the shell mood before the workspace fills up. The setting applies immediately and stays available in Settings.",
@@ -72,10 +77,10 @@ export function WorkspaceOnboarding() {
       title: "Set the visual mode you want to operate in",
     },
     {
-      description: "The quickest way to light up the dashboard is either one manual subscription or one uploaded statement. Both paths stay one click away.",
+      description: "The quickest way to light up the product is a statement upload. Recurring bill entry is available when an account statement misses a known charge.",
       eyebrow: "Get started",
       icon: <Sparkles className="size-5" />,
-      title: "Use the next action that gets real data into the workspace",
+      title: "Bring real financial data into the workspace",
     },
   ] as const;
 
@@ -269,7 +274,7 @@ export function WorkspaceOnboarding() {
             <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-white/45">Next action</p>
               <p className="mt-2 text-sm leading-6 text-white/70">
-                The dashboard becomes useful after either one manual subscription or one successful statement upload. Both are linked in the final step.
+                The dashboard becomes useful after statement imports create transaction history. Recurring bills stay available as a supporting feature for known charges.
               </p>
             </div>
           </div>
