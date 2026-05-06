@@ -3,26 +3,8 @@
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { SignInPage } from "@/components/ui/sign-in";
+import { Component as SignInCard2 } from "@/components/ui/sign-in-card-2";
 import { useAuth } from "@/hooks/use-auth";
-
-const TESTIMONIALS = [
-  {
-    quote: "I uploaded three months of statements and finally understood why I was always broke two weeks before payday. Turns out, subscriptions.",
-    author: "Maya R.",
-    role: "Freelance designer",
-  },
-  {
-    quote: "FinSight found a $94/month charge I forgot about from 2022. Paid for itself in the first login.",
-    author: "Daniel K.",
-    role: "Software engineer",
-  },
-  {
-    quote: "I've tried every budgeting app. This is the first one that actually shows me patterns instead of just totals.",
-    author: "Priya S.",
-    role: "Product manager",
-  },
-];
 
 function LoginPageContent() {
   const router = useRouter();
@@ -51,14 +33,10 @@ function LoginPageContent() {
   };
 
   return (
-    <SignInPage
-      description="Sign in to your FinSight workspace and pick up right where you left off."
-      heroImageSrc="/financial-dashboard-reference.jpg"
+    <SignInCard2
       onCreateAccount={() => router.push("/register")}
       onResetPassword={() => {}}
       onSignIn={handleSignIn}
-      testimonials={TESTIMONIALS}
-      title="Your numbers are waiting."
     />
   );
 }
