@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "How MySubscription Tracker handles account, subscription, upload, notification, and household data.",
+    "How FinSight handles account, uploaded statement, transaction, recurring-spend, notification, and household data.",
 };
 
 const sections = [
   {
-    body: "We collect account details, subscription records, uploaded statement files, parsed transaction data, settings, notification preferences, and family sharing choices that you provide while using the workspace.",
+    body: "We collect account details, uploaded statement files, parsed transaction data, recurring-spend records, settings, notification preferences, and family sharing choices that you provide while using the workspace.",
     title: "Information we handle",
   },
   {
@@ -20,7 +20,7 @@ const sections = [
     title: "How the product uses data",
   },
   {
-    body: "Uploaded files are used for parsing and detection. Parsed transaction data stays scoped to the authenticated user and powers reports, dashboards, and subscription suggestions.",
+    body: "Uploaded files are used for parsing and detection. Parsed transaction data stays scoped to the authenticated user and powers reports, dashboards, merchant analysis, and recurring-charge suggestions.",
     title: "Uploads and parsing",
   },
   {
@@ -32,7 +32,7 @@ const sections = [
     title: "Family sharing",
   },
   {
-    body: "You can export subscription data from the exports workspace and delete workspace-owned data from settings. Some operational logs and required security records may remain for service integrity.",
+    body: "You can export financial analysis, transaction-derived views, and recurring-spend data from the exports workspace, and delete workspace-owned data from settings. Some operational logs and required security records may remain for service integrity.",
     title: "Choices and deletion",
   },
 ];
@@ -43,7 +43,7 @@ export default function PrivacyPage() {
       <div className="mx-auto max-w-5xl">
         <header className="flex items-center justify-between gap-4">
           <Link className="font-serif text-2xl tracking-tight" href="/">
-            MySubscription Tracker
+            FinSight
           </Link>
           <Button asChild className="rounded-full px-5" variant="outline">
             <Link href="/">
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
             Privacy policy
           </p>
           <h1 className="mt-5 max-w-3xl font-serif text-5xl leading-[0.96] sm:text-6xl">
-            Workspace data stays scoped to the subscription work you ask the product to do.
+            Workspace data stays scoped to the financial analysis you ask the product to do.
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-8 text-black/66 dark:text-white/66">
             This policy summarizes the data handled by the current product surface. It is written
