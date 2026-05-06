@@ -156,8 +156,8 @@ function EmptyDashboard() {
           </p>
           <h2 className="mt-3 text-2xl font-semibold text-ink">No analysis data yet</h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-black/62">
-            Upload a statement or add recurring subscriptions to populate monthly spend,
-            renewals, active plans, and category concentration.
+            Upload a bank statement to populate monthly spend, category concentration, merchant
+            patterns, reports, and recurring-charge signals.
           </p>
         </div>
         <div className="flex flex-col gap-2">
@@ -169,7 +169,7 @@ function EmptyDashboard() {
           </Button>
           <Button asChild variant="outline">
             <Link href="/subscriptions">
-              Add subscription
+              Add recurring bill
               <ArrowRight className="size-4" />
             </Link>
           </Button>
@@ -183,8 +183,8 @@ function SubscriptionTable({ items }: { items: DashboardActiveSubscriptionItem[]
   if (items.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-black/10 bg-stone/45 p-5 text-sm leading-6 text-black/58">
-        Active subscriptions will appear here after imports or manual entries create recurring
-        plans.
+        Recurring charges will appear here after imports or manual entries identify repeating
+        expenses.
       </div>
     );
   }
@@ -278,10 +278,10 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/48">
                 Financial dashboard
               </p>
-              <h2 className="mt-2 text-2xl font-semibold text-ink">Spend and renewals overview</h2>
+              <h2 className="mt-2 text-2xl font-semibold text-ink">Spend analysis overview</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-black/62">
-                Monthly spend comes from parsed statement transactions. Subscription health comes
-                from detected and manually entered recurring plans.
+                Monthly spend comes from parsed statement transactions. Recurring-charge health is
+                one layer inside the broader analysis.
               </p>
             </div>
             <div className="flex gap-2">
@@ -303,7 +303,7 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
           <div className="grid gap-4 border-b border-black/10 py-5 md:grid-cols-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
-                Monthly run rate
+                Recurring run rate
               </p>
               <CurrencyDisplay
                 className="mt-2 block text-3xl font-semibold text-ink"
@@ -311,7 +311,7 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
                 value={toNumber(summary.summary.total_monthly_spend)}
               />
               <p className="mt-2 text-sm text-black/58">
-                {summary.summary.active_subscriptions} active subscription
+                {summary.summary.active_subscriptions} active recurring charge
                 {summary.summary.active_subscriptions === 1 ? "" : "s"}
               </p>
             </div>
@@ -330,7 +330,7 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
-                Portfolio score
+                Recurring spend score
               </p>
               <p className="mt-2 text-3xl font-semibold text-ink">{score?.score ?? 0}</p>
               <p className="mt-2 text-sm text-black/58">
@@ -398,7 +398,7 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
 
             <div>
               <h3 className="text-lg font-semibold text-ink">Category concentration</h3>
-              <p className="mt-1 text-sm text-black/58">Monthly run-rate by recurring category.</p>
+              <p className="mt-1 text-sm text-black/58">Recurring run-rate by category.</p>
               <div className="mt-4 space-y-3">
                 {categories.length > 0 ? (
                   categories.map((category) => (
@@ -424,7 +424,7 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
                   ))
                 ) : (
                   <p className="rounded-xl border border-dashed border-black/10 bg-stone/45 p-4 text-sm leading-6 text-black/58">
-                    Categorized subscriptions will show run-rate concentration here.
+                    Categorized recurring charges will show run-rate concentration here.
                   </p>
                 )}
               </div>
@@ -435,8 +435,8 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
             <div>
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-ink">Subscription ledger</h3>
-                  <p className="mt-1 text-sm text-black/58">Active recurring plans ordered by renewal date.</p>
+                  <h3 className="text-lg font-semibold text-ink">Recurring charge ledger</h3>
+                  <p className="mt-1 text-sm text-black/58">Active recurring expenses ordered by next charge date.</p>
                 </div>
                 <Button asChild size="sm" variant="ghost">
                   <Link href="/subscriptions">
@@ -449,7 +449,7 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-ink">Upcoming renewals</h3>
+              <h3 className="text-lg font-semibold text-ink">Upcoming recurring charges</h3>
               <p className="mt-1 text-sm text-black/58">Due within the next 30 days.</p>
               <div className="mt-3">
                 <RenewalList items={summary.upcoming_renewals} />
@@ -473,7 +473,7 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
                     currency,
                     value: toNumber(summary.summary.total_monthly_spend),
                   })}{" "}
-                  per month across active recurring plans.
+                  per month across detected and manually tracked recurring charges.
                 </p>
               </div>
               <div className="flex gap-3">
@@ -483,7 +483,7 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
               <div className="flex gap-3">
                 <CalendarClock className="mt-0.5 size-4 shrink-0 text-white/70" />
                 <p>
-                  {summary.summary.upcoming_renewals} renewal
+                  {summary.summary.upcoming_renewals} recurring charge
                   {summary.summary.upcoming_renewals === 1 ? "" : "s"} need review in the next
                   30 days.
                 </p>
@@ -510,13 +510,13 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
             </Button>
             <Button asChild className="w-full justify-between" variant="outline">
               <Link href="/score">
-                Subscription score
+                Recurring spend score
                 <Gauge className="size-4" />
               </Link>
             </Button>
             <Button asChild className="w-full justify-between" variant="ghost">
               <Link href="/subscriptions">
-                Manage plans
+                Manage recurring charges
                 <Layers3 className="size-4" />
               </Link>
             </Button>
