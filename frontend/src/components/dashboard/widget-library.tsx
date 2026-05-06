@@ -33,23 +33,23 @@ const CATEGORY_COLORS = ["#111418", "#dc5d30", "#d9895d", "#95a6ba", "#cdb28f"];
 
 export const dashboardWidgetMeta: Record<DashboardWidgetId, WidgetMeta> = {
   "subscription-score": {
-    description: "A portfolio score that blends coverage, renewal readiness, context, and duplicate risk.",
+    description: "A recurring-spend score inside the larger financial analysis workspace.",
     desktopHeight: 4,
-    emptyText: "Add active subscriptions to start tracking the score and cleanup queue.",
-    eyebrow: "Score pulse",
-    title: "Subscription score",
+    emptyText: "Add or import recurring charges to start tracking the cleanup queue.",
+    eyebrow: "Recurring risk",
+    title: "Recurring spend score",
   },
   "active-subscriptions": {
-    description: "Live roster of the subscriptions currently shaping monthly spend.",
+    description: "Live roster of recurring charges currently shaping monthly spend.",
     desktopHeight: 4,
-    emptyText: "Add subscriptions or import statement data to populate the active roster.",
-    eyebrow: "Live roster",
-    title: "Active subscriptions",
+    emptyText: "Import statement data or add recurring charges to populate the roster.",
+    eyebrow: "Recurring ledger",
+    title: "Active recurring charges",
   },
   "category-breakdown": {
-    description: "Where recurring spend is clustering right now across categories.",
+    description: "Where recurring spend clusters across categories inside your broader budget.",
     desktopHeight: 4,
-    emptyText: "Categorize active subscriptions to unlock the category breakdown.",
+    emptyText: "Categorize recurring charges to unlock this category breakdown.",
     eyebrow: "Spend mix",
     title: "Category breakdown",
   },
@@ -61,9 +61,9 @@ export const dashboardWidgetMeta: Record<DashboardWidgetId, WidgetMeta> = {
     title: "Monthly spend",
   },
   "recently-ended": {
-    description: "Recent cancellations with enough context to review what changed.",
+    description: "Recently ended recurring charges with enough context to review what changed.",
     desktopHeight: 3,
-    emptyText: "Cancelled subscriptions with end dates will show up here.",
+    emptyText: "Ended recurring charges with end dates will show up here.",
     eyebrow: "Closed recently",
     title: "Recently ended",
   },
@@ -75,11 +75,11 @@ export const dashboardWidgetMeta: Record<DashboardWidgetId, WidgetMeta> = {
     title: "Duplicate alerts",
   },
   "upcoming-renewals": {
-    description: "Charges due soon, ordered by urgency so the next move is obvious.",
+    description: "Recurring charges due soon, ordered by urgency so the next move is obvious.",
     desktopHeight: 4,
-    emptyText: "Upcoming renewal dates will appear once active plans have charge schedules.",
+    emptyText: "Upcoming charge dates will appear once recurring items have schedules.",
     eyebrow: "Next up",
-    title: "Upcoming renewals",
+    title: "Upcoming charges",
   },
 };
 
@@ -180,7 +180,7 @@ function ScoreWidget({ summary }: { summary: DashboardSummary }) {
     return (
       <WidgetEmptyState
         ctaHref="/subscriptions"
-        ctaLabel="Add subscriptions"
+        ctaLabel="Add recurring charges"
         icon={<Gauge className="size-5" />}
         text={dashboardWidgetMeta["subscription-score"].emptyText}
       />
@@ -225,7 +225,7 @@ function ScoreWidget({ summary }: { summary: DashboardSummary }) {
           </div>
         </div>
         <p className="mt-4 text-sm leading-6 text-white/68">
-          {formatBandLabel(score.band)} with {score.recommendation_count} recommended cleanup move
+          {formatBandLabel(score.band)} with {score.recommendation_count} recurring-spend cleanup move
           {score.recommendation_count === 1 ? "" : "s"} queued.
         </p>
       </div>
@@ -256,7 +256,7 @@ function ScoreWidget({ summary }: { summary: DashboardSummary }) {
               <div className="rounded-[1.35rem] border border-black/10 bg-stone/70 px-4 py-4">
                 <p className="text-xs uppercase tracking-[0.24em] text-black/42">Score band</p>
                 <p className="mt-3 text-lg font-semibold text-ink">{formatBandLabel(score.band)}</p>
-                <p className="mt-1 text-sm text-black/58">Coverage, context, renewals, and waste control.</p>
+                <p className="mt-1 text-sm text-black/58">Coverage, context, charge timing, and waste control.</p>
               </div>
               <div className="rounded-[1.35rem] border border-black/10 bg-stone/70 px-4 py-4">
                 <p className="text-xs uppercase tracking-[0.24em] text-black/42">Next move</p>
@@ -351,7 +351,7 @@ function ActiveSubscriptionsWidget({ summary }: { summary: DashboardSummary }) {
     return (
       <WidgetEmptyState
         ctaHref="/subscriptions"
-        ctaLabel="Add a subscription"
+        ctaLabel="Add recurring charge"
         icon={<Layers3 className="size-5" />}
         text={dashboardWidgetMeta["active-subscriptions"].emptyText}
       />
@@ -368,7 +368,7 @@ function ActiveSubscriptionsWidget({ summary }: { summary: DashboardSummary }) {
             currency: summary.summary.currency,
             value: Number.parseFloat(summary.summary.total_monthly_spend),
           })}{" "}
-          in monthly-equivalent spend is currently active after conversion.
+          in monthly-equivalent recurring spend is currently active after conversion.
         </p>
       </div>
 
@@ -473,7 +473,7 @@ function CategoryBreakdownWidget({ summary }: { summary: DashboardSummary }) {
     return (
       <WidgetEmptyState
         ctaHref="/subscriptions"
-        ctaLabel="Review subscriptions"
+        ctaLabel="Review recurring spend"
         icon={<Donut className="size-5" />}
         text={dashboardWidgetMeta["category-breakdown"].emptyText}
       />
@@ -517,7 +517,7 @@ function CategoryBreakdownWidget({ summary }: { summary: DashboardSummary }) {
               />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-ink">{item.label}</p>
-                <p className="text-sm text-black/58">{item.subscriptions} subscriptions</p>
+                <p className="text-sm text-black/58">{item.subscriptions} recurring items</p>
               </div>
             </div>
 
@@ -538,7 +538,7 @@ function UpcomingRenewalsWidget({ summary }: { summary: DashboardSummary }) {
     return (
       <WidgetEmptyState
         ctaHref="/subscriptions"
-        ctaLabel="Review renewal dates"
+        ctaLabel="Review charge dates"
         icon={<CalendarClock className="size-5" />}
         text={dashboardWidgetMeta["upcoming-renewals"].emptyText}
       />
@@ -592,7 +592,7 @@ function RecentlyEndedWidget({ summary }: { summary: DashboardSummary }) {
     return (
       <WidgetEmptyState
         ctaHref="/subscriptions"
-        ctaLabel="Inspect subscriptions"
+        ctaLabel="Inspect recurring spend"
         icon={<FolderClock className="size-5" />}
         text={dashboardWidgetMeta["recently-ended"].emptyText}
       />
@@ -686,7 +686,7 @@ export function DashboardBoardFootnote({ summary }: { summary: DashboardSummary 
           <ArrowUpRight className="size-5 text-white/55" />
         </div>
         <p className="mt-3 text-sm leading-6 text-white/65">
-          {summary.summary.upcoming_renewals} renewal{summary.summary.upcoming_renewals === 1 ? "" : "s"} are due soon, so the widget grid stays grounded in action instead of just reporting totals.
+          {summary.summary.upcoming_renewals} recurring charge{summary.summary.upcoming_renewals === 1 ? "" : "s"} are due soon, so the widget grid stays grounded in action instead of just reporting totals.
         </p>
       </div>
     </div>
