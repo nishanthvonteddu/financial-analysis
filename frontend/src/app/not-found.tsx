@@ -15,10 +15,10 @@ export default function NotFound() {
             Page not found
           </p>
           <h1 className="mt-4 font-serif text-4xl leading-tight text-ink dark:text-white sm:text-5xl">
-            The route you asked for is outside the current subscription workspace.
+            The route you asked for is outside the current financial workspace.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-black/64 dark:text-white/64">
-            Use the dashboard to get back to the live product surface, or start from the landing page if you meant to sign in or create an account.
+            Use the analysis dashboard to get back to your statements, reports, and spend insights, or start from the landing page if you meant to sign in or create an account.
           </p>
         </div>
 
