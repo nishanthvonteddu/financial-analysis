@@ -196,7 +196,7 @@ export function ReportAnalytics({
         </div>
 
         <div className="rounded-[1.5rem] border border-black/10 bg-stone/70 p-5">
-          <p className="text-xs uppercase tracking-[0.28em] text-black/42">Active subscriptions</p>
+          <p className="text-xs uppercase tracking-[0.28em] text-black/42">Recurring charges</p>
           <p className="mt-3 text-3xl font-semibold tracking-tight text-ink">
             {summary?.active_subscriptions ?? 0}
           </p>
@@ -365,7 +365,7 @@ export function ReportAnalytics({
                     <div>
                       <p className="text-sm font-semibold text-ink">{method.label}</p>
                       <p className="mt-1 text-xs uppercase tracking-[0.24em] text-black/42">
-                        {method.subscriptions} active subscriptions
+                        {method.subscriptions} recurring charges
                       </p>
                     </div>
                     <span className="mt-1 size-3 rounded-full" style={{ backgroundColor: method.color }} />
@@ -442,7 +442,7 @@ export function ReportAnalytics({
                   <div>
                     <p className="text-sm font-semibold text-ink">{category.category_name}</p>
                     <p className="mt-1 text-xs uppercase tracking-[0.24em] text-black/42">
-                      {category.active_subscriptions} active subscriptions
+                      {category.active_subscriptions} recurring charges
                     </p>
                   </div>
                   <div className="text-right">
