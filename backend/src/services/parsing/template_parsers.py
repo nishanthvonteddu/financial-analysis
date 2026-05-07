@@ -254,9 +254,14 @@ def parse_csv_records(
 
 
 def _infer_year_hint(text: str) -> int:
-    year_match = re.search(r"\b(20\d{2})\b", text)
-    if year_match:
-        return int(year_match.group(1))
+    current_year = datetime.now(UTC).year
+    candidate_years = [
+        int(match)
+        for match in re.findall(r"\b(20\d{2})\b", text)
+        if 2000 <= int(match) <= current_year + 1
+    ]
+    if candidate_years:
+        return max(candidate_years)
     return datetime.now(UTC).year
 
 
