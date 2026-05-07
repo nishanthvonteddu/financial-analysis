@@ -616,23 +616,25 @@ export default function SettingsPage() {
         title="Profile and workspace controls"
       >
         <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-          <div className="space-y-4 rounded-[1.6rem] border border-black/10 bg-stone/55 p-5">
+          <div className="space-y-4 rounded-xl border border-black/10 bg-stone/55 p-5">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-black/42">Signed in as</p>
               <h3 className="mt-2 text-xl font-semibold text-ink">{user?.full_name ?? "Workspace operator"}</h3>
               <p className="mt-1 text-sm text-black/58">{user?.email ?? "No email available"}</p>
             </div>
 
-            <div className="rounded-[1.35rem] border border-black/10 bg-white/85 p-4">
-              <p className="text-xs uppercase tracking-[0.28em] text-black/42">Workspace currency</p>
-              <p className="mt-2 text-2xl font-semibold text-ink">{currencySummary.label}</p>
-              <p className="mt-2 text-sm leading-6 text-black/58">{currencySummary.detail}</p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-                <label className="sr-only" htmlFor="preferred-currency">
-                  Preferred currency
+            <div className="rounded-xl border border-black/10 bg-white/85 p-4">
+              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
+                <label className="block" htmlFor="preferred-currency">
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-black/45">
+                    Workspace currency
+                  </span>
+                  <span className="mt-1 block text-sm text-black/58">
+                    Used for dashboard and report totals.
+                  </span>
                 </label>
                 <select
-                  className="h-11 w-full rounded-full border border-black/10 bg-stone/70 px-4 text-sm font-semibold text-ink outline-none transition focus:border-black/20 focus:ring-2 focus:ring-ember/15"
+                  className="h-11 w-full min-w-48 rounded-lg border border-black/10 bg-stone/70 px-3 text-sm font-semibold text-ink outline-none transition focus:border-black/20 focus:ring-2 focus:ring-ember/15"
                   id="preferred-currency"
                   onChange={(event) => setCurrencyDraft(event.target.value)}
                   value={currencyDraft}
@@ -644,7 +646,7 @@ export default function SettingsPage() {
                   ))}
                 </select>
                 <Button
-                  className="rounded-full px-5"
+                  className="h-11 rounded-lg px-5"
                   disabled={isSavingCurrency || currencyDraft === effectivePreferredCurrency}
                   onClick={() => {
                     void handleCurrencySave();
@@ -654,9 +656,7 @@ export default function SettingsPage() {
                   {isSavingCurrency ? "Saving..." : "Save"}
                 </Button>
               </div>
-              <p className="mt-2 text-xs leading-5 text-black/50">
-                Dashboard and report aggregates convert into {getCurrencyName(effectivePreferredCurrency)}.
-              </p>
+              <p className="mt-2 text-xs text-black/50">Current: {currencySummary.label} · {getCurrencyName(effectivePreferredCurrency)}</p>
               {currencyError ? <p className="mt-2 text-sm text-ember">{currencyError}</p> : null}
             </div>
 
