@@ -14,6 +14,9 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -38,9 +41,11 @@ type FinancialCommandCenterProps = {
 
 type ChartTooltipProps = {
   active?: boolean;
-  payload?: Array<{ payload?: { currency?: string; total?: number } }>;
+  payload?: Array<{ payload?: { currency?: string; label?: string; total?: number } }>;
   label?: string;
 };
+
+const CATEGORY_COLORS = ["#101922", "#d85f35", "#8b9db2", "#c6a571", "#5c7566"];
 
 function toNumber(value: string | number | null | undefined) {
   const parsed = Number(value ?? 0);
@@ -76,6 +81,16 @@ function ChartTooltip({ active, label, payload }: ChartTooltipProps) {
       </p>
     </div>
   );
+}
+
+function getStatementTotals(points: ReturnType<typeof buildMonthlyData>) {
+  const nonZeroPoints = points.filter((point) => point.total > 0);
+  const total = nonZeroPoints.reduce((sum, point) => sum + point.total, 0);
+  return {
+    activeMonths: nonZeroPoints.length,
+    average: nonZeroPoints.length > 0 ? total / nonZeroPoints.length : 0,
+    total,
+  };
 }
 
 function buildMonthlyData(points: DashboardMonthlySpendPoint[]) {
@@ -125,6 +140,86 @@ function categoryPercentages(categories: DashboardCategoryBreakdownItem[]) {
     ...category,
     percent: total > 0 ? (toNumber(category.total_monthly_spend) / total) * 100 : 0,
   }));
+}
+
+function CategoryMixChart({
+  categories,
+  currency,
+}: {
+  categories: ReturnType<typeof categoryPercentages>;
+  currency: string;
+}) {
+  if (categories.length === 0) {
+    return (
+      <p className="rounded-lg border border-dashed border-black/10 bg-stone/45 p-4 text-sm leading-6 text-black/58">
+        Categories appear after recurring charges are classified.
+      </p>
+    );
+  }
+
+  const chartData = categories.map((category) => ({
+    currency,
+    label: category.category_name,
+    total: toNumber(category.total_monthly_spend),
+  }));
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-[132px_minmax(0,1fr)] sm:items-center">
+      <div className="h-32">
+        <ResponsiveContainer height="100%" width="100%">
+          <PieChart>
+            <Pie
+              cx="50%"
+              cy="50%"
+              data={chartData}
+              dataKey="total"
+              innerRadius={36}
+              outerRadius={58}
+              paddingAngle={3}
+            >
+              {chartData.map((item, index) => (
+                <Cell fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} key={item.label} />
+              ))}
+            </Pie>
+            <Tooltip content={<ChartTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="space-y-2">
+        {categories.map((category, index) => (
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3" key={`${category.category_id}-${category.category_name}`}>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className="size-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: CATEGORY_COLORS[index % CATEGORY_COLORS.length] }}
+                />
+                <p className="truncate text-sm font-medium text-ink">{category.category_name}</p>
+              </div>
+              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-black/8">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    backgroundColor: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+                    width: `${Math.max(5, category.percent)}%`,
+                  }}
+                />
+              </div>
+            </div>
+            <span className="text-sm font-semibold text-ink">
+              {formatCurrency({
+                compact: true,
+                currency: category.currency,
+                maximumFractionDigits: 0,
+                value: toNumber(category.total_monthly_spend),
+              })}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function LoadingState() {
@@ -268,21 +363,19 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
   const monthlyVariance = (latestMonth?.total ?? 0) - (previousMonth?.total ?? 0);
   const categories = categoryPercentages(summary.category_breakdown);
   const score = summary.score_overview;
+  const statementTotals = getStatementTotals(monthlyData);
 
   return (
     <section className="rounded-xl border border-black/10 bg-white shadow-line">
-      <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0 p-5 sm:p-6">
-          <div className="flex flex-col gap-5 border-b border-black/10 pb-5 lg:flex-row lg:items-start lg:justify-between">
+      <div className="min-w-0 p-4 sm:p-5">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="min-w-0">
+            <div className="flex flex-col gap-4 border-b border-black/10 pb-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/48">
-                Financial dashboard
+                Financial analysis
               </p>
-              <h2 className="mt-2 text-2xl font-semibold text-ink">Spend analysis overview</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-black/62">
-                Monthly spend comes from parsed statement transactions. Recurring-charge health is
-                one layer inside the broader analysis.
-              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-ink">All statements and recurring spend</h2>
             </div>
             <div className="flex gap-2">
               <Button asChild variant="outline">
@@ -300,8 +393,34 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
             </div>
           </div>
 
-          <div className="grid gap-4 border-b border-black/10 py-5 md:grid-cols-3">
-            <div>
+          <div className="grid gap-3 border-b border-black/10 py-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-lg bg-[#101922] p-4 text-white">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/46">
+                Total statement spend
+              </p>
+              <CurrencyDisplay
+                className="mt-2 block text-3xl font-semibold"
+                currency={currency}
+                value={statementTotals.total}
+              />
+              <p className="mt-1 text-xs text-white/58">
+                {statementTotals.activeMonths} month{statementTotals.activeMonths === 1 ? "" : "s"} with parsed spend
+              </p>
+            </div>
+            <div className="rounded-lg border border-black/10 bg-stone/55 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
+                Monthly average
+              </p>
+              <CurrencyDisplay
+                className="mt-2 block text-3xl font-semibold text-ink"
+                currency={currency}
+                value={statementTotals.average}
+              />
+              <p className="mt-1 text-xs text-black/56">
+                {getMonthlyNarrative(monthlyData, currency)}
+              </p>
+            </div>
+            <div className="rounded-lg border border-black/10 bg-stone/55 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
                 Recurring run rate
               </p>
@@ -310,43 +429,27 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
                 currency={currency}
                 value={toNumber(summary.summary.total_monthly_spend)}
               />
-              <p className="mt-2 text-sm text-black/58">
+              <p className="mt-1 text-xs text-black/56">
                 {summary.summary.active_subscriptions} active recurring charge
                 {summary.summary.active_subscriptions === 1 ? "" : "s"}
               </p>
             </div>
-            <div>
+            <div className="rounded-lg border border-black/10 bg-stone/55 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
-                Latest statement month
-              </p>
-              <CurrencyDisplay
-                className="mt-2 block text-3xl font-semibold text-ink"
-                currency={currency}
-                value={latestMonth?.total ?? 0}
-              />
-              <p className="mt-2 text-sm text-black/58">
-                {getMonthlyNarrative(monthlyData, currency)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
-                Recurring spend score
+                Risk score
               </p>
               <p className="mt-2 text-3xl font-semibold text-ink">{score?.score ?? 0}</p>
-              <p className="mt-2 text-sm text-black/58">
+              <p className="mt-1 text-xs text-black/56">
                 {score ? `${score.grade} grade · ${score.recommendation_count} actions` : "No score yet"}
               </p>
             </div>
           </div>
 
-          <div className="grid gap-5 py-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <div className="grid gap-5 py-5 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div>
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-ink">Monthly spend comparison</h3>
-                  <p className="mt-1 text-sm text-black/58">
-                    Compare parsed statement spend across the last six months.
-                  </p>
+                  <h3 className="text-lg font-semibold text-ink">Monthly statement spend</h3>
                 </div>
                 <div className="rounded-lg bg-stone/70 px-3 py-2 text-sm text-black/62">
                   {monthlyVariance >= 0 ? "Up" : "Down"}{" "}
@@ -359,7 +462,7 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
                   vs previous month
                 </div>
               </div>
-              <div className="h-72 rounded-xl border border-black/10 bg-stone/35 px-3 py-4">
+              <div className="h-64 rounded-xl border border-black/10 bg-stone/35 px-3 py-4">
                 {hasMonthlySpend ? (
                   <ResponsiveContainer height="100%" width="100%">
                     <BarChart data={monthlyData} margin={{ bottom: 0, left: -12, right: 10, top: 8 }}>
@@ -397,36 +500,9 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-ink">Category concentration</h3>
-              <p className="mt-1 text-sm text-black/58">Recurring run-rate by category.</p>
-              <div className="mt-4 space-y-3">
-                {categories.length > 0 ? (
-                  categories.map((category) => (
-                    <div key={`${category.category_id}-${category.category_name}`}>
-                      <div className="flex items-center justify-between gap-3 text-sm">
-                        <span className="truncate font-medium text-ink">{category.category_name}</span>
-                        <span className="text-black/58">
-                          {formatCurrency({
-                            compact: true,
-                            currency: category.currency,
-                            maximumFractionDigits: 0,
-                            value: toNumber(category.total_monthly_spend),
-                          })}
-                        </span>
-                      </div>
-                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone">
-                        <div
-                          className="h-full rounded-full bg-ink"
-                          style={{ width: `${Math.max(6, category.percent)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="rounded-xl border border-dashed border-black/10 bg-stone/45 p-4 text-sm leading-6 text-black/58">
-                    Categorized recurring charges will show run-rate concentration here.
-                  </p>
-                )}
+              <h3 className="text-lg font-semibold text-ink">Recurring mix</h3>
+              <div className="mt-4">
+                <CategoryMixChart categories={categories} currency={currency} />
               </div>
             </div>
           </div>
@@ -458,12 +534,12 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
           </div>
         </div>
 
-        <aside className="border-t border-black/10 bg-stone/45 p-5 sm:p-6 xl:border-l xl:border-t-0">
+        <aside className="border-t border-black/10 bg-stone/45 p-5 xl:border-l xl:border-t-0">
           <div className="rounded-xl bg-ink p-5 text-white">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/48">
-              Executive readout
+              Readout
             </p>
-            <h3 className="mt-3 text-xl font-semibold">What needs attention</h3>
+            <h3 className="mt-3 text-xl font-semibold">What changed</h3>
             <div className="mt-5 space-y-4 text-sm leading-6 text-white/68">
               <div className="flex gap-3">
                 <CircleDollarSign className="mt-0.5 size-4 shrink-0 text-white/70" />
@@ -522,6 +598,7 @@ export function FinancialCommandCenter({ isLoading = false, summary }: Financial
             </Button>
           </div>
         </aside>
+      </div>
       </div>
     </section>
   );
