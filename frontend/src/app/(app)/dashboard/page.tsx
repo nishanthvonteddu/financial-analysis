@@ -41,9 +41,9 @@ export default function DashboardPage() {
   return (
     <div className="animate-page-enter space-y-6">
       <PageHeader
-        description="Monthly spend, recurring plans, renewals, and score actions in one production-ready analysis surface."
+        description="Statement totals, monthly movement, recurring spend, and renewal risk in one compact view."
         eyebrow="Dashboard"
-        title="Financial command center"
+        title="Financial analysis"
       />
 
       {showOnboarding ? <WorkspaceOnboarding /> : null}
