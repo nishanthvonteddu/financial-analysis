@@ -105,6 +105,23 @@ function getRenewalStatusLabel(renewalCount: number) {
   return `${renewalCount} renewal${renewalCount === 1 ? "" : "s"}`;
 }
 
+function getDayCurrency(cell: MonthCell) {
+  return cell.renewals[0]?.currency ?? "USD";
+}
+
+function getMonthSpend(cells: MonthCell[]) {
+  return cells
+    .filter((cell) => cell.currentMonth)
+    .reduce((sum, cell) => sum + Number(cell.totalAmount), 0);
+}
+
+function getTopSpendDays(cells: MonthCell[]) {
+  return cells
+    .filter((cell) => cell.currentMonth && Number(cell.totalAmount) > 0)
+    .sort((left, right) => Number(right.totalAmount) - Number(left.totalAmount))
+    .slice(0, 4);
+}
+
 function RenewalList({ renewals }: { renewals: CalendarRenewalItem[] }) {
   if (renewals.length === 0) {
     return (
@@ -179,6 +196,8 @@ export function CalendarWorkspace({
     weekday: "long",
     year: "numeric",
   });
+  const monthSpend = getMonthSpend(monthCells);
+  const topSpendDays = getTopSpendDays(monthCells);
 
   useEffect(() => {
     setSelectedDate(getInitialSelectedDate(calendar, selectedMonth));
@@ -191,16 +210,20 @@ export function CalendarWorkspace({
   };
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)]">
-      <section className="rounded-[2rem] border border-black/10 bg-white/76 p-4 shadow-line backdrop-blur sm:p-6">
-        <div className="flex flex-col gap-4 border-b border-black/10 pb-5 lg:flex-row lg:items-center lg:justify-between">
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.8fr)]">
+      <section className="rounded-xl border border-black/10 bg-white/76 p-4 shadow-line backdrop-blur sm:p-5">
+        <div className="flex flex-col gap-4 border-b border-black/10 pb-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.32em] text-black/42">Renewal calendar</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-black/45">Daily spend calendar</p>
             <h2 className="mt-2 text-3xl font-semibold tracking-tight text-ink">{monthLabel}</h2>
-            <p className="mt-2 text-sm leading-6 text-black/62">
-              {calendar?.total_renewals ?? 0} projected renewal
-              {(calendar?.total_renewals ?? 0) === 1 ? "" : "s"} in this month.
-            </p>
+            <div className="mt-3 flex flex-wrap gap-2 text-sm">
+              <span className="rounded-lg bg-[#101922] px-3 py-2 font-semibold text-white">
+                {formatCurrency({ value: monthSpend })} scheduled
+              </span>
+              <span className="rounded-lg bg-stone/70 px-3 py-2 text-black/62">
+                {calendar?.total_renewals ?? 0} renewal{(calendar?.total_renewals ?? 0) === 1 ? "" : "s"}
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -225,7 +248,7 @@ export function CalendarWorkspace({
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-7 gap-2 text-center text-xs uppercase tracking-[0.24em] text-black/38">
+        <div className="mt-5 grid grid-cols-7 gap-2 text-center text-xs uppercase tracking-[0.16em] text-black/38">
           {WEEKDAY_LABELS.map((label) => (
             <span key={label}>{label}</span>
           ))}
@@ -235,6 +258,7 @@ export function CalendarWorkspace({
           {monthCells.map((cell) => {
             const isSelected = cell.date === selectedCell.date;
             const hasRenewals = cell.renewals.length > 0;
+            const dayTotal = Number(cell.totalAmount);
 
             return (
               <div className="relative min-w-0" key={cell.date}>
@@ -245,7 +269,7 @@ export function CalendarWorkspace({
                   })}: ${getRenewalStatusLabel(cell.renewals.length)}`}
                   aria-pressed={isSelected}
                   className={cn(
-                    "flex aspect-square w-full min-w-0 flex-col justify-between rounded-[1.15rem] border p-2 text-left transition sm:p-3",
+                    "flex aspect-square w-full min-w-0 flex-col justify-between rounded-lg border p-2 text-left transition sm:p-2.5",
                     cell.currentMonth
                       ? "border-black/10 bg-stone/65 text-ink hover:border-black/20 hover:bg-white"
                       : "border-transparent bg-transparent text-black/24",
@@ -255,19 +279,22 @@ export function CalendarWorkspace({
                   type="button"
                 >
                   <span className="text-sm font-semibold">{cell.day}</span>
-                  <span className="flex h-5 items-end gap-1 overflow-hidden">
-                    {cell.renewals.slice(0, 3).map((renewal) => (
-                      <span
-                        aria-hidden="true"
-                        className="size-2 rounded-full bg-ember"
-                        key={`${cell.date}-${renewal.subscription_id}`}
-                      />
-                    ))}
-                    {cell.renewals.length > 3 ? (
-                      <span className="text-[10px] font-semibold text-black/50">
-                        +{cell.renewals.length - 3}
-                      </span>
-                    ) : null}
+                  <span className="min-h-9">
+                    {dayTotal > 0 ? (
+                      <>
+                        <span className="block truncate text-[11px] font-semibold text-ink sm:text-xs">
+                          {formatCurrency({
+                            compact: true,
+                            currency: getDayCurrency(cell),
+                            maximumFractionDigits: 0,
+                            value: dayTotal,
+                          })}
+                        </span>
+                        <span className="mt-1 block h-1.5 rounded-full bg-ember" />
+                      </>
+                    ) : (
+                      <span className="block text-[11px] text-black/30">-</span>
+                    )}
                   </span>
                 </button>
 
@@ -312,7 +339,7 @@ export function CalendarWorkspace({
       </section>
 
       <aside className="space-y-4">
-        <section className="rounded-[2rem] border border-black/10 bg-[#101922] p-6 text-white shadow-line">
+        <section className="rounded-xl border border-black/10 bg-[#101922] p-5 text-white shadow-line">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-white/42">Selected day</p>
@@ -332,6 +359,7 @@ export function CalendarWorkspace({
               <p className="text-xs uppercase tracking-[0.24em] text-white/38">Total</p>
               <p className="mt-2 text-3xl font-semibold">
                 {formatCurrency({
+                  currency: getDayCurrency(selectedCell),
                   value: Number(selectedCell.totalAmount),
                 })}
               </p>
@@ -354,10 +382,10 @@ export function CalendarWorkspace({
             title="No recurring charges scheduled this month"
           />
         ) : (
-          <section className="rounded-[2rem] border border-black/10 bg-white/76 p-5 shadow-line backdrop-blur">
+          <section className="rounded-xl border border-black/10 bg-white/76 p-5 shadow-line backdrop-blur">
             <div className="mb-4 flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-black/42">Day detail</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-black/42">Day detail</p>
                 <h3 className="mt-1 text-xl font-semibold text-ink">
                   {getRenewalStatusLabel(selectedCell.renewals.length)}
                 </h3>
@@ -366,6 +394,34 @@ export function CalendarWorkspace({
             <RenewalList renewals={selectedCell.renewals} />
           </section>
         )}
+
+        <section className="rounded-xl border border-black/10 bg-white/76 p-5 shadow-line backdrop-blur">
+          <p className="text-xs uppercase tracking-[0.18em] text-black/42">Highest spend days</p>
+          <div className="mt-3 space-y-2">
+            {topSpendDays.length > 0 ? (
+              topSpendDays.map((cell) => (
+                <button
+                  className="flex w-full items-center justify-between gap-3 rounded-lg bg-stone/60 px-3 py-2 text-left transition hover:bg-stone"
+                  key={cell.date}
+                  onClick={() => setSelectedDate(cell.date)}
+                  type="button"
+                >
+                  <span className="text-sm font-semibold text-ink">
+                    {formatDate(cell.date, { day: "numeric", month: "short" })}
+                  </span>
+                  <span className="text-sm font-semibold text-ink">
+                    {formatCurrency({
+                      currency: getDayCurrency(cell),
+                      value: Number(cell.totalAmount),
+                    })}
+                  </span>
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-black/58">No scheduled spend in this month.</p>
+            )}
+          </div>
+        </section>
       </aside>
     </div>
   );
