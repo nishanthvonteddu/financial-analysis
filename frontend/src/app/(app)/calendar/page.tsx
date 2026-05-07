@@ -30,9 +30,9 @@ export default function CalendarPage() {
             </Link>
           </Button>
         }
-        description="Review projected renewal dates across active plans, move month to month, and open the day detail when a billing cluster needs attention."
-        eyebrow="Renewal calendar"
-        title="Renewal calendar"
+        description="Daily scheduled spend, renewal counts, and the highest-cost days for the month."
+        eyebrow="Calendar"
+        title="Daily spend calendar"
       />
 
       <CalendarWorkspace
