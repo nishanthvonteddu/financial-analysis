@@ -77,6 +77,26 @@ def test_pdf_extractor_handles_capital_one_statement_rows(monkeypatch) -> None:
     assert str(result.transactions[2].amount) == "-20.00"
 
 
+def test_pdf_extractor_ignores_future_account_digits_when_inferring_year(monkeypatch) -> None:
+    statement_text = "\n".join(
+        [
+            "Bank of America statement closing 01/26/2026",
+            "Account ending in 2050",
+            "01/08 01/09 GET COVERED LLC GETCOVEREDINSNY 9465 4362 28.97",
+        ]
+    )
+
+    def _open(_: object) -> _FakePdf:
+        return _FakePdf([_FakePage(statement_text)])
+
+    monkeypatch.setattr("src.services.parsing.pdf_extractor.pdfplumber.open", _open)
+
+    result = extract_pdf_transactions(b"%PDF")
+
+    assert result.bank_format == "bank_of_america"
+    assert result.transactions[0].posted_at == date(2026, 1, 8)
+
+
 def test_pdf_extractor_detects_scanned_pdfs(monkeypatch) -> None:
     def _open(_: object) -> _FakePdf:
         return _FakePdf([_FakePage(None), _FakePage("")])
